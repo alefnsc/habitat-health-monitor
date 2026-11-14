@@ -15,4 +15,4 @@ def sign(body: bytes, secret: str) -> str:
 def verify(body: bytes, header: str | None, secret: str) -> bool:
     if not secret or not header:
         return False
-    return hmac.compare_digest(sign(body, secret), header)
+    return hmac.compare_digest(sign(body, secret).encode("utf-8"), header.encode("utf-8"))

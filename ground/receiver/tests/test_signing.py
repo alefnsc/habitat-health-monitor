@@ -27,3 +27,7 @@ def test_verify_missing_inputs():
     assert not verify(body, None, "k")
     assert not verify(body, "", "k")
     assert not verify(body, sign(body, "k"), "")
+
+
+def test_verify_non_ascii_header_is_false():
+    assert not verify(b"{}", "sha256=café", "k")
