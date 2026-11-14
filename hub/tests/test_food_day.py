@@ -217,3 +217,27 @@ def test_real_preview_all_crew_and_after_roll(store):
         "intake_iron_mg"
     ]
     assert iron["status"] == "unknown" and iron["floor_judged"] is None
+
+
+def test_real_references_file_served(settings, clock):
+    from dataclasses import replace
+
+    root = Path(__file__).resolve().parents[2]
+    real = root / "data/food/references.json"
+    data = load_references(real)
+    assert {i["ind"] for i in data["items"] if i["has_rule"]} == {
+        "intake_water_ml", "intake_sodium_mg", "intake_calcium_mg", "intake_iron_mg",
+        "intake_vitd_ug",
+    }  # fmt: skip
+    for i in data["items"]:
+        assert i["source_kind"] == ("nasa_std" if i["ind"] in {"intake_vitd_ug", "intake_kcal"} else "nasa_doc")
+        assert i["url"].startswith("https://")
+    s = MealStore(settings.db_path)
+    app = create_app(settings, clock=clock, store=s)
+    st = replace(settings, food_references_path=real)
+    app.state.ctx = SimpleNamespace(store=s, assessor=FakeAssessor({}), settings=st)
+    app.include_router(router)
+    with TestClient(app) as c:
+        r = c.get("/api/food/references")
+        assert r.status_code == 200 and len(r.json()["items"]) == 10
+    s.close()
