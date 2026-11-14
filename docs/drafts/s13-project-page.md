@@ -63,4 +63,21 @@ It is an educational prototype, not a medical device. It never diagnoses and giv
 
 ## Images
 
-(For S17.)
+Three images: one real screenshot and two AI-generated illustrations, each marked as such on the image. Every number on them is cited in `docs/img/image-facts.md`.
+
+1. `docs/img/console-status.png`
+   - Caption: Crew console status board replaying a recorded synthetic session: heart rate and cabin sensors, each with its source and reference. Real screenshot; educational prototype, not a medical device.
+   - Alt text: Dark console page titled Status board, with banners "Educational prototype, not a medical device" and "Replay of a recorded session, not live data".
+     - Values shown: heart rate 61 bpm, skin temperature 33.5 °C, cabin CO2 1.01 mmHg (1,324 ppm), temperature 22.2 °C, humidity 45 %, pressure 1013.0 hPa and light 400 lx.
+     - Blood pressure, glucose, body temperature, sleep, mood and SpO2 read "No reading yet".
+2. `docs/img/habitat-illustration.png`
+   - Caption: One habitat, three kinds of sensor node and one offline hub that compares readings with NASA-STD-3001 where a rule exists. AI-generated illustration; hobby-sensor values are estimates.
+   - Alt text: Flat cartoon cutaway of a cylindrical surface habitat with bunks, a galley, a treadmill and a medical corner, with glowing sensor nodes and no people.
+     - Callouts read "Cabin node: CO2, temperature, humidity, pressure", "Hub: works offline", "Vitals node" and "Exercise rig: load cell".
+     - A label reads "AI-generated illustration".
+3. `docs/img/same-sensors-three-places.png`
+   - Caption: Same sensors, three places: the cabin limits stay the same while gravity, distance to Earth and radiation change. AI-generated concept art; the console has no ISS, Moon or Mars mode.
+   - Alt text: Comparison card titled "Same sensors, three places", with cartoon art of a space station, a Moon base and a Mars base side by side.
+     - A box gives the shared cabin limits: CO2 at most 3 mmHg (1-hour mean) and 18-27 °C, both checked by the prototype, and 34.5-103 kPa total pressure as a NASA reference only.
+     - Rows compare gravity, link or light time to Earth, radiation dose rate and outside air for each place.
+     - A label reads "AI-generated art · concept only".
