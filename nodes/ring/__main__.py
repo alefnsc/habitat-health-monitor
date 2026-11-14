@@ -130,7 +130,8 @@ def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
     cfg = config_from_env(env)
     verifier, challenge = make_pkce()
     state = secrets.token_urlsafe(24)
-    url = build_authorize_url(cfg, state, challenge)
+    send_redirect = not args.use_registered_redirect
+    url = build_authorize_url(cfg, state, challenge, include_redirect=send_redirect)
 
     def open_sign_in() -> None:
         print("Sign in with the ring account and allow heartrate, spo2 and daily:\n" + url)
@@ -145,7 +146,7 @@ def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
         redirect = input("Paste the full URL the browser was sent to: ")
     code = code_from_redirect(redirect, state)
     with httpx.Client() as http:
-        tok = exchange_code(cfg, code, verifier, http)
+        tok = exchange_code(cfg, code, verifier, http, include_redirect=send_redirect)
     save_token(Path(args.token), tok)
     print(f"Token saved to {args.token} (mode 600). Next: python -m nodes.ring pull")
     return 0
@@ -182,6 +183,11 @@ def build_parser() -> argparse.ArgumentParser:
     au.add_argument("--token", default=DEFAULT_TOKEN)
     au.add_argument("--no-browser", action="store_true", help="print the URL, do not open it")
     au.add_argument("--env-file", default=".env", help="where a typed client id and secret are saved")
+    au.add_argument(
+        "--use-registered-redirect", action="store_true",
+        help="send no redirect_uri: the vendor uses the app's one registered redirect "
+        "(still listened for on RING_REDIRECT_URI)",
+    )  # fmt: skip
     pu = sub.add_parser("pull", help="fetch, save the raw pull, post as src hobby")
     pu.add_argument("--days", type=int, default=2, help="how many days back (default 2)")
     pu.add_argument("--token", default=DEFAULT_TOKEN)

@@ -64,13 +64,18 @@ def make_pkce() -> tuple[str, str]:
     return verifier, pkce_challenge(verifier)
 
 
-def build_authorize_url(cfg: OAuthConfig, state: str, challenge: str) -> str:
-    query = urlencode({
+def build_authorize_url(
+    cfg: OAuthConfig, state: str, challenge: str, *, include_redirect: bool = True
+) -> str:
+    """With include_redirect=False the vendor uses the app's one registered redirect URI."""
+    params = {
         "response_type": "code", "client_id": cfg.client_id, "redirect_uri": cfg.redirect_uri,
         "scope": " ".join(cfg.scopes), "state": state, "code_challenge": challenge,
         "code_challenge_method": "S256",
-    })  # fmt: skip
-    return f"{cfg.authorize_url}?{query}"
+    }  # fmt: skip
+    if not include_redirect:
+        del params["redirect_uri"]
+    return f"{cfg.authorize_url}?{urlencode(params)}"
 
 
 def code_from_redirect(url: str, expected_state: str) -> str:
@@ -99,10 +104,19 @@ def _token_request(cfg: OAuthConfig, form: dict, http: httpx.Client, now: float 
 
 
 def exchange_code(
-    cfg: OAuthConfig, code: str, verifier: str, http: httpx.Client, *, now: float | None = None
+    cfg: OAuthConfig,
+    code: str,
+    verifier: str,
+    http: httpx.Client,
+    *,
+    now: float | None = None,
+    include_redirect: bool = True,
 ) -> dict:
+    """The redirect URI is sent only if the authorize request sent it (vendor rule)."""
     form = {"grant_type": "authorization_code", "code": code, "redirect_uri": cfg.redirect_uri,
             "code_verifier": verifier}  # fmt: skip
+    if not include_redirect:
+        del form["redirect_uri"]
     return _token_request(cfg, form, http, now)
 
 

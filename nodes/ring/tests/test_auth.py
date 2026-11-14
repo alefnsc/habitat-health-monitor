@@ -65,6 +65,18 @@ def test_authorize_url_parameters():
     assert SCOPES == ("heartrate", "spo2", "daily")
 
 
+def test_authorize_url_and_exchange_can_leave_the_redirect_to_the_registration():
+    """The vendor then uses the app's one registered redirect; the exchange must omit it too."""
+    q = parse_qs(urlsplit(build_authorize_url(CFG, "s", "c", include_redirect=False)).query)
+    assert "redirect_uri" not in q and q["code_challenge"] == ["c"]
+    with respx.mock:
+        route = respx.post(TOKEN_URL).respond(200, json={"access_token": "A", "refresh_token": "R"})
+        with httpx.Client() as http:
+            exchange_code(CFG, "abc", "verif", http, now=NOW, include_redirect=False)
+        form = parse_qs(route.calls.last.request.content.decode())
+    assert "redirect_uri" not in form and form["code_verifier"] == ["verif"]
+
+
 def test_code_from_redirect_checks_state_and_errors():
     assert code_from_redirect(CFG.redirect_uri + "?code=abc&state=s1", "s1") == "abc"
     with pytest.raises(AuthError, match="state"):

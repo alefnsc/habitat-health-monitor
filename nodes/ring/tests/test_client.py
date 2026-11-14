@@ -205,6 +205,27 @@ def test_auth_command_runs_the_code_flow_and_saves_a_private_token(tmp_path, mon
     assert not (tmp_path / ".env").exists()  # nothing was missing, so nothing was written
 
 
+@respx.mock
+def test_auth_can_use_the_registered_redirect(tmp_path, monkeypatch):
+    opened: list[str] = []
+    monkeypatch.setattr(cli.webbrowser, "open", lambda url: opened.append(url) or True)
+
+    def fake_wait(redirect_uri: str, timeout_s: float = 300, on_ready=None) -> str:
+        assert redirect_uri == CFG.redirect_uri  # still listening where the code should land
+        on_ready()
+        state = parse_qs(urlsplit(opened[0]).query)["state"][0]
+        return f"{redirect_uri}?code=C0DE&state={state}"
+
+    monkeypatch.setattr(cli, "wait_for_redirect", fake_wait)
+    exch = respx.post(TOKEN_URL).respond(200, json={"access_token": "AT", "refresh_token": "RT",
+                                                     "expires_in": 86400})  # fmt: skip
+    argv = ["auth", "--use-registered-redirect", "--token", str(tmp_path / "t.json"),
+            "--env-file", str(tmp_path / ".env")]  # fmt: skip
+    assert cli.main(argv, env=ENV) == 0
+    assert "redirect_uri" not in parse_qs(urlsplit(opened[0]).query)
+    assert "redirect_uri" not in parse_qs(exch.calls.last.request.content.decode())
+
+
 def test_fill_missing_prompts_saves_privately_and_never_prints_the_secret(tmp_path, capsys):
     env_file = tmp_path / ".env"
     env_file.write_text("# keep me\nRING_API_BASE=https://api.example.test\nRING_CLIENT_ID=\n"
