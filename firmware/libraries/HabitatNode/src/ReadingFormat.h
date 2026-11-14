@@ -15,10 +15,11 @@ enum Ind : uint8_t {
 };
 
 // Device table index (section 4.1 dev list, plus MPU6050, and the D35 hobby modules NTC and KY039, D39 KY017 tilt switch).
+// DEV_RING (D41) is the wearable ring imported by nodes/ring; no firmware sends it, the table mirrors the contract.
 enum Dev : uint8_t {
   DEV_MAX30102, DEV_DS18B20, DEV_MLX90614, DEV_SCD41, DEV_BME280, DEV_DHT22,
   DEV_DHT11, DEV_BH1750, DEV_HX711, DEV_H10, DEV_MANUAL, DEV_CAMERA,
-  DEV_MPU6050, DEV_NTC, DEV_KY039, DEV_KY017, DEV_COUNT
+  DEV_MPU6050, DEV_NTC, DEV_KY039, DEV_KY017, DEV_RING, DEV_COUNT
 };
 
 // Quality flag bits (section 4.4, node-raised ones). Bit order is output order.

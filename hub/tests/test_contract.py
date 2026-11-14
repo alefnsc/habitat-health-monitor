@@ -285,6 +285,21 @@ def test_tilt_node_dev_ind():
     assert "tilt" in UNGATED_INDS
 
 
+def test_ring_node_and_device():
+    """D41: the wearable ring importer posts as ring-1 with the generic RING device code."""
+    from pathlib import Path
+
+    t = {"node": "ring-1", "ind": "hr", "val": 58, "unit": "bpm", "dev": "RING",
+         "age_ms": 3_600_000, "crew": "crew-b"}  # fmt: skip
+    r = parse_reading(mod(BASE, **t))
+    assert (r.node, r.dev, r.age_ms, r.crew) == ("ring-1", "RING", 3_600_000, "crew-b")
+    root = Path(__file__).resolve().parents[2]
+    fw = root / "firmware/libraries/HabitatNode/src"
+    assert "DEV_RING, DEV_COUNT" in (fw / "ReadingFormat.h").read_text()
+    assert '"KY017", "RING"}' in (fw / "ReadingFormat.cpp").read_text()
+    assert '"dev.RING": "Ring (delayed cloud sync)"' in (root / "console/src/copy.ts").read_text()
+
+
 def test_rep_phase_fields():
     r = parse_rep(mod(REP, work_ecc_j=20.5, t_con_ms=900, t_ecc_ms=1000, t_turn_ms=2100))
     assert (r.work_ecc_j, r.t_con_ms, r.t_ecc_ms, r.t_turn_ms) == (20.5, 900, 1000, 2100)

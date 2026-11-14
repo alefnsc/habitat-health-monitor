@@ -88,6 +88,7 @@ export const COPY: Record<string, string> = {
   "dev.H10": "Chest strap",
   "dev.manual": "Typed in",
   "dev.camera": "Camera",
+  "dev.RING": "Ring (delayed cloud sync)",
 
   "age.justNow": "just now",
 
