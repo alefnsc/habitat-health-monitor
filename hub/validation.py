@@ -138,6 +138,120 @@ def summary_row(
     )
 
 
+WORK_X_LABEL = "Cell work (J), approx.: static cell force \u00d7 camera displacement"
+
+
+def pair_reps(aligned: dict) -> tuple[list[dict], list[dict]]:
+    """Pair camera and load-cell reps from one `GET /api/reps?session=` body (D5, D21)."""
+    session = aligned.get("session")
+    pairs: list[dict] = []
+    failures: list[dict] = []
+    for rp in aligned.get("pairs", []):
+        cam, cell = rp.get("camera"), rp.get("load_cell")
+        if cam is None:
+            failures.append(
+                {"session": session, "rep": rp["rep"], "reason": "unmatched_load_cell_rep"}
+            )
+        elif cell is None:
+            failures.append(
+                {"session": session, "rep": rp["rep"], "reason": "unmatched_camera_rep"}
+            )
+        else:
+            pairs.append(
+                {
+                    "session": session,
+                    "rep": rp["rep"],
+                    "camera_peak_n": cam["peak_n"],
+                    "load_cell_peak_n": cell["peak_n"],
+                    "camera_work_j": cam.get("work_j"),
+                    "work_cell_j": rp.get("work_cell_j"),
+                    "mass_kg": cam.get("mass_kg", cell.get("mass_kg")),
+                }
+            )
+    return pairs, failures
+
+
+def _plot_xy(x, y, xlabel, ylabel, title, out_path, colour=None, colour_label=None) -> str:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sc = ax.scatter(x, y, c=colour, s=22, cmap="viridis" if colour is not None else None)
+    lo, hi = min([*x, *y]), max([*x, *y])
+    ax.plot([lo, hi], [lo, hi], color="grey", linestyle=":", label="y = x")
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    ax.set_title(title)
+    if colour is not None:
+        fig.colorbar(sc, ax=ax, label=colour_label)
+    ax.legend(fontsize=8)
+    fig.tight_layout()
+    Path(out_path).parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_path, format="png", dpi=150)
+    plt.close(fig)
+    return out_path
+
+
+def _fetch_reps(hub: str, session: str) -> dict:
+    q = urllib.parse.urlencode({"session": session})
+    with urllib.request.urlopen(f"{hub.rstrip('/')}/api/reps?{q}", timeout=30) as r:
+        return json.loads(r.read())
+
+
+def run_reps(hub: str, sessions: list[str], out: str, img: str) -> list[str]:
+    out_dir, img_dir = Path(out), Path(img)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    all_pairs: list[dict] = []
+    all_fail: list[dict] = []
+    n_cam = n_cell = 0
+    cols = [
+        "session",
+        "rep",
+        "camera_peak_n",
+        "load_cell_peak_n",
+        "camera_work_j",
+        "work_cell_j",
+        "mass_kg",
+    ]
+    for sid in sessions:
+        body = _fetch_reps(hub, sid)
+        pairs, fails = pair_reps(body)
+        _write_csv(out_dir / f"reps-{sid}.csv", pairs, cols)
+        all_pairs += pairs
+        all_fail += fails
+        n_cam += sum(1 for p in body.get("pairs", []) if p.get("camera"))
+        n_cell += sum(1 for p in body.get("pairs", []) if p.get("load_cell"))
+    rows: list[str] = []
+    ba = None
+    if len(all_pairs) >= 2:
+        cam = [p["camera_peak_n"] for p in all_pairs]
+        cell = [p["load_cell_peak_n"] for p in all_pairs]
+        ba = bland_altman(cam, cell)
+        _plot_xy(cell, cam, "Load cell peak force (N)", "Camera peak force (N)",
+                 f"Peak force, camera vs load cell (n = {ba['n']})",
+                 str(img_dir / "validation-peak-force.png"),
+                 colour=[p["mass_kg"] for p in all_pairs], colour_label="Load mass (kg)")  # fmt: skip
+    rows.append(
+        summary_row(
+            "Peak force, camera vs load cell", "N", ba, len(all_pairs) + len(all_fail), all_fail
+        )
+    )
+    wp = [p for p in all_pairs if p["camera_work_j"] is not None and p["work_cell_j"] is not None]
+    wba = None
+    if len(wp) >= 2:
+        wba = bland_altman([p["camera_work_j"] for p in wp], [p["work_cell_j"] for p in wp])
+        _plot_xy([p["work_cell_j"] for p in wp], [p["camera_work_j"] for p in wp], WORK_X_LABEL,
+                 "Camera work (J)", f"Work, camera vs cell, approximation (n = {wba['n']})",
+                 str(img_dir / "validation-work.png"))  # fmt: skip
+    rows.append(summary_row("Work, camera vs cell (approx., report only)", "J", wba, len(wp), []))
+    denom = max(n_cam, n_cell)
+    agree = f"{len(all_pairs)}/{denom} = {100 * len(all_pairs) / denom:.0f} %" if denom else "n/a"
+    rows.append(f"| Rep detection agreement | {agree} |")
+    return rows
+
+
 COMPARISONS = [
     # slug, label, ref_ind, test_ind, test_dev, window_s, unit
     ("hr", "MAX30102 hr vs oximeter", "hr", "hr", "MAX30102", 10, "bpm"),
@@ -215,7 +329,16 @@ def main(argv: list[str] | None = None) -> int:
     v.add_argument("--until")
     v.add_argument("--out", default="data/validation/")
     v.add_argument("--img", default="docs/img/")
+    r = sub.add_parser("reps")
+    r.add_argument("--hub", required=True)
+    r.add_argument("--session", action="append", required=True)
+    r.add_argument("--out", default="data/validation/")
+    r.add_argument("--img", default="docs/img/")
     a = ap.parse_args(argv)
+    if a.cmd == "reps":
+        for row in run_reps(a.hub, a.session, a.out, a.img):
+            print(row)
+        return 0
     print("| Comparison | n | failed | bias | SD | limits of agreement |")
     for row in run_vitals(a.hub, a.since, a.until, a.out, a.img):
         print(row)
