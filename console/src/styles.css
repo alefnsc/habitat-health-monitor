@@ -46,3 +46,21 @@ button.primary { background: #2b5fa8; color: #fff; border: 0; border-radius: 6px
 .footnote { color: var(--muted); font-size: 0.8rem; margin-top: 8px; }
 .uplot, .u-wrap { color: var(--text); }
 .u-legend { color: var(--text); }
+
+/* Lanes: stacked readings on one time axis */
+.lanes-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
+.lanes-key { display: inline-flex; align-items: center; gap: 6px; color: var(--muted); font-size: 0.85rem; }
+.lanes-key .sw { display: inline-block; width: 14px; height: 10px; border-radius: 2px; margin-left: 8px; }
+.sw-ok { background: rgba(31, 157, 85, 0.45); }
+.sw-watch { background: rgba(217, 154, 0, 0.5); }
+.sw-act { background: rgba(209, 59, 59, 0.45); }
+.lane { display: grid; grid-template-columns: 210px 1fr; column-gap: 12px; padding: 6px 0; border-top: 1px solid var(--line); }
+.lane-head { grid-row: span 2; display: flex; flex-direction: column; gap: 2px; }
+.lane-name { font-weight: 600; }
+.lane-val { font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.lane-val.st-ok { color: var(--ok); }
+.lane-val.st-watch { color: var(--watch); }
+.lane-val.st-act { color: var(--act); }
+.lane-tag { color: var(--muted); font-size: 0.75rem; }
+.lane-src { color: var(--muted); font-size: 0.72rem; line-height: 1.25; }
+.lane-empty { color: var(--muted); font-size: 0.85rem; padding: 6px 0; }

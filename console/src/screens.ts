@@ -1,4 +1,4 @@
-export const SCREENS = ["status", "entry", "history", "exercise", "food", "nasa", "prompts", "body"] as const;
+export const SCREENS = ["status", "entry", "history", "lanes", "exercise", "food", "nasa", "prompts", "body"] as const;
 export type Screen = (typeof SCREENS)[number];
 
 export function screenFromHash(hash: string): Screen {
