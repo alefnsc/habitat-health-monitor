@@ -50,3 +50,11 @@ def test_tilt_pure_block_host_tests() -> None:
     )
     assert r.returncode == 0, r.stdout + r.stderr
     assert r.stdout.strip().endswith("ok")
+
+
+def test_safety_checklist_has_mercury_and_magnet_rules() -> None:
+    text = (FW.parent / "docs" / "safety-checklist.md").read_text()
+    assert "12. **Mercury tilt switch (KY-017" in text
+    assert "13. **Neodymium magnets" in text
+    low = text.lower()
+    assert "hazardous-waste" in low and "no vacuum" in low and "under 18" in low
