@@ -58,7 +58,7 @@ def test_public_gets_every_item_while_local_refuses():
 
 
 def test_real_beacon_reaches_cloud_app():
-    eng, store, cloud, up, refuse, cur = rig()
+    eng, _, cloud, up, _, _ = rig()
     beacon = eng.due_beacon(T0 + 30.0)
     assert beacon is not None
     up.offer([], beacon)

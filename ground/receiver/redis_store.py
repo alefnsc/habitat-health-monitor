@@ -69,6 +69,12 @@ class RedisStore:
 
     def ingest(self, beacon: dict | None, items: list[dict], received_at: str) -> IngestResult:
         st, now = self._load(), self.clock()
+        fetched = (beacon or {}).get("fetched_id")
+        if st["max_id"] is not None and isinstance(fetched, int) and fetched < st["max_id"]:
+            # Outbox ids only fall when the hub was reset: drop the old history, keep arrival ids.
+            print(f"hub reset: fetched_id {fetched} < stored max_id {st['max_id']}; cleared", flush=True)
+            self.kv.delete(ARRIVALS)
+            st = {**_empty_state(), "next_arrival_id": st["next_arrival_id"]}
         top = st["max_id"]
         seen: set[int] = set()
         unique: list[dict] = []
@@ -91,15 +97,29 @@ class RedisStore:
         self._save(st)
         return IngestResult(st["max_id"], len(new), aid)
 
+    def _live(self, st: dict[str, Any]) -> list[list[Any]]:
+        """Index entries received within retention (read-only; index times are the clock)."""
+        now = self.clock()
+        return [e for e in st["index"] if now - e[2] <= self.retention]
+
     def arrivals_after(self, after: int, limit: int) -> list[Arrival]:
-        rows = self.kv.zrangebyscore(ARRIVALS, after + 1, "+inf", offset=0, count=limit)
+        live = self._live(self._load())
+        if not live:
+            return []
+        lo = max(after + 1, live[0][0])
+        rows = self.kv.zrangebyscore(ARRIVALS, lo, "+inf", offset=0, count=limit)
         return [Arrival(**json.loads(r)) for r in rows]
 
     def summary(self) -> Summary:
         st = self._load()
-        stored, lo, hi = st["stored"], st["min_id"], st["max_id"]
+        live = self._live(st)
+        if not live:
+            return Summary(0, None, None, 0, 0, None)
+        stored = sum(e[1] for e in live)
+        firsts = [e[3] for e in live if e[3] is not None]
+        lo, hi = (firsts[0] if firsts else None), st["max_id"]
         missing = 0 if stored == 0 or lo is None or hi is None else (hi - lo + 1) - stored
-        return Summary(stored, lo, hi, missing, st["arrivals"], st["last_arrival_at"])
+        return Summary(stored, lo, hi, missing, len(live), st["last_arrival_at"])
 
     def purge_crew(self, crew: str) -> int:
         st = self._load()

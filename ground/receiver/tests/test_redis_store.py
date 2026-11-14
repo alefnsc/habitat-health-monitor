@@ -112,3 +112,45 @@ def test_purge_crew_survives_null_payload():
     assert s.purge_crew("crew-a") == 1
     items = [x["id"] for a in s.arrivals_after(0, 10) for x in a.items]
     assert items == [1]
+
+
+def test_reads_ignore_arrivals_older_than_retention():
+    s, clock = make()
+    s.ingest(None, [it(1), it(2)], T)
+    clock["t"] += 47 * 3600
+    s.ingest(None, [it(3)], "2026-11-16T14:00:00.000Z")
+    clock["t"] += 2 * 3600  # first arrival is now 49 h old, the second 2 h old
+    assert [a.arrival_id for a in s.arrivals_after(0, 10)] == [2]
+    sm = s.summary()
+    assert (sm.stored, sm.min_id, sm.max_id, sm.arrivals) == (1, 3, 3, 1)
+    assert sm.last_arrival_at == "2026-11-16T14:00:00.000Z"
+
+
+def test_all_expired_reads_look_empty_and_do_not_write():
+    s, clock = make()
+    s.ingest(None, [it(1)], T)
+    clock["t"] += 49 * 3600
+    before = dict(s.kv.strings), {k: dict(v) for k, v in s.kv.zsets.items()}
+    assert s.arrivals_after(0, 10) == []
+    sm = s.summary()
+    assert (sm.stored, sm.arrivals, sm.last_arrival_at, sm.min_id) == (0, 0, None, None)
+    assert (dict(s.kv.strings), {k: dict(v) for k, v in s.kv.zsets.items()}) == before
+
+
+def test_hub_reset_clears_and_ingests_new_ids():
+    s, _ = make()
+    s.ingest({"fetched_id": 5}, [it(i) for i in range(1, 6)], T)
+    r = s.ingest({"fetched_id": 2}, [it(1), it(2)], T)
+    assert (r.stored, r.max_id) == (2, 2)
+    arr = s.arrivals_after(0, 10)
+    assert [[x["id"] for x in a.items] for a in arr] == [[1, 2]]
+    sm = s.summary()
+    assert (sm.stored, sm.min_id, sm.max_id, sm.arrivals) == (2, 1, 2, 1)
+
+
+def test_normal_batches_do_not_reset():
+    s, _ = make()
+    s.ingest({"fetched_id": 5}, [it(i) for i in range(1, 6)], T)
+    r = s.ingest({"fetched_id": 7}, [it(5), it(6)], T)
+    assert (r.stored, r.max_id) == (1, 6)
+    assert s.summary().stored == 6
