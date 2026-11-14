@@ -18,7 +18,7 @@ from hub.timeutil import parse_iso, to_iso
 log = logging.getLogger("hub.assess")
 
 CREW_SCOPED = BODY_INDS | INTAKE_INDS
-UNGATED_INDS = frozenset({"motion", "load_raw"})
+UNGATED_INDS = frozenset({"motion", "load_raw", "tilt"})
 ESCALATIONS = frozenset({"self", "cmo", "flight_surgeon"})
 _COVERAGE_S = {"mean_1h": 2700, "mean_7d": 86400, "sum_24h_floor": 72000}
 _WINDOW_S = {"mean_1h": 3600, "mean_7d": 7 * 86400, "dose_24h": 86400, "sum_24h_floor": 86400}

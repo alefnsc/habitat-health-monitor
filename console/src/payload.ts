@@ -20,6 +20,7 @@ export const UNITS: Record<Ind, string> = {
   cabin_lux: "lx",
   motion: "g",
   load_raw: "N",
+  tilt: "state",
   cabin_ppco2: "mmHg",
   space_weather: "level",
   rad_dose_cum: "mSv",
