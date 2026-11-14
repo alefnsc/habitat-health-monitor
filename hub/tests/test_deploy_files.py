@@ -35,7 +35,7 @@ def test_no_provider_names_in_ui_sources():
 
 def test_consent_doc_has_both_languages_and_rules():
     text = (ROOT / "docs" / "consent.md").read_text()
-    for needle in ("## English", "## Português", "48 h", "PUBLIC_CREWS", "purge", "under 18", "menores de 18", "sim-1"):
+    for needle in ("## English", "## Português", "48 h", "PUBLIC_CREWS", "purge", "under 18", "menores de 18", "sim-1", "guardian", "Responsável legal"):
         assert needle in text, needle
     assert text.count("sim-1") >= 2
 

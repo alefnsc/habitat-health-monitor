@@ -6,6 +6,7 @@ Signed copies are kept by the team owner and never committed to this repository.
 
 During the NASA Space Apps Challenge 2026 this prototype can measure, on a volunteer: heart rate and an SpO2 estimate, skin temperature, motion, and values typed in by hand (blood pressure, glucose, sleep hours, mood, symptoms, meals, body mass).
 
+- Cabin readings are public. Personal readings (body and intake values, and prompt answers) are published only under the crew id, never a name, and only if you tick yes below.
 - Readings stay on the habitat hub unless you consent here. With consent, they may appear on the project's public ground page under a crew id (for example `crew-a`), never under your name.
 - Public copies are deleted automatically after at most 48 h. You can withdraw at any time: the team owner removes your crew id from `PUBLIC_CREWS` and runs the signed purge, which deletes your public readings at once.
 - Hobby-sensor values are estimates. This is not a medical device and gives no diagnosis.
@@ -15,11 +16,13 @@ During the NASA Space Apps Challenge 2026 this prototype can measure, on a volun
 
 Crew id: ________  Name: ______________________  Date: __________
 I consent to the publication described above: [ ] yes  [ ] no    Signature: ______________________
+Parent or guardian (if the participant is under 18): name ______  signature ______  date ______. A guardian signs only to acknowledge that the minor takes part. The publish choice above does not apply to anyone under 18: their readings are never published.
 
 ## Português
 
 Durante o NASA Space Apps Challenge 2026 este protótipo pode medir, em um voluntário: frequência cardíaca e uma estimativa de SpO2, temperatura da pele, movimento, e valores digitados (pressão arterial, glicose, horas de sono, humor, sintomas, refeições, massa corporal).
 
+- As leituras da cabine são públicas. As leituras pessoais (valores do corpo e de ingestão, e respostas aos prompts) são publicadas somente com o código de tripulante, nunca com um nome, e somente se você marcar sim abaixo.
 - As leituras ficam no hub do habitat, a não ser que você consinta aqui. Com consentimento, podem aparecer na página pública de solo do projeto com um código de tripulante (por exemplo `crew-a`), nunca com o seu nome.
 - As cópias públicas são apagadas automaticamente em no máximo 48 h. Você pode retirar o consentimento a qualquer momento: o dono da equipe tira o seu código de `PUBLIC_CREWS` e executa o purge assinado, que apaga na hora as suas leituras públicas.
 - Valores de sensores caseiros são estimativas. Não é um dispositivo médico e não faz diagnóstico.
@@ -29,3 +32,4 @@ Durante o NASA Space Apps Challenge 2026 este protótipo pode medir, em um volun
 
 Código de tripulante: ________  Nome: ______________________  Data: __________
 Consinto com a publicação descrita acima: [ ] sim  [ ] não    Assinatura: ______________________
+Responsável legal (se o participante for menor de 18 anos): nome ______  assinatura ______  data ______. O responsável assina apenas para reconhecer a participação do menor. A escolha de publicação acima não se aplica a menores de 18 anos: suas leituras nunca são publicadas.
