@@ -2,7 +2,7 @@ import type { Tracker } from "../../vendor/ground-truth/demo/src/pose/source";
 import type { PageState } from "./main";
 import { COPY } from "./copy";
 import { createRecorder, recordingProblem } from "./pose";
-import { ENVIRONMENT_MENU, analyseRecording, inputProblemText, resultView, toRepMessages } from "./reps";
+import { ENVIRONMENT_MENU, analyseRecording, gNoteText, inputProblemText, resultView, toRepMessages } from "./reps";
 import { createSequencer } from "./seq";
 import { createSetState } from "./set";
 import { endSession, framesForSet, postRep, postRepsWithRetry, startSession, unloadGuard, type CrewId } from "./session";
@@ -85,6 +85,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
         table.append(h("tr", {}, h("td", { text: String(r.rep) }), h("td", { text: r.peakN.toFixed(1) }), h("td", { text: r.workJ.toFixed(1) }), h("td", { text: r.eccJ.toFixed(1) }), h("td", { text: r.tConS.toFixed(2) }), h("td", { text: r.tEccS.toFixed(2) }), h("td", { text: r.romM.toFixed(2) }), h("td", {}, h("span", { text: r.badge }), ...r.notes.map((n) => h("div", { text: n })))));
       }
       results.append(table);
+      results.append(h("p", { text: gNoteText(g) }));
     }
     if (view.grade) results.append(h("p", { text: `${COPY["result.grade"]}: ${view.grade}` }));
     for (const n of view.notes) results.append(h("p", { text: n }));
