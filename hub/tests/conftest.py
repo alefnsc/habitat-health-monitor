@@ -36,6 +36,7 @@ def settings(tmp_path) -> Settings:
         load_settings({}),
         db_path=tmp_path / "hub.db",
         linksim_url="",  # no link watcher unless a test sets a URL
+        features=load_settings({}).features - {"nasa", "iss"},  # no live NASA polling in tests
         mqtt_host="",  # no subscriber unless a test sets a host
         console_dist=missing / "console",
         camera_dist=missing / "camera",
@@ -46,9 +47,3 @@ def settings(tmp_path) -> Settings:
         food_references_path=missing / "food" / "references.json",
         link_config=missing / "link.json",
     )
-
-
-@pytest.fixture(autouse=True)
-def _no_live_nasa(monkeypatch):
-    """Tests never poll the live NASA endpoints."""
-    monkeypatch.setenv("DONKI_MODE", "replay")
