@@ -51,6 +51,7 @@ describe("format", () => {
     expect(sourceKindLabel("clinical_ref")).toBe("Clinical reference (not NASA-published)");
     expect(sourceKindLabel("personal_baseline")).toBe("Your 30-day baseline");
     expect(sourceKindLabel("team_convention")).toBe("Team convention, not clinical");
+    expect(sourceKindLabel("nasa_doc")).toBe("NASA program document, not NASA-STD-3001");
     expect(sourceKindLabel(null)).toBe("No rule");
   });
 

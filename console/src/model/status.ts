@@ -1,5 +1,6 @@
 import { COPY } from "../copy";
 import type { CrewId, Ind, StatusBody, StatusEntry } from "../contract";
+import { RULES } from "./rules";
 import { devLabel, estimateBadge, flagText, formatAge, formatValue, sourceKindLabel, srcLabel, statusClass, statusLabel } from "../format";
 
 export interface TileSpec {
@@ -50,6 +51,20 @@ function emptyTile(s: TileSpec, label: string): Tile {
   };
 }
 
+const WINDOW_WAIT: Record<string, string> = { mean_1h: "1-hour mean", mean_7d: "7-day mean", dose_24h: "24-hour dose", cumulative: "cumulative total" };
+
+// A rule exists but the hub has no verdict yet (for example one reading and a 1-hour mean rule): say what it waits for.
+function waitingLabel(e: StatusEntry): string | null {
+  if (e.status !== "unknown" || !e.rule_id || e.q.some((f) => f !== "ok")) return null;
+  const rule = RULES.find((r) => r.id === e.rule_id);
+  const what = rule ? (WINDOW_WAIT[rule.window] ?? "more readings") : "more readings";
+  const kind = e.source_kind ?? rule?.source_kind ?? null;
+  const ref = e.source_ref ?? rule?.source_ref ?? "";
+  const id = ref.match(/\[[^\]]+\]/)?.[0] ?? "";
+  const cite = kind ? `${sourceKindLabel(kind)}${id ? ` ${id}` : ""}` : "";
+  return `${COPY["status.waitingFor"]} ${what}${cite ? ` (${cite})` : ""}`;
+}
+
 function fromEntry(s: TileSpec, e: StatusEntry, nowMs: number, value: string): Tile {
   const badge = estimateBadge(e.ind, e.src, e.dev);
   return {
@@ -58,10 +73,10 @@ function fromEntry(s: TileSpec, e: StatusEntry, nowMs: number, value: string): T
     value,
     unit: e.unit,
     statusClass: cls(e),
-    statusLabel: statusLabel(e.status, e.q),
+    statusLabel: waitingLabel(e) ?? statusLabel(e.status, e.q),
     srcLabel: srcLabel(e.src),
-    sourceKindLabel: sourceKindLabel(e.source_kind),
-    sourceRef: e.source_kind === "nasa_std" ? e.source_ref : null,
+    sourceKindLabel: sourceKindLabel(e.source_kind ?? RULES.find((r) => r.id === e.rule_id)?.source_kind ?? null),
+    sourceRef: e.source_kind === "nasa_std" || e.source_kind === "nasa_doc" ? e.source_ref : null,
     devText: devLabel(e.dev),
     badges: badge ? [badge] : [],
     flags: e.q.filter((f) => f !== "ok").map(flagText),

@@ -119,3 +119,17 @@ describe("status model", () => {
     expect(c.sourceRef).toBe("[V2 6004]");
   });
 });
+
+describe("waiting for a window", () => {
+  test("rule exists, status unknown: names the window and the source, not No rule", () => {
+    const e = entry("cabin_ppco2", 2.4, { status: "unknown", rule_id: "co2_1h", source_kind: null, source_ref: null });
+    const t = buildTiles([e], NOW).find((x) => x.id === "cabin_ppco2")!;
+    expect(t.statusLabel).toBe("Waiting for 1-hour mean (NASA-STD-3001 [V2 6004])");
+    expect(t.statusClass).toBe("unknown");
+    expect(t.statusLabel).not.toBe("No rule");
+  });
+  test("no rule id: still No rule", () => {
+    const e = entry("glucose", 90, { status: "unknown", rule_id: null, source_kind: null });
+    expect(buildTiles([e], NOW).find((x) => x.id === "glucose")!.statusLabel).toBe("No rule");
+  });
+});

@@ -49,7 +49,7 @@ export type QualityFlag =
   | "assumed_pressure"
   | "stale";
 export type Status = "ok" | "watch" | "act" | "unknown";
-export type SourceKind = "nasa_std" | "clinical_ref" | "personal_baseline" | "team_convention";
+export type SourceKind = "nasa_std" | "clinical_ref" | "personal_baseline" | "team_convention" | "nasa_doc";
 export type EscalateTo = "self" | "cmo" | "flight_surgeon";
 export type CrewId = "crew-a" | "crew-b" | "crew-c";
 export type SymptomCode = "headache" | "fatigue" | "nausea" | "poor_sleep" | "none";

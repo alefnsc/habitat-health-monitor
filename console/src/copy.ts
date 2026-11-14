@@ -30,6 +30,7 @@ export const COPY: Record<string, string> = {
   "crew.wearerError": "Could not set the wearer: ",
   "crew.choose": "Choose who this reading is for.",
 
+  "status.waitingFor": "Waiting for",
   "status.incomplete": "Waiting for both values",
   "tile.bp": "Blood pressure",
   "tile.hr": "Heart rate",
@@ -66,6 +67,7 @@ export const COPY: Record<string, string> = {
   "kind.clinical_ref": "Clinical reference (not NASA-published)",
   "kind.personal_baseline": "Your 30-day baseline",
   "kind.team_convention": "Team convention, not clinical",
+  "kind.nasa_doc": "NASA program document, not NASA-STD-3001",
   "kind.none": "No rule",
 
   "badge.spo2Hobby": "Uncalibrated estimate",
