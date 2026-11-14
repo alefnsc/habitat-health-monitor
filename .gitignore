@@ -24,3 +24,4 @@ ground/public/guidance.json
 
 # Wokwi twin build output
 firmware/wokwi/*/build/
+.vercel
