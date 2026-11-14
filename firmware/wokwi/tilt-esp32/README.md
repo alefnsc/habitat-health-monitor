@@ -10,16 +10,26 @@ the diagram.
 | Simulated part | Stands in for | Pin |
 |---|---|---|
 | `wokwi-esp32-devkit-v1`, labelled "ESP32 stands in for the NodeMCU" | NodeMCU (ESP8266) | — |
-| `wokwi-slide-switch`, labelled "KY-017 stand-in (simulated)" | sealed KY-017 mercury tilt pod (`tilt`, dev `KY017`) | common (2) to GPIO14 (D5 on the NodeMCU), pin 3 to GND |
+| `wokwi-slide-switch`, labelled "KY-017 stand-in (simulated)" | sealed KY-017 mercury tilt pod (`tilt`, dev `KY017`) | pin 1 = + to 3V3 (red), middle = S to GPIO14 = D5 on the NodeMCU (yellow), pin 3 = − to GND (black) |
+| custom chip `chip-nimh-pack`, "4×AA Ni-MH pack (drawing only, 4.8–5.6 V)" | the node's 4 × Ni-MH AA pack (D40 amendment) | + to VIN (red), − to GND (black) |
 
-The switch starts in the left position, where pins 1 and 2 are joined. Pin 1 is not connected, so the input pull-up
-reads high and `tilt` is 0, the weight at rest. Slide it right to join pins 2 and 3: GPIO14 goes to GND and `tilt` is 1,
-the weight tilted past the trip angle. Part and pin names follow docs.wokwi.com/parts/ (read 2026-11-14).
+**This canvas is the bench wiring map.** Wire the real node the same way:
+- KY-017: + to 3V3, S to D5, − to GND, matching each pin by its printed letter, not by its position;
+- the pack: + to VIN, − to GND.
+
+**The switch.** It starts in the left position, which joins pins 1 and 2: S is held at 3V3, so `tilt` is 0, the weight at
+rest. Slide it right to join pins 2 and 3: S goes to GND and `tilt` is 1, the weight tilted past the trip angle
+(`TILT_ACTIVE_LOW=1`).
+
+**The pack chip.** Wokwi has no battery part, so the pack is a do-nothing custom chip (`nimh-pack.chip.c`). It only shows
+where the pack connects; the simulator powers the ESP32 itself.
+
+Part and pin names follow docs.wokwi.com/parts/ (read 2026-11-14).
 
 **Saved project (share link):** https://wokwi.com/projects/480680478751478785. Until D40 this link held the vitals node
 twin (`../vitals-esp32`, now archived); the tilt-1 twin replaced it in place. Saved 2026-11-14 14:35 (UTC−03:00), and
-renamed "tilt-1 node twin". The custom-chip files were removed. Re-saved at 15:05 with the Ni-MH power label, and the three
-files match commit 13e1c39 byte for byte (SHA-256 checked after a reload). A run showed `tilt` 0 at rest, 1 after sliding right, 0 after sliding back, then a
+renamed "tilt-1 node twin". The custom-chip files were removed. Re-saved at 15:35 as the bench wiring map (3-wire switch, Ni-MH
+pack chip); the five files match commit b5060b7 byte for byte (SHA-256 checked after a reload). A run showed `tilt` 0 at rest, 1 after sliding right, 0 after sliding back, then a
 heartbeat 10 s later.
 
 ## What runs where (also written on the Wokwi canvas)
@@ -37,9 +47,10 @@ heartbeat 10 s later.
 2. Paste these files over the project's files:
    - `firmware/wokwi/tilt-esp32/sketch.ino` into `sketch.ino`;
    - `firmware/wokwi/tilt-esp32/diagram.json` into `diagram.json`;
-   - `firmware/wokwi/tilt-esp32/libraries.txt` into `libraries.txt`.
+   - `firmware/wokwi/tilt-esp32/libraries.txt` into `libraries.txt`;
+   - `firmware/wokwi/tilt-esp32/nimh-pack.chip.json` and `nimh-pack.chip.c` into two new tabs with those names.
 
-   Delete any other tabs, such as the old `*.chip.c` and `*.chip.json` files.
+   Delete any other tabs, such as the old vitals `max30102.*` and `mlx90614.*` chip files.
 3. Press Start. The serial monitor shows `# tilt-1 serial-only mode (no secrets.h)`, then a `tilt` line with `"val":0`.
 4. Slide the switch right: a line with `"val":1` appears. Slide it back: `"val":0` again.
 5. Leave it alone: the same value repeats every 10 s (the heartbeat).
