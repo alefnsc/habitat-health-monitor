@@ -15,6 +15,7 @@ dependencies = [
   "paho-mqtt>=2",
   "pyserial",
   "httpx",
+  "lightstreamer-client-lib==2.2.3",
   "beautifulsoup4",
 ]
 
