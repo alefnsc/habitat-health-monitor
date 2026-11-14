@@ -11,7 +11,7 @@ EXPECTED = {
 
 
 def test_items_recorded():
-    rows = re.findall(r"^\| `([A-Z0-9_]+)` \| `(\w+)` \|", DOC.read_text(), re.M)
+    rows = re.findall(r"^\| `([A-Z0-9_]+)` \| `(\w+)` \|", DOC.read_text(), re.MULTILINE)
     assert dict(rows) == EXPECTED
 
 
@@ -20,5 +20,5 @@ def test_unit_assumption():
 
 
 def test_licence_line():
-    lines = re.findall(r"^Licence: .* \(OSI: (yes|no)\)$", DOC.read_text(), re.M)
+    lines = re.findall(r"^Licence: .* \(OSI: (yes|no)\)$", DOC.read_text(), re.MULTILINE)
     assert len(lines) == 1
