@@ -7,13 +7,27 @@ import { render, renderCrewView } from "./render";
 import { LIVE_BANNER, decideMode, fetchSummary } from "./mode";
 import { liveSource } from "./sources";
 import type { GroundView } from "./types";
+import { emptyLit, litSpots, noteArrival, spotsInFile } from "./habitat";
+import { linkFrame, linkSchedule, liveLinkFrame } from "./linkview";
+import { renderOverview } from "./overview";
 
 const root = document.querySelector<HTMLDivElement>("#app")!;
 const controls = document.querySelector<HTMLDivElement>("#controls")!;
 const crew = document.querySelector<HTMLDivElement>("#crew")!;
+const overview = document.querySelector<HTMLDivElement>("#overview")!;
 const source = import.meta.env.VITE_GROUND_SOURCE === "replay" ? "replay" : "live";
 
 let view: GroundView = emptyView();
+let lit = emptyLit();
+
+/** Redraw the overview every animation frame so packets move smoothly. */
+function animate(frame: () => void): void {
+  const loop = () => {
+    frame();
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
 
 function startLive(): void {
   const base = apiBase("live", import.meta.env.VITE_API_BASE as string | undefined);
@@ -21,6 +35,7 @@ function startLive(): void {
     base,
     (a) => {
       view = reduce(view, a, Date.now());
+      lit = noteArrival(lit, a, Date.now());
     },
     (...args) => fetch(...args),
   );
@@ -28,6 +43,10 @@ function startLive(): void {
     render(root, view, Date.now(), import.meta.env.VITE_GROUND_SOURCE === "auto" ? LIVE_BANNER : null);
   draw();
   setInterval(draw, 500);
+  animate(() => {
+    const now = Date.now();
+    renderOverview(overview, liveLinkFrame(view.beacon, view.lastArrivalMs, now), litSpots(lit, now), null);
+  });
 }
 
 async function loadGuidance(): Promise<GuidanceItem[] | null> {
@@ -48,13 +67,17 @@ async function startReplay(): Promise<void> {
   const file = loaded.file;
   const t0 = Date.parse(file.t0);
   const guidance = await loadGuidance();
+  const schedule = linkSchedule(file);
+  const present = spotsInFile(file);
   const src = replaySource(
     file,
     (a) => {
       view = reduce(view, a, Date.parse(a.received_at));
+      lit = noteArrival(lit, a, Date.parse(a.received_at));
     },
     () => {
       view = emptyView();
+      lit = emptyLit();
     },
     () => performance.now(),
   );
@@ -80,6 +103,11 @@ async function startReplay(): Promise<void> {
   };
   draw();
   setInterval(draw, 250);
+  animate(() => {
+    src.tick();
+    const p = src.positionMs();
+    renderOverview(overview, linkFrame(schedule, p), litSpots(lit, t0 + p), present);
+  });
 }
 
 const mode = import.meta.env.VITE_GROUND_SOURCE;

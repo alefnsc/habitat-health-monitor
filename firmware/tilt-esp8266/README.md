@@ -17,15 +17,21 @@ with the camera's turnaround (`GET /api/reps`, field `tilt`). It measures no ang
 - Keep D1/D2 free (I2C for a later MPU6050) and D3, D4, D8 free (boot pins).
 - This node is never worn on the body.
 
-## Power (D40): two cells, no cable
+## Power (D40): a cell pack, no cable
 
 The pod rides on the weight, so the node runs on its own cells and nothing on the held weight is cabled to the hub.
 
-- **Cells.** Use 2 × AA or AAA in series (3.0 to 3.2 V fresh), wired to the NodeMCU's **3V3** and **GND** pins. Solder
-  them, or use a holder with jumpers. At about 80 mA with Wi-Fi on, AA cells last roughly 15 hours.
-- **Never VIN.** Its regulator needs more than about 4.5 V. Never put more than 3.6 V on 3V3, so never use three cells.
+- **Chosen pack: 4 × Ni-MH AA in series** (about 4.8 V nominal, 5.6 V fresh), wired to the NodeMCU's **VIN** and **GND**
+  pins. The board's regulator makes 3.3 V. Solder the leads, or use a 4-cell holder. With 2,450 mAh cells and Wi-Fi on
+  (about 80 mA), the pack lasts roughly a day.
+- **Other pack: 2 × alkaline AA or AAA in series** (3.0 to 3.2 V fresh), wired to **3V3** and **GND**. This bypasses the
+  regulator and lasts about 15 hours.
+- **Never 2 cells on VIN.** The regulator needs more than about 4.5 V. Two Ni-MH on 3V3 are too low as well (2.4 to 2.8 V).
+- **Never 3 or more cells on 3V3.** More than 3.6 V on 3V3 destroys the board.
+- **One kind of cell per pack.** Never mix types, brands or charge levels: charge Ni-MH cells together.
+- **The KY-017 stays on 3V3 and GND**, never on VIN, so the D5 input never sees more than 3.3 V.
 - **No CR2032.** A coin cell cannot supply the Wi-Fi bursts (170 to 300 mA): the voltage collapses and the board resets.
-- **Flashing.** Unplug the cells before you plug USB in to flash, and plug them back after.
+- **Flashing.** Unplug the pack before you plug USB in to flash, and plug it back after.
 - **Twin.** The Wokwi twin of this node is in `firmware/wokwi/tilt-esp32`.
 
 ## Safety: the capsule holds mercury

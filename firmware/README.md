@@ -9,23 +9,24 @@ Two microcontrollers and a hub computer.
 | Board | Runs | Wired to it | Link |
 |---|---|---|---|
 | Raspberry Pi 3 Model B (or a laptop) | hub, Mosquitto, console | nothing on the header | see `docs/pi-setup.md` |
-| UNO+WiFi R3, ATmega328P side | `exercise-uno` | DHT11 on D2 (`cabin-1`: `cabin_temp`, `cabin_rh`, hobby estimates), buzzer on D8 (`alarm`) | USB serial to the hub, 250000 baud |
-| UNO+WiFi R3, ESP8266 side | nothing (DIP switch: "USB to ATmega328") | — | — |
-| NodeMCU (ESP8266) on 2 × AA/AAA cells | `tilt-esp8266` (D39) | sealed KY-017 tilt pod on D5 (`tilt-1`: `tilt`) | Wi-Fi/MQTT |
+| Arduino UNO R3 (the bench board), or the ATmega328P side of an UNO+WiFi R3 | `exercise-uno` (`arduino:avr:uno`, the same build for both) | DHT11 on D2 (`cabin-1`: `cabin_temp`, `cabin_rh`, hobby estimates), buzzer on D8 (`alarm`) | USB serial to the hub, 250000 baud |
+| UNO+WiFi R3 only: its ESP8266 side | nothing (DIP switch: "USB to ATmega328"; see below) | — | — |
+| NodeMCU (ESP8266) on 4 × Ni-MH AA (VIN) | `tilt-esp8266` (D39) | sealed KY-017 tilt pod on D5 (`tilt-1`: `tilt`) | Wi-Fi/MQTT |
 | Wokwi | two twins, because Wokwi has no ESP8266: the UNO I/O board (`firmware/wokwi/uno-rig/`) and the tilt-1 node on an ESP32 stand-in (`firmware/wokwi/tilt-esp32/`) | — | — |
 
 **`exercise-uno` build flags** (D40 defaults: only what is wired):
 - `ENABLE_DHT=1`;
 - `ENABLE_HX711=0`, `ENABLE_SERVO=0`, `ENABLE_NTC=0`, `ENABLE_KY039=0`;
-- `BUZZER_PASSIVE=0` (1 for a passive buzzer);
+- `BUZZER_PASSIVE=1` (the bench buzzer is passive; 0 for an active buzzer);
 - `DHT_TYPE=DHT11`.
 
 Turn a channel on only when its module is wired. A floating HX711 DOUT reads as "ready" and would stream noise.
 
 **Commands:** `servo`, `cal` and `tare` answer `ok:false, err:"not_built"` while their part is compiled out. `alarm` always works.
 
-**Tilt node power:** 2 × AA/AAA cells in series on **3V3** and **GND**. Never VIN, never more than 3.6 V on 3V3, and no
-CR2032 coin cell, because it cannot supply the Wi-Fi bursts. See `firmware/tilt-esp8266/README.md`.
+**Tilt node power:** 4 × Ni-MH AA in series on **VIN** and **GND** (chosen), or 2 × alkaline AA/AAA on **3V3** and **GND**.
+Never 2 cells on VIN, never 3 or more cells on 3V3, never mix cells in one pack, and no CR2032 coin cell, because it
+cannot supply the Wi-Fi bursts. The KY-017 stays on 3V3. See `firmware/tilt-esp8266/README.md`.
 
 **Archived** (kept as design history, with their tests):
 - `firmware/vitals-esp32` and `firmware/wokwi/vitals-esp32`: wearable vitals now come from a ring import;
@@ -41,7 +42,9 @@ One 3.3 V I2C bus at 100 kHz (the MLX90614's SMBus limit; the plan's 400 kHz wou
 - Single core: on the ESP8266, `HabitatNode::loop()` shares the loop with sensing, so a Wi-Fi or broker reconnect can pause it. If the pause exceeds 0.8 s the sketch prints `# fifo gap` and restarts the window instead of using a gap. On the ESP32 `HabitatNode::loop()` runs on core 0.
 - With no `secrets.h` the sketch runs serial-only and prints the same contract-v1 lines (this is what the Wokwi twin runs).
 
-### UNO+WiFi DIP switch modes (vendor table, unverified on this board)
+### UNO+WiFi DIP switch modes (UNO+WiFi only; vendor table, unverified on this board)
+
+A plain Arduino UNO R3 has no DIP switch: skip this section.
 
 From the RobotDyn product page for the UNO+WiFi R3 ATmega328P+ESP8266 (robotdyn.com, listing "UNO+WiFi R3
 ATmega328P+ESP8266, 32Mb flash, USB-TTL CH340G, Micro-USB"), 8-position switch, DIP 8 reserved. Re-check against

@@ -13,8 +13,25 @@ Part and pin names follow docs.wokwi.com/parts/ (read 2026-11-14).
 
 **Saved project (share link, unchanged since D35):** https://wokwi.com/projects/480675272836723713. The D40 contents
 replace the old exercise rig (HX711, servo, NTC, pulse potentiometer) in place. Saved 2026-11-14 14:30 (UTC−03:00), and
-renamed "UNO I/O board twin". The four files match commit 8a38e07 byte for byte (SHA-256 checked after a reload).
+renamed "UNO I/O board twin". Re-saved at 15:40 with the bench wiring block, then again after the passive-buzzer default (b1d1722);
+the four files match commit ffd1a0c byte for byte (SHA-256 checked after a reload).
 A run showed `cabin-1` lines every 5 s, `alarm` acked `ok:true`, and `servo` answered `not_built`.
+
+## Real bench wiring (also written on the Wokwi canvas)
+
+The canvas is the wiring map for the real board, an Arduino UNO R3 or the UNO+WiFi's ATmega side. Both run the same
+`arduino:avr:uno` firmware. Wire colours on the canvas: red 5V, black GND, green D2, purple D8.
+
+| Module | Module pin | Board pin |
+|---|---|---|
+| DHT11 module | S (data) | D2 |
+| DHT11 module | + | 5V |
+| DHT11 module | − | GND |
+| Buzzer module | S | D8 |
+| Buzzer module | − | GND |
+| Buzzer module | middle pin | 5V, **only if it is printed + or VCC** |
+
+Match each pin by its printed letter, not by its position: module batches order their pins differently.
 
 ## What runs where (also written on the Wokwi canvas)
 

@@ -5,8 +5,8 @@ node is host-tested with a fake I2C bus, but nothing here has been run on a Pi. 
 Educational prototype, not a medical device.
 
 Decision D40 (amends D36): a Raspberry Pi 3 Model B v1.2 is the hub host (Mosquitto, FastAPI hub, console) and
-nothing else. **Nothing is wired to its 40-pin header.** The UNO I/O board (the ATmega328P side of the UNO+WiFi board,
-with a DHT11 and the buzzer) plugs into a Pi USB port. It sends `cabin-1` readings over serial and takes the alarm
+nothing else. **Nothing is wired to its 40-pin header.** The UNO I/O board (an Arduino UNO R3 on the bench, or the ATmega328P
+side of an UNO+WiFi board, with a DHT11 and the buzzer) plugs into a Pi USB port. It sends `cabin-1` readings over serial and takes the alarm
 commands. The `tilt-1` NodeMCU runs on its own cells and reaches the broker over Wi-Fi. A laptop can run the same hub
 when the Pi is not ready: `scripts/dev-up.sh`.
 
@@ -69,7 +69,8 @@ curl -s http://127.0.0.1:8000/api/status         # cabin-1 readings every 5 s
 mosquitto_sub -h 127.0.0.1 -u habitat -P '<password>' -v -t 'habitat/v1/r/tilt-1'
 ```
 
-Set the UNO+WiFi DIP switch to "USB to ATmega328" (`firmware/README.md`) before plugging it in.
+UNO+WiFi only: set its DIP switch to "USB to ATmega328" (`firmware/README.md`) before plugging it in. A plain UNO R3
+has no switch.
 
 Things the script does not do:
 - Build the console: copy `console/dist` (and `camera/dist`) to the Pi from the machine that built them [confirm].

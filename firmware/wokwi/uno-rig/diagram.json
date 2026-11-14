@@ -91,6 +91,42 @@
       "attrs": {
         "text": "Simulated parts are labelled. Readings are estimates. Not a medical device."
       }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "bench_1",
+      "top": 520,
+      "left": -60,
+      "attrs": {
+        "text": "Real bench wiring (Arduino UNO R3, or the UNO+WiFi's ATmega side):"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "bench_2",
+      "top": 542,
+      "left": -60,
+      "attrs": {
+        "text": "DHT11 module: S → D2, + → 5V, − → GND"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "bench_3",
+      "top": 564,
+      "left": -60,
+      "attrs": {
+        "text": "Buzzer module: S → D8, − → GND; middle pin → 5V only if it is printed + or VCC"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "bench_4",
+      "top": 586,
+      "left": -60,
+      "attrs": {
+        "text": "Match each pin by its printed letter, not by its position."
+      }
     }
   ],
   "connections": [
