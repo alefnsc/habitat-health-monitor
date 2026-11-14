@@ -1,0 +1,6 @@
+"fdc_id","data_type","description","food_category_id","publication_date"
+"900001","sr_legacy_food","Test grain, dry","20","2019-04-01"
+"900002","sr_legacy_food","Test drink, canned","14","2019-04-01"
+"900003","sr_legacy_food","Test powder, no vitamin D","1","2019-04-01"
+"900004","sr_legacy_food","Test atwater only","1","2019-04-01"
+"900005","sr_legacy_food","Test nothing reported","1","2019-04-01"

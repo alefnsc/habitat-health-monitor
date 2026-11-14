@@ -1,0 +1,4 @@
+id,fdc_id,fdc_dataset,name,category,serving_g,serving_label,serving_source,fluid_ml_per_serving,fluid_basis,note
+test-grain,900001,sr_legacy,Test grain,grain,50,50 g,team-chosen,0,"solid food, drinking fluid not counted",dry
+test-drink,900002,sr_legacy,Test drink,beverage,250,1 cup,FDC portion: 1 cup = 250 g,240,"drink, 1 cup = 240 mL",canned
+test-powder,900003,sr_legacy,Test powder,shelf_dairy,30,30 g,team-chosen,0,"solid food, drinking fluid not counted",dried
