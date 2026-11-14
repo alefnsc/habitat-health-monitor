@@ -15,6 +15,8 @@ and labelled so in the diagram. Wokwi has no ESP8266, so the twin is one Uno run
 Part and pin names follow docs.wokwi.com/parts/. They were checked against the docs pages, not by
 a headless run (see "Headless run").
 
+**Saved project (share link):** https://wokwi.com/projects/480675272836723713. It matches commit c0d2b38 file for file.
+
 ## Open it on wokwi.com
 
 1. Start a new **Arduino Uno** project.
