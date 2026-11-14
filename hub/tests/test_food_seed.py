@@ -55,7 +55,9 @@ def test_fit_flags():
 @pytest.mark.parametrize("doc", [FIT, FLAGS])
 def test_coverage_and_meal_shape(doc):
     for crew in doc["crew"]:
-        assert max(m["t_minus_h"] for m in doc["meals"] if m["crew"] == crew) >= 60
+        ts = [m["t_minus_h"] for m in doc["meals"] if m["crew"] == crew]
+        assert max(ts) >= 60
+        assert any(20 <= t < 24 for t in ts)  # the last block holds a 20 h old reading
     for m in doc["meals"]:
         assert 0 <= m["t_minus_h"] <= 72
         for it in m["items"]:

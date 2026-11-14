@@ -17,7 +17,7 @@
  "meals": [
   {
    "crew": "crew-a",
-   "t_minus_h": 49.0,
+   "t_minus_h": 51.0,
    "items": [
     {
      "food_id": "almonds-raw",
@@ -31,7 +31,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 53.0,
+   "t_minus_h": 56.0,
    "items": [
     {
      "food_id": "cranberries-dried-sweetened",
@@ -49,7 +49,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 58.0,
+   "t_minus_h": 62.0,
    "items": [
     {
      "food_id": "pasta-dry",
@@ -63,7 +63,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 63.0,
+   "t_minus_h": 70.0,
    "items": [
     {
      "food_id": "tuna-light-canned-water",
@@ -81,7 +81,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 25.0,
+   "t_minus_h": 27.0,
    "items": [
     {
      "food_id": "apricots-dried",
@@ -95,7 +95,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 29.0,
+   "t_minus_h": 32.0,
    "items": [
     {
      "food_id": "peanut-butter-smooth",
@@ -113,7 +113,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 34.0,
+   "t_minus_h": 38.0,
    "items": [
     {
      "food_id": "saltine-crackers",
@@ -131,7 +131,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 39.0,
+   "t_minus_h": 46.0,
    "items": [
     {
      "food_id": "white-rice-dry",
@@ -157,7 +157,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 1.0,
+   "t_minus_h": 3.0,
    "items": [
     {
      "food_id": "cranberries-dried-sweetened",
@@ -179,7 +179,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 5.0,
+   "t_minus_h": 8.0,
    "items": [
     {
      "food_id": "rye-crispbread",
@@ -193,7 +193,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 10.0,
+   "t_minus_h": 14.0,
    "items": [
     {
      "food_id": "cranberries-dried-sweetened",
@@ -215,7 +215,7 @@
   },
   {
    "crew": "crew-a",
-   "t_minus_h": 15.0,
+   "t_minus_h": 22.0,
    "items": [
     {
      "food_id": "popcorn-air-popped",
@@ -233,7 +233,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 49.0,
+   "t_minus_h": 51.0,
    "items": [
     {
      "food_id": "dates-medjool",
@@ -251,7 +251,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 53.0,
+   "t_minus_h": 56.0,
    "items": [
     {
      "food_id": "flour-tortilla-shelf-stable",
@@ -273,7 +273,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 58.0,
+   "t_minus_h": 62.0,
    "items": [
     {
      "food_id": "cranberries-dried-sweetened",
@@ -287,7 +287,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 63.0,
+   "t_minus_h": 70.0,
    "items": [
     {
      "food_id": "prunes-dried",
@@ -301,7 +301,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 25.0,
+   "t_minus_h": 27.0,
    "items": [
     {
      "food_id": "cashews-dry-roasted-unsalted",
@@ -315,7 +315,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 29.0,
+   "t_minus_h": 32.0,
    "items": [
     {
      "food_id": "apricots-dried",
@@ -337,7 +337,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 34.0,
+   "t_minus_h": 38.0,
    "items": [
     {
      "food_id": "white-rice-dry",
@@ -355,7 +355,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 39.0,
+   "t_minus_h": 46.0,
    "items": [
     {
      "food_id": "cranberries-dried-sweetened",
@@ -377,7 +377,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 1.0,
+   "t_minus_h": 3.0,
    "items": [
     {
      "food_id": "salmon-pink-canned",
@@ -403,7 +403,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 5.0,
+   "t_minus_h": 8.0,
    "items": [
     {
      "food_id": "granola-bar-hard-plain",
@@ -417,7 +417,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 10.0,
+   "t_minus_h": 14.0,
    "items": [
     {
      "food_id": "rye-crispbread",
@@ -435,7 +435,7 @@
   },
   {
    "crew": "crew-b",
-   "t_minus_h": 15.0,
+   "t_minus_h": 22.0,
    "items": [
     {
      "food_id": "chickpeas-canned",
@@ -461,7 +461,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 49.0,
+   "t_minus_h": 51.0,
    "items": [
     {
      "food_id": "saltine-crackers",
@@ -479,7 +479,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 53.0,
+   "t_minus_h": 56.0,
    "items": [
     {
      "food_id": "almonds-raw",
@@ -493,7 +493,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 58.0,
+   "t_minus_h": 62.0,
    "items": [
     {
      "food_id": "prunes-dried",
@@ -507,7 +507,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 63.0,
+   "t_minus_h": 70.0,
    "items": [
     {
      "food_id": "raisins-dark",
@@ -529,7 +529,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 25.0,
+   "t_minus_h": 27.0,
    "items": [
     {
      "food_id": "fruit-bar-nonfat",
@@ -543,7 +543,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 29.0,
+   "t_minus_h": 32.0,
    "items": [
     {
      "food_id": "rye-crispbread",
@@ -557,7 +557,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 34.0,
+   "t_minus_h": 38.0,
    "items": [
     {
      "food_id": "walnuts-english",
@@ -579,7 +579,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 39.0,
+   "t_minus_h": 46.0,
    "items": [
     {
      "food_id": "white-rice-dry",
@@ -593,7 +593,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 1.0,
+   "t_minus_h": 3.0,
    "items": [
     {
      "food_id": "almonds-raw",
@@ -611,7 +611,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 5.0,
+   "t_minus_h": 8.0,
    "items": [
     {
      "food_id": "white-rice-dry",
@@ -625,7 +625,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 10.0,
+   "t_minus_h": 14.0,
    "items": [
     {
      "food_id": "almonds-raw",
@@ -643,7 +643,7 @@
   },
   {
    "crew": "crew-c",
-   "t_minus_h": 15.0,
+   "t_minus_h": 22.0,
    "items": [
     {
      "food_id": "walnuts-english",

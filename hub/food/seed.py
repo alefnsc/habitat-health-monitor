@@ -25,7 +25,7 @@ from hub.sim import ReplayLine
 
 LABEL = "SYNTHETIC: generated, not real people"
 BLOCK_H = 24
-DAY_OFFSETS = (1.0, 5.0, 10.0, 15.0)  # hours before the end of the block
+DAY_OFFSETS = (3.0, 8.0, 14.0, 22.0)  # hours before the end of the block; 22 h keeps floors judged
 MAX_TRIES = 20000
 DRINKS = ("milk-powder-nonfat-d", "orange-juice-canned", "apple-juice-canned",
           "almond-milk-shelf-stable", "instant-tea-prepared")  # fmt: skip
