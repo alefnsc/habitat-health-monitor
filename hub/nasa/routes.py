@@ -13,12 +13,14 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from hub.nasa.actuator import NoActiveAlert
+from hub.nasa.isslive_routes import router as iss_router
 from hub.nasa.spaceweather import space_weather_state
 from hub.nasa.state import NasaState, get_nasa_state
 
 router = APIRouter()
 log = logging.getLogger(__name__)
 _snapshot_cache: dict[Path, tuple[tuple[int, int], dict]] = {}
+router.include_router(iss_router)  # GET /api/nasa/iss-cabin (N9)
 
 DISCLAIMER = (
     "DONKI is a research-grade archive from NASA CCMC and may lag real events. "

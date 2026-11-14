@@ -11,10 +11,10 @@ class FakeUpdate:
     def __init__(self, item, fields):
         self._item, self._fields = item, fields
 
-    def getItemName(self):  # noqa: N802
+    def getItemName(self):
         return self._item
 
-    def getValue(self, name):  # noqa: N802
+    def getValue(self, name):
         return self._fields.get(name)
 
 

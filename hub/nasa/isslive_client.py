@@ -27,7 +27,7 @@ class _ItemListener:
     def __init__(self, owner: IssLiveClient) -> None:
         self._owner = owner
 
-    def onItemUpdate(self, update) -> None:  # noqa: N802
+    def onItemUpdate(self, update) -> None:
         self._owner.handle_update(
             update.getItemName(),
             update.getValue("TimeStamp"),
@@ -46,7 +46,7 @@ class _StatusListener:
     def __init__(self, owner: IssLiveClient) -> None:
         self._owner = owner
 
-    def onStatusChange(self, status: str) -> None:  # noqa: N802
+    def onStatusChange(self, status: str) -> None:
         self._owner.handle_status(status)
 
     def __getattr__(self, name: str):
