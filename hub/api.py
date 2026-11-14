@@ -26,6 +26,7 @@ from hub.events import EventBus
 from hub.features import HubContext, load_features, wire_features
 from hub.ingest import Ingestor, IngestResult
 from hub.mqtt import MqttPublisher, NodeRegistry, run_subscriber
+from hub.serial_rig import RigLink
 from hub.staticmount import BuildMount
 from hub.store import Store
 from hub.thresholds import load_rule_files
@@ -115,6 +116,8 @@ def create_app(
     async def lifespan(app: FastAPI):
         stop = asyncio.Event()
         await runtime.start(stop)
+        if rig is not None:
+            rig.start()
         tasks: list[asyncio.Task] = []
         bus.loop = asyncio.get_running_loop()
         if settings.mqtt_host:
@@ -134,6 +137,8 @@ def create_app(
         try:
             yield
         finally:
+            if rig is not None:
+                await asyncio.to_thread(rig.stop)
             await runtime.stop()
             stop.set()
             for t in tasks:
@@ -159,6 +164,10 @@ def create_app(
     app.state.extra_subscriptions = ("habitat/v1/badge/+",)
     app.state.mqtt_handlers = {"badge": on_badge_message}
     ctx = HubContext(settings, store, ingestor, assessor, bus, nodes, crew_registry, None, clock)
+    rig: RigLink | None = None
+    if "serial" in settings.features and settings.serial_port:
+        rig = RigLink(settings, ingestor, nodes)
+    app.state.rig = rig
     runtime = wire_features(app, features, ctx)
     app.state.runtime = runtime
     app.mount("/camera", BuildMount(settings.camera_dist, "npm --prefix camera run build"))

@@ -17,7 +17,7 @@ WINDOWS: frozenset[str] = frozenset(
     {"instant", "mean_1h", "mean_7d", "dose_24h", "cumulative", "sum_24h_floor"}
 )
 SOURCE_KINDS: frozenset[str] = frozenset(
-    {"nasa_std", "clinical_ref", "personal_baseline", "team_convention"}
+    {"nasa_std", "nasa_doc", "clinical_ref", "personal_baseline", "team_convention"}
 )
 _BAND_KEYS = frozenset({"min", "max", "lt", "gt"})
 

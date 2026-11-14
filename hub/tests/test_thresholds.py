@@ -127,6 +127,10 @@ def test_source_kinds():
         parse_rules([d])
 
 
+def test_nasa_doc_source_kind():
+    assert parse_rules([base(source_kind="nasa_doc")])[0].source_kind == "nasa_doc"
+
+
 def test_reject_duplicate():
     with pytest.raises(ThresholdsError):
         parse_rules([base(), base()])
