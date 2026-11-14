@@ -38,7 +38,7 @@ export const COPY: Record<string, string> = {
   "tile.body_temp": "Body temperature",
   "tile.sleep_h": "Sleep",
   "tile.mood": "Mood",
-  "tile.spo2": "SpO2 (finger sensor)",
+  "tile.spo2": "SpO2",
   "tile.skin_temp": "Skin temperature",
   "tile.cabin_ppco2": "Cabin CO2 partial pressure",
   "tile.cabin_temp": "Cabin temperature",
