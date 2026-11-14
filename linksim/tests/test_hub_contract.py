@@ -1,15 +1,13 @@
 """Contract check of the hub outbox (resolution D1, alert shape D3) against a recorded sample.
 
-The fixture is recorded from the real hub once GET /api/outbox (H12) exists:
+The fixture was recorded from the real hub (GET /api/outbox, H12):
   curl -s 'http://127.0.0.1:8000/api/outbox?after=0&limit=20' > linksim/tests/fixtures/outbox_sample.json
-while sim-1 replays data/replay/l0-synthetic.jsonl. Until then this test is skipped.
+while the synthetic L0 session was replayed (readings posted through /api/readings).
 If it fails, the hub deviates from D1: raise it with the hub owner, do not edit this test.
 """
 
 import json
 from pathlib import Path
-
-import pytest
 
 FIXTURE = Path(__file__).parent / "fixtures" / "outbox_sample.json"
 KINDS = {"reading", "rep", "alert", "prompt_answer"}
@@ -23,7 +21,6 @@ ALERT_KEYS = {
 }  # fmt: skip
 
 
-@pytest.mark.skipif(not FIXTURE.exists(), reason="outbox_sample.json not recorded yet (needs H12)")
 def test_fixture_shape():
     data = json.loads(FIXTURE.read_text())
     assert set(data) >= {"items", "last_id"}
@@ -42,3 +39,15 @@ def test_fixture_shape():
             assert p["status"] in STATUSES
         if it["kind"] == "alert":
             assert ALERT_KEYS <= set(it["payload"])
+
+
+def test_alert_shape_from_recorded_session():
+    """The first 20 outbox items hold no alert, so check the alert in the recorded ground replay."""
+    replay = Path(__file__).resolve().parents[2] / "data" / "ground" / "ground-replay.json"
+    alerts = [
+        i for a in json.loads(replay.read_text())["arrivals"] for i in a["items"]
+        if i["kind"] == "alert"
+    ]
+    assert alerts, "recorded session holds no alert"
+    for it in alerts:
+        assert ALERT_KEYS <= set(it["payload"])
