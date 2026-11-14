@@ -40,7 +40,7 @@ ring through an importer. That importer is the next step (§9) and is not part o
 - **Build flags**, defaults in bold:
   - `ENABLE_DHT` **1**;
   - `ENABLE_HX711` **0**, `ENABLE_SERVO` **0**, `ENABLE_NTC` **0**, `ENABLE_KY039` **0**;
-  - `BUZZER_PASSIVE` **0**;
+  - `BUZZER_PASSIVE` **1** (the bench buzzer is passive: it only clicked on a steady HIGH and beeped with tone(), checked 14/11);
   - `DHT_TYPE` **DHT11**.
 
   A module that is not wired is compiled out, so no floating pin ever publishes numbers. A floating HX711 DOUT pin

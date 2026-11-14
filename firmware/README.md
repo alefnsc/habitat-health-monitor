@@ -17,7 +17,7 @@ Two microcontrollers and a hub computer.
 **`exercise-uno` build flags** (D40 defaults: only what is wired):
 - `ENABLE_DHT=1`;
 - `ENABLE_HX711=0`, `ENABLE_SERVO=0`, `ENABLE_NTC=0`, `ENABLE_KY039=0`;
-- `BUZZER_PASSIVE=0` (1 for a passive buzzer);
+- `BUZZER_PASSIVE=1` (the bench buzzer is passive; 0 for an active buzzer);
 - `DHT_TYPE=DHT11`.
 
 Turn a channel on only when its module is wired. A floating HX711 DOUT reads as "ready" and would stream noise.

@@ -86,7 +86,7 @@ def test_sketch_defaults_match_d40() -> None:
     text = SKETCH.read_text()
     for flag, val in [
         ("ENABLE_DHT", 1), ("ENABLE_HX711", 0), ("ENABLE_SERVO", 0),
-        ("ENABLE_NTC", 0), ("ENABLE_KY039", 0), ("BUZZER_PASSIVE", 0),
+        ("ENABLE_NTC", 0), ("ENABLE_KY039", 0), ("BUZZER_PASSIVE", 1),
     ]:  # fmt: skip
         assert f"#ifndef {flag}\n#define {flag} {val}\n#endif" in text, flag
     assert "#define DHT_TYPE DHT11" in text
