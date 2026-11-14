@@ -12,7 +12,7 @@
 // Build flags (D40 defaults: only the DHT11 and the buzzer are wired). A module that is not wired is
 // compiled out, so a floating pin never publishes numbers (a floating HX711 DOUT reads as "ready"):
 //   ENABLE_DHT=1  ENABLE_HX711=0  ENABLE_SERVO=0  ENABLE_NTC=0  ENABLE_KY039=0
-//   BUZZER_PASSIVE=0 (1 for a passive buzzer, driven with tone())  DHT_TYPE=DHT11
+//   BUZZER_PASSIVE=1 (the bench buzzer is passive, driven with tone(); 0 for an active one)  DHT_TYPE=DHT11
 //   arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_HX711=1" ...
 // The HX711 RATE pin must be tied to DVDD for 80 SPS when the load cell is fitted.
 //
@@ -42,7 +42,7 @@
 #define ENABLE_KY039 0
 #endif
 #ifndef BUZZER_PASSIVE
-#define BUZZER_PASSIVE 0
+#define BUZZER_PASSIVE 1
 #endif
 
 #include <EEPROM.h>

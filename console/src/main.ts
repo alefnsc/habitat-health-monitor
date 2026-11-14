@@ -13,6 +13,7 @@ import { renderEntry } from "./views/entry";
 import { renderFood } from "./views/food";
 import { renderExercise } from "./views/exercise";
 import { renderHistory } from "./views/history";
+import { renderLanes } from "./views/lanes";
 import { entryForTile, openGuidance, setLinkState } from "./views/guidance";
 import { refreshBanner, renderNasa, startBanner } from "./views/nasa";
 import { loadBoard, renderStatus } from "./views/status";
@@ -82,6 +83,7 @@ export function mountApp(root: HTMLElement): void {
     });
     else if (cur === "entry") renderEntry(screen);
     else if (cur === "history") dispose = renderHistory(screen);
+    else if (cur === "lanes") dispose = renderLanes(screen);
     else if (cur === "exercise") dispose = renderExercise(screen);
     else if (cur === "nasa") dispose = renderNasa(screen);
     else if (cur === "food") dispose = renderFood(screen);

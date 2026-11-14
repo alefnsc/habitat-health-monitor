@@ -96,7 +96,7 @@ describe("replay mode", () => {
     expect(urls).toEqual(["/habitat-health-monitor/console/replay.json"]);
     expect(root.textContent).toContain("Replay of a recorded session");
     expect(root.querySelector('[data-tile="hr"]')).not.toBeNull();
-    for (const s of ["entry", "history", "exercise", "food", "nasa", "prompts", "body"]) {
+    for (const s of ["entry", "history", "lanes", "exercise", "food", "nasa", "prompts", "body"]) {
       location.hash = `#/${s}`;
       window.dispatchEvent(new Event("hashchange"));
       expect(root.querySelector("#screen")!.textContent).toBe("Not available in the replay.");

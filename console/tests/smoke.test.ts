@@ -3,7 +3,7 @@ import { SCREENS, screenFromHash } from "../src/main";
 
 describe("scaffold", () => {
   test("test_screens_list", () => {
-    expect([...SCREENS]).toEqual(["status", "entry", "history", "exercise", "food", "nasa", "prompts", "body"]);
+    expect([...SCREENS]).toEqual(["status", "entry", "history", "lanes", "exercise", "food", "nasa", "prompts", "body"]);
   });
   test("test_default_screen", () => {
     expect(screenFromHash("")).toBe("status");

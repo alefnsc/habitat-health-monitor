@@ -46,6 +46,18 @@ def test_twin_wiring_matches_sketch_pins() -> None:
     wires = {frozenset(c[:2]) for c in d["connections"]}
     for a, b in [("dht:SDA", "uno:2"), ("buzzer:2", "uno:8")]:
         assert frozenset((a, b)) in wires, (a, b)
+    # one colour per signal on the canvas: red 5V, black GND, green D2, purple D8
+    colour = {
+        "5V": "red",
+        "GND.1": "black",
+        "GND.2": "black",
+        "GND.3": "black",
+        "2": "green",
+        "8": "purple",
+    }
+    for a, b, c, *_ in d["connections"]:
+        uno_pin = next(e.split(":", 1)[1] for e in (a, b) if e.startswith("uno:"))
+        assert c == colour[uno_pin], (a, b, c)
     assert "PIN_DHT = 2," in SKETCH.read_text() and "PIN_BUZZER = 8;" in SKETCH.read_text()
 
 
@@ -53,6 +65,11 @@ def test_twin_simulated_parts_are_labelled() -> None:
     d = json.loads((TWIN / "diagram.json").read_text())
     texts = " ".join(p["attrs"]["text"] for p in d["parts"] if p["type"] == "wokwi-text").lower()
     assert "dht11 stand-in (simulated)" in texts
+    # the bench wiring map for the real board (D40, plain UNO R3 or the UNO+WiFi's ATmega side)
+    assert "real bench wiring (arduino uno r3, or the uno+wifi's atmega side)" in texts
+    assert "dht11 module: s → d2, + → 5v, − → gnd" in texts
+    assert "buzzer module: s → d8, − → gnd" in texts and "only if it is printed + or vcc" in texts
+    assert "match each pin by its printed letter, not by its position" in texts
     assert "not a medical device" in texts
     # D40: the load cell and pulse module are not on the board
     assert "load cell" not in texts and "pulse" not in texts
@@ -69,7 +86,7 @@ def test_sketch_defaults_match_d40() -> None:
     text = SKETCH.read_text()
     for flag, val in [
         ("ENABLE_DHT", 1), ("ENABLE_HX711", 0), ("ENABLE_SERVO", 0),
-        ("ENABLE_NTC", 0), ("ENABLE_KY039", 0), ("BUZZER_PASSIVE", 0),
+        ("ENABLE_NTC", 0), ("ENABLE_KY039", 0), ("BUZZER_PASSIVE", 1),
     ]:  # fmt: skip
         assert f"#ifndef {flag}\n#define {flag} {val}\n#endif" in text, flag
     assert "#define DHT_TYPE DHT11" in text
