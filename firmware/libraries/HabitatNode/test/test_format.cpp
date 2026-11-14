@@ -94,6 +94,17 @@ int main() {
     assert(std::string(e["dev"].as<const char*>()) == "KY039");
     assert(std::string(e["unit"].as<const char*>()) == "bpm");
   }
+  {  // test_format_tilt (D39): two-state tilt switch, no decimals
+    PendingReading r{3, 0, IND_TILT, 1.0f, DEV_KY017, 0};
+    size_t n = formatReading(r, "tilt-1", 1, 0, buf, sizeof buf);
+    assert(n > 0);
+    JsonDocument d;
+    assert(!deserializeJson(d, buf));
+    assert(std::string(d["ind"].as<const char*>()) == "tilt");
+    assert(std::string(d["unit"].as<const char*>()) == "state");
+    assert(std::string(d["dev"].as<const char*>()) == "KY017");
+    assert(std::strstr(buf, "\"val\":1,"));
+  }
   std::puts("ok");
   return 0;
 }

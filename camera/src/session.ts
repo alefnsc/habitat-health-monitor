@@ -74,7 +74,7 @@ const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 export async function postRepsWithRetry(
   msgs: RepMessage[],
   post: (m: RepMessage) => Promise<PostResult>,
-  opts: { intervalMs: number; maxTries: number; onPending?: (n: number) => void } = { intervalMs: 2000, maxTries: 15 },
+  opts: { intervalMs: number; maxTries: number; onPending?: (n: number) => void; age?: (m: RepMessage) => number } = { intervalMs: 2000, maxTries: 15 },
 ): Promise<{ sent: number; pending: number; rejected: { seq: number; reason: string }[] }> {
   let sent = 0;
   let pending = 0;
@@ -83,7 +83,8 @@ export async function postRepsWithRetry(
     let done = false;
     for (let attempt = 1; attempt <= opts.maxTries && !done; attempt++) {
       try {
-        await post(m);
+        // age_ms is the rep's age at send time, so recompute it on every attempt.
+        await post(opts.age ? { ...m, age_ms: opts.age(m) } : m);
         sent += 1;
         done = true;
       } catch (e) {

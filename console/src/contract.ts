@@ -32,6 +32,7 @@ export type Ind =
   | "cabin_lux"
   | "motion"
   | "load_raw"
+  | "tilt"
   | "cabin_ppco2"
   | "space_weather"
   | "rad_dose_cum"

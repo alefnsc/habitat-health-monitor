@@ -2,8 +2,10 @@ import json
 
 import pytest
 
+from hub.assess import UNGATED_INDS
 from hub.contract import (
     BODY_INDS,
+    CABIN_INDS,
     INTAKE_INDS,
     INTAKE_ORDER,
     REASON_CODES,
@@ -12,6 +14,7 @@ from hub.contract import (
     parse_reading,
     parse_rep,
     reading_to_dict,
+    rep_to_dict,
     validate_reading,
     validate_rep,
 )
@@ -271,3 +274,32 @@ def test_zz_every_reason_code_hit():
             assert any(r.startswith(code) for r in SEEN), code
         else:
             assert code in SEEN, code
+
+
+def test_tilt_node_dev_ind():
+    t = {"node": "tilt-1", "ind": "tilt", "val": 1, "unit": "state", "dev": "KY017"}
+    r = parse_reading(mod(BASE, **t))
+    assert (r.node, r.ind, r.val, r.unit, r.dev) == ("tilt-1", "tilt", 1.0, "state", "KY017")
+    assert reason_of(mod(BASE, **{**t, "unit": "bool"})) == "unit_mismatch"
+    assert "tilt" not in BODY_INDS and "tilt" not in CABIN_INDS
+    assert "tilt" in UNGATED_INDS
+
+
+def test_rep_phase_fields():
+    r = parse_rep(mod(REP, work_ecc_j=20.5, t_con_ms=900, t_ecc_ms=1000, t_turn_ms=2100))
+    assert (r.work_ecc_j, r.t_con_ms, r.t_ecc_ms, r.t_turn_ms) == (20.5, 900, 1000, 2100)
+    d = rep_to_dict(r)
+    assert (d["work_ecc_j"], d["t_con_ms"], d["t_ecc_ms"], d["t_turn_ms"]) == (20.5, 900, 1000, 2100)
+    old = parse_rep(REP)
+    assert (old.work_ecc_j, old.t_con_ms, old.t_ecc_ms, old.t_turn_ms) == (None, None, None, None)
+    assert parse_rep(mod(REP, work_ecc_j=None, t_turn_ms=None)).t_turn_ms is None
+    cases = [
+        (mod(REP, work_ecc_j="x"), "bad_type:work_ecc_j"),
+        (mod(REP, work_ecc_j=-1), "bad_value:work_ecc_j"),
+        (mod(REP, t_con_ms=1.5), "bad_type:t_con_ms"),
+        (mod(REP, t_ecc_ms=-1), "bad_value:t_ecc_ms"),
+        (mod(REP, t_turn_ms=5000), "bad_value:t_turn_ms"),
+        (mod(REP, t_turn_ms=1000), "bad_value:t_turn_ms"),
+    ]
+    for m, reason in cases:
+        assert reason_of(m, rep=True) == reason

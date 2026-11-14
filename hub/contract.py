@@ -25,6 +25,7 @@ INDICATORS: dict[str, str] = {
     "cabin_lux": "lx",
     "motion": "g",
     "load_raw": "N",
+    "tilt": "state",
     "space_weather": "level",
     "rad_dose_cum": "mSv",
     "intake_kcal": "kcal",
@@ -79,14 +80,15 @@ INTAKE_CEILINGS: dict[str, float] = {
 BODY_MASS_RANGE: tuple[float, float] = (20.0, 300.0)
 
 NODES: frozenset[str] = frozenset(
-    {"vitals-1", "cabin-1", "exercise-1", "strap-1", "manual", "camera", "sim-1", "nasa", "food"}
+    {"vitals-1", "cabin-1", "exercise-1", "strap-1", "manual", "camera", "sim-1", "nasa", "food",
+     "tilt-1"}
 )
 SOURCES: frozenset[str] = frozenset({"certified", "hobby", "self", "nasa", "replay"})
 DEVICES: frozenset[str] = frozenset(
     {
         "MAX30102", "DS18B20", "MLX90614", "SCD41", "BME280", "DHT22", "DHT11", "BH1750",
         "HX711", "H10", "manual", "camera", "MPU6050", "MH-Z19", "DONKI", "OSDR", "catalog",
-        "NTC", "KY039",
+        "NTC", "KY039", "KY017",
     }
 )  # fmt: skip
 FLAGS: frozenset[str] = frozenset(
@@ -157,6 +159,10 @@ class Rep:
     mass_kg: float
     t0_ms: int
     t1_ms: int
+    work_ecc_j: float | None = None
+    t_con_ms: int | None = None
+    t_ecc_ms: int | None = None
+    t_turn_ms: int | None = None
 
 
 _READING_FIELDS = (
@@ -326,6 +332,24 @@ def parse_rep(raw: bytes | str | dict, *, max_bytes: int | None = None) -> Rep:
     if msg["t1_ms"] < msg["t0_ms"]:
         raise ContractError("bad_value:t1_ms")
 
+    ecc = msg.get("work_ecc_j")
+    if ecc is not None:
+        if not _is_num(ecc):
+            raise ContractError("bad_type:work_ecc_j")
+        if not _finite(float(ecc)) or ecc < 0:
+            raise ContractError("bad_value:work_ecc_j")
+    for name in ("t_con_ms", "t_ecc_ms", "t_turn_ms"):
+        x = msg.get(name)
+        if x is None:
+            continue
+        if not _is_int(x):
+            raise ContractError(f"bad_type:{name}")
+        if x < 0:
+            raise ContractError(f"bad_value:{name}")
+    turn = msg.get("t_turn_ms")
+    if turn is not None and not (msg["t0_ms"] <= turn <= msg["t1_ms"]):
+        raise ContractError("bad_value:t_turn_ms")
+
     def opt(x: Any) -> float | None:
         return None if x is None else float(x)
 
@@ -346,6 +370,10 @@ def parse_rep(raw: bytes | str | dict, *, max_bytes: int | None = None) -> Rep:
         mass_kg=float(msg["mass_kg"]),
         t0_ms=msg["t0_ms"],
         t1_ms=msg["t1_ms"],
+        work_ecc_j=opt(ecc),
+        t_con_ms=msg.get("t_con_ms"),
+        t_ecc_ms=msg.get("t_ecc_ms"),
+        t_turn_ms=turn,
     )
 
 
@@ -383,4 +411,6 @@ def rep_to_dict(r: Rep) -> dict:
         "type": r.type, "session": r.session, "rep": r.rep, "src": r.src,
         "peak_n": r.peak_n, "work_j": r.work_j, "rom_m": r.rom_m, "g": r.g,
         "mass_kg": r.mass_kg, "t0_ms": r.t0_ms, "t1_ms": r.t1_ms,
+        "work_ecc_j": r.work_ecc_j, "t_con_ms": r.t_con_ms, "t_ecc_ms": r.t_ecc_ms,
+        "t_turn_ms": r.t_turn_ms,
     }  # fmt: skip

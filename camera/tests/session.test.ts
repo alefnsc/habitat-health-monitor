@@ -7,7 +7,7 @@ const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { sta
 const SESSION = { session: "s-1794657600000", mass_kg: 10, g: 9.81, crew: "crew-a", started_at: "x", ended_at: null, camera_reps: 0, load_cell_reps: 0 };
 const msg = (seq: number): RepMessage => ({
   v: 1, node: "camera", boot: 1, seq, age_ms: 0, type: "rep", session: "s", rep: seq, src: "camera", peak_n: 1, work_j: 1,
-  rom_m: 0.5, g: 9.81, mass_kg: 10, t0_ms: 0, t1_ms: 1000,
+  rom_m: 0.5, g: 9.81, mass_kg: 10, t0_ms: 0, t1_ms: 1000, work_ecc_j: 0, t_con_ms: 500, t_ecc_ms: 500, t_turn_ms: 500,
 });
 const res = (dup = false): PostResult => ({ id: 1, measured_at: "x", duplicate: dup, results: [] });
 
@@ -51,6 +51,23 @@ describe("session", () => {
     await vi.advanceTimersByTimeAsync(4000);
     expect(await p).toEqual({ sent: 1, pending: 0, rejected: [] });
     expect(seen).toEqual([1, 1, 1]);
+  });
+
+  test("test_age_is_recomputed_per_attempt", async () => {
+    const t0 = performance.now() - 1000; // the rep ended (t1_ms = 1000) as the test starts
+    const age = (m: RepMessage) => Math.max(0, Math.round(performance.now() - (t0 + m.t1_ms)));
+    const sentAges: { seq: number; age: number }[] = [];
+    let n = 0;
+    const post = async (m: RepMessage) => {
+      sentAges.push({ seq: m.seq, age: m.age_ms });
+      if (++n === 1) throw new ApiError(0, "timeout");
+      return res();
+    };
+    const p = postRepsWithRetry([msg(1), msg(2)], post, { intervalMs: 2000, maxTries: 15, age });
+    await vi.advanceTimersByTimeAsync(4000);
+    expect(await p).toEqual({ sent: 2, pending: 0, rejected: [] });
+    // First attempt at +0 ms, retry after the 2 s sleep, second rep sent right after that.
+    expect(sentAges).toEqual([{ seq: 1, age: 0 }, { seq: 1, age: 2000 }, { seq: 2, age: 2000 }]);
   });
 
   test("test_duplicate_is_sent", async () => {

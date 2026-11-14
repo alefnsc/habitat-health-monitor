@@ -2,7 +2,7 @@ import type { Tracker } from "../../vendor/ground-truth/demo/src/pose/source";
 import type { PageState } from "./main";
 import { COPY } from "./copy";
 import { createRecorder, recordingProblem } from "./pose";
-import { ENVIRONMENT_MENU, analyseRecording, inputProblemText, resultView, toRepMessages } from "./reps";
+import { ENVIRONMENT_MENU, analyseRecording, gNoteText, inputProblemText, resultView, toRepMessages } from "./reps";
 import { createSequencer } from "./seq";
 import { createSetState } from "./set";
 import { endSession, framesForSet, postRep, postRepsWithRetry, startSession, unloadGuard, type CrewId } from "./session";
@@ -80,21 +80,24 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     const outcome = analyseRecording(frames, inputs, { id, title: "Camera set" });
     const view = resultView(outcome);
     if (view.rows.length) {
-      const table = h("table", {}, h("tr", {}, ...["Rep", COPY["result.peak"], COPY["result.work"], COPY["result.rom"], ""].map((t) => h("th", { text: t }))));
+      const table = h("table", {}, h("tr", {}, ...["Rep", COPY["result.peak"], COPY["result.work"], COPY["result.workEcc"], COPY["result.tCon"], COPY["result.tEcc"], COPY["result.rom"], ""].map((t) => h("th", { text: t }))));
       for (const r of view.rows) {
-        table.append(h("tr", {}, h("td", { text: String(r.rep) }), h("td", { text: r.peakN.toFixed(1) }), h("td", { text: r.workJ.toFixed(1) }), h("td", { text: r.romM.toFixed(2) }), h("td", {}, h("span", { text: r.badge }), ...r.notes.map((n) => h("div", { text: n })))));
+        table.append(h("tr", {}, h("td", { text: String(r.rep) }), h("td", { text: r.peakN.toFixed(1) }), h("td", { text: r.workJ.toFixed(1) }), h("td", { text: r.eccJ.toFixed(1) }), h("td", { text: r.tConS.toFixed(2) }), h("td", { text: r.tEccS.toFixed(2) }), h("td", { text: r.romM.toFixed(2) }), h("td", {}, h("span", { text: r.badge }), ...r.notes.map((n) => h("div", { text: n })))));
       }
       results.append(table);
+      results.append(h("p", { text: gNoteText(g) }));
     }
     if (view.grade) results.append(h("p", { text: `${COPY["result.grade"]}: ${view.grade}` }));
     for (const n of view.notes) results.append(h("p", { text: n }));
     if (outcome.kind === "analysed") {
+      const anchor = recorder.firstFramePerfMs ?? performance.now();
       const msgs = toRepMessages({ ok: true, reps: outcome.reps.map((r) => r.rep) }, {
-        session: id, g, mass_kg: massKg, boot: seq.boot, seq, firstFramePerfMs: recorder.firstFramePerfMs ?? performance.now(), nowPerfMs: performance.now(),
+        session: id, g, mass_kg: massKg, boot: seq.boot, seq, firstFramePerfMs: anchor, nowPerfMs: performance.now(),
       });
       sendOut.textContent = `${COPY["set.sent"]} 0 of ${msgs.length}`;
       const r = await postRepsWithRetry(msgs, (m) => postRep(m), {
         intervalMs: 2000, maxTries: 15,
+        age: (m) => Math.max(0, Math.round(performance.now() - (anchor + m.t1_ms))),
         onPending: (n) => { pendingReps = n; sendOut.textContent = `${COPY["set.sent"]} ${msgs.length - n} of ${msgs.length}, ${n} waiting`; },
       });
       pendingReps = r.pending;

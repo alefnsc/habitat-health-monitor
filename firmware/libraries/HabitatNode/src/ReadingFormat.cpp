@@ -9,20 +9,20 @@ namespace habitat {
 const char* const kIndNames[IND_COUNT] = {
     "hr", "spo2", "skin_temp", "body_temp", "bp_sys", "bp_dia", "glucose",
     "sleep_h", "mood", "symptom", "cabin_temp", "cabin_rh", "cabin_p",
-    "cabin_co2", "cabin_lux", "motion", "load_raw"};
+    "cabin_co2", "cabin_lux", "motion", "load_raw", "tilt"};
 const char* const kIndUnits[IND_COUNT] = {
     "bpm", "%", "C", "C", "mmHg", "mmHg", "mg/dL", "h", "1-5", "code", "C",
-    "%", "hPa", "ppm", "lx", "g", "N"};
+    "%", "hPa", "ppm", "lx", "g", "N", "state"};
 const char* const kDevNames[DEV_COUNT] = {
     "MAX30102", "DS18B20", "MLX90614", "SCD41", "BME280", "DHT22", "DHT11",
-    "BH1750", "HX711", "H10", "manual", "camera", "MPU6050", "NTC", "KY039"};
+    "BH1750", "HX711", "H10", "manual", "camera", "MPU6050", "NTC", "KY039", "KY017"};
 
 // Decimals per indicator; unlisted indicators use 1.
 static const uint8_t kDecimals[IND_COUNT] = {
     /*hr*/ 0, /*spo2*/ 0, /*skin_temp*/ 2, /*body_temp*/ 1, /*bp_sys*/ 0,
     /*bp_dia*/ 0, /*glucose*/ 0, /*sleep_h*/ 1, /*mood*/ 0, /*symptom*/ 0,
     /*cabin_temp*/ 1, /*cabin_rh*/ 1, /*cabin_p*/ 1, /*cabin_co2*/ 0,
-    /*cabin_lux*/ 0, /*motion*/ 3, /*load_raw*/ 1};
+    /*cabin_lux*/ 0, /*motion*/ 3, /*load_raw*/ 1, /*tilt*/ 0};
 
 static const char* const kFlagNames[5] = {"motion", "no_contact", "settling",
                                           "leads_off", "out_of_range"};

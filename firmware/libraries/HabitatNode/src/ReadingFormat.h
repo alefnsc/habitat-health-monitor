@@ -11,14 +11,14 @@ enum Ind : uint8_t {
   IND_HR, IND_SPO2, IND_SKIN_TEMP, IND_BODY_TEMP, IND_BP_SYS, IND_BP_DIA,
   IND_GLUCOSE, IND_SLEEP_H, IND_MOOD, IND_SYMPTOM, IND_CABIN_TEMP,
   IND_CABIN_RH, IND_CABIN_P, IND_CABIN_CO2, IND_CABIN_LUX, IND_MOTION,
-  IND_LOAD_RAW, IND_COUNT
+  IND_LOAD_RAW, IND_TILT, IND_COUNT
 };
 
-// Device table index (section 4.1 dev list, plus MPU6050, and the D35 hobby modules NTC and KY039).
+// Device table index (section 4.1 dev list, plus MPU6050, and the D35 hobby modules NTC and KY039, D39 KY017 tilt switch).
 enum Dev : uint8_t {
   DEV_MAX30102, DEV_DS18B20, DEV_MLX90614, DEV_SCD41, DEV_BME280, DEV_DHT22,
   DEV_DHT11, DEV_BH1750, DEV_HX711, DEV_H10, DEV_MANUAL, DEV_CAMERA,
-  DEV_MPU6050, DEV_NTC, DEV_KY039, DEV_COUNT
+  DEV_MPU6050, DEV_NTC, DEV_KY039, DEV_KY017, DEV_COUNT
 };
 
 // Quality flag bits (section 4.4, node-raised ones). Bit order is output order.

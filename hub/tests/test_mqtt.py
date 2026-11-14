@@ -31,6 +31,14 @@ def test_route_reading(rig, clock):
     assert (n.node, n.online, n.last_seen) == ("cabin-1", True, "2026-11-14T12:00:05.000Z")
 
 
+def test_route_tilt_reading(rig):
+    store, ing, nodes = rig
+    raw = json.dumps(msg(node="tilt-1", ind="tilt", val=1, unit="state", dev="KY017")).encode()
+    res = route_message(ing, nodes, "habitat/v1/r/tilt-1", raw)
+    assert res.reason is None and res.stored is not None and store.count("readings") == 1
+    assert nodes.snapshot()[0].node == "tilt-1"
+
+
 def test_route_topic_mismatch(rig):
     store, ing, nodes = rig
     raw = json.dumps(msg(node="vitals-1", ind="hr", unit="bpm", dev="MAX30102")).encode()

@@ -200,6 +200,30 @@ def _fetch_reps(hub: str, session: str) -> dict:
         return json.loads(r.read())
 
 
+def _share(k: int, n: int) -> str:
+    return f"{k}/{n} = {100 * k / n:.0f} %" if n else "n/a"
+
+
+def tilt_rows(bodies: list[dict]) -> list[str]:
+    """D39: how often the tilt switch witnessed a camera rep, and how far its midpoint sat
+    from the camera turnaround."""
+    # A camera rep with no tilt result (no t_turn_ms) cannot be witnessed, so it is not counted.
+    cams = [p for b in bodies for p in b.get("pairs", []) if p.get("camera") and p.get("tilt") is not None]
+    seen = [p["tilt"] for p in cams if p.get("tilt") and p["tilt"].get("seen")]
+    inside = [t for t in seen if t.get("turn_inside")]
+    offs = sorted(abs(t["offset_ms"]) for t in seen)
+    if offs:
+        p95 = offs[math.ceil(0.95 * len(offs)) - 1]
+        spread = f"{statistics.median(offs):.0f} ms / {p95:.0f} ms"
+    else:
+        spread = "n/a"
+    return [
+        f"| Tilt witness seen | {_share(len(seen), len(cams))} |",
+        f"| Turnaround inside tilt interval | {_share(len(inside), len(seen))} |",
+        f"| Tilt offset, abs median / p95 | {spread} |",
+    ]
+
+
 def run_reps(hub: str, sessions: list[str], out: str, img: str) -> list[str]:
     out_dir, img_dir = Path(out), Path(img)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -215,8 +239,10 @@ def run_reps(hub: str, sessions: list[str], out: str, img: str) -> list[str]:
         "work_cell_j",
         "mass_kg",
     ]
+    bodies: list[dict] = []
     for sid in sessions:
         body = _fetch_reps(hub, sid)
+        bodies.append(body)
         pairs, fails = pair_reps(body)
         _write_csv(out_dir / f"reps-{sid}.csv", pairs, cols)
         all_pairs += pairs
@@ -249,6 +275,7 @@ def run_reps(hub: str, sessions: list[str], out: str, img: str) -> list[str]:
     denom = max(n_cam, n_cell)
     agree = f"{len(all_pairs)}/{denom} = {100 * len(all_pairs) / denom:.0f} %" if denom else "n/a"
     rows.append(f"| Rep detection agreement | {agree} |")
+    rows += tilt_rows(bodies)
     return rows
 
 
