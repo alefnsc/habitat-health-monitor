@@ -1,4 +1,4 @@
-"""Serial reader for the exercise rig: load_raw lines, ack lines, comments (H13)."""
+"""Serial reader for the UNO board: exercise-1 and cabin-1 readings, ack lines, comments (H13, D40)."""
 
 from __future__ import annotations
 
@@ -19,7 +19,8 @@ from hub.mqtt import NodeRegistry
 
 log = logging.getLogger("hub.serial")
 
-RIG_NODE = "exercise-1"
+RIG_NODE = "exercise-1"  # commands and acks
+SERIAL_NODES: frozenset[str] = frozenset({RIG_NODE, "cabin-1"})  # D40: the UNO also reads the DHT11
 MAX_LINE = 256
 RECONNECT_S = 2.0
 
@@ -55,7 +56,9 @@ def handle_line(ingestor: Ingestor, line: bytes, stats: dict[str, int]) -> Inges
             else:
                 log.warning("%s err=%s", text, msg.get("err"))
             return None
-    res = ingestor.ingest_reading(raw, channel="serial", max_bytes=MAX_LINE, expected_node=RIG_NODE)
+    res = ingestor.ingest_reading(
+        raw, channel="serial", max_bytes=MAX_LINE, expected_node=SERIAL_NODES
+    )
     if res.reason is None:
         stats["stored"] += 1
     else:
@@ -135,7 +138,8 @@ class RigLink:
 
     def _set_online(self, online: bool) -> None:
         if self.nodes is not None:
-            self.nodes.set_online(RIG_NODE, online, self.nodes.clock())
+            for node in sorted(SERIAL_NODES):  # one cable: both nodes come and go together
+                self.nodes.set_online(node, online, self.nodes.clock())
 
     def _open(self) -> serial.Serial:
         assert self.settings.serial_port

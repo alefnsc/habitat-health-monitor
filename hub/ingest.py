@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -69,12 +69,14 @@ class Ingestor:
         *,
         channel: str,
         max_bytes: int | None = None,
-        expected_node: str | None = None,
+        expected_node: str | Collection[str] | None = None,
     ) -> IngestResult:
         try:
             r = parse_reading(raw, max_bytes=max_bytes)
-            if expected_node is not None and r.node != expected_node:
-                raise ContractError("topic_node_mismatch")
+            if expected_node is not None:
+                allowed = {expected_node} if isinstance(expected_node, str) else expected_node
+                if r.node not in allowed:
+                    raise ContractError("topic_node_mismatch")
             return self._pipeline(r, channel)
         except ContractError as e:
             return self._reject(channel, e.reason)
