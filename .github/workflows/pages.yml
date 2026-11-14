@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "ground/**"
+      - "console/**"
       - "data/ground/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -36,6 +37,13 @@ jobs:
         working-directory: ground
         env:
           GROUND_BASE: /habitat-health-monitor/
+      - run: npm ci
+        working-directory: console
+      - run: npm run build:replay
+        working-directory: console
+        env:
+          CONSOLE_BASE: /habitat-health-monitor/console/
+      - run: cp -r console/dist-replay ground/dist/console
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
