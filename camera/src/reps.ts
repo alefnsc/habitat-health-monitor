@@ -23,6 +23,10 @@ export interface RepMessage {
   mass_kg: number;
   t0_ms: number;
   t1_ms: number;
+  work_ecc_j: number;
+  t_con_ms: number;
+  t_ecc_ms: number;
+  t_turn_ms: number;
 }
 
 export interface RepContext {
@@ -41,6 +45,8 @@ export function toRepMessages(result: { ok: true; reps: RepResult[] } | { ok: fa
   return result.reps.map((r, i) => {
     const t0 = Math.round(r.startS * 1000);
     const t1 = Math.round((r.startS + r.durationS) * 1000);
+    // Turnaround: the vendored lift ends at the first sample at the top level (D39).
+    const turn = Math.min(t1, Math.max(t0, Math.round((r.startS + r.liftDurationS) * 1000)));
     return {
       v: 1,
       node: "camera",
@@ -58,6 +64,10 @@ export function toRepMessages(result: { ok: true; reps: RepResult[] } | { ok: fa
       mass_kg: ctx.mass_kg,
       t0_ms: t0,
       t1_ms: t1,
+      work_ecc_j: Math.max(0, -r.negativeWorkJ),
+      t_con_ms: turn - t0,
+      t_ecc_ms: t1 - turn,
+      t_turn_ms: turn,
     };
   });
 }
@@ -76,6 +86,9 @@ export interface ResultRow {
   rep: number;
   peakN: number;
   workJ: number;
+  eccJ: number;
+  tConS: number;
+  tEccS: number;
   romM: number;
   badge: string;
   notes: string[];
@@ -90,6 +103,9 @@ export function resultView(outcome: CaptureOutcome): { rows: ResultRow[]; grade:
       rep: r.index,
       peakN: r.rep.peakForceN,
       workJ: r.rep.positiveWorkJ,
+      eccJ: Math.max(0, -r.rep.negativeWorkJ),
+      tConS: r.rep.liftDurationS,
+      tEccS: Math.max(0, r.rep.durationS - r.rep.liftDurationS),
       romM: r.rep.rangeOfMotionM,
       badge: COPY["result.estimate"],
       notes: r.notes,
