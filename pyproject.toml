@@ -23,6 +23,7 @@ dependencies = [
 dev = ["pytest", "ruff", "respx", "pytest-asyncio"]
 analysis = ["matplotlib", "numpy"]
 pi = ["smbus2"]  # cabin node on a Raspberry Pi (MIT)
+cloud = ["upstash-redis"]  # public ground segment (MIT)
 
 [tool.setuptools.packages.find]
 where = [".", "ground"]

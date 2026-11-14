@@ -4,6 +4,7 @@ import { apiBase, replayUrl } from "./paths";
 import { loadReplay, positionLabel, replayBanner, replaySource } from "./replay";
 import type { GuidanceItem } from "./replay";
 import { render, renderCrewView } from "./render";
+import { LIVE_BANNER, decideMode, fetchSummary } from "./mode";
 import { liveSource } from "./sources";
 import type { GroundView } from "./types";
 
@@ -23,7 +24,8 @@ function startLive(): void {
     },
     (...args) => fetch(...args),
   );
-  const draw = () => render(root, view, Date.now(), null);
+  const draw = () =>
+    render(root, view, Date.now(), import.meta.env.VITE_GROUND_SOURCE === "auto" ? LIVE_BANNER : null);
   draw();
   setInterval(draw, 500);
 }
@@ -80,5 +82,19 @@ async function startReplay(): Promise<void> {
   setInterval(draw, 250);
 }
 
-if (source === "replay") void startReplay();
-else startLive();
+const mode = import.meta.env.VITE_GROUND_SOURCE;
+if (mode === "auto") {
+  void (async () => {
+    const current = decideMode(await fetchSummary("", (...a) => fetch(...a)), Date.now());
+    if (current === "live") startLive();
+    else await startReplay();
+    setInterval(async () => {
+      const next = decideMode(await fetchSummary("", (...a) => fetch(...a)), Date.now());
+      if (next !== current) location.reload();
+    }, 60_000);
+  })();
+} else if (source === "replay") {
+  void startReplay();
+} else {
+  startLive();
+}

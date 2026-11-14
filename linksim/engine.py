@@ -220,10 +220,11 @@ class LinkEngine:
             self._fetched_id = max(self._fetched_id, it.id)
 
     @_locked
-    def due(self, now_s: float) -> list[OutboxItem]:
+    def due(self, now_s: float, limit: int | None = MAX_DUE) -> list[OutboxItem]:
+        """Crossed items in id order; `limit=None` returns every ready item."""
         self._generate_beacons(now_s)
         ready = sorted(r.item.id for r in self._pending.values() if r.arrive_at <= now_s)
-        return [self._pending[i].item for i in ready[:MAX_DUE]]
+        return [self._pending[i].item for i in (ready if limit is None else ready[:limit])]
 
     @_locked
     def due_beacon(self, now_s: float) -> Beacon | None:

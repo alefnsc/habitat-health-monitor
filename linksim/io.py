@@ -4,10 +4,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import httpx
 
 from .engine import LinkEngine, OutboxItem
+
+if TYPE_CHECKING:
+    from .public import PublicUplink
 
 BATCH = 500
 
@@ -68,27 +72,41 @@ def save_cursor(path: Path, delivered_id: int) -> None:
 
 def step(
     engine: LinkEngine,
-    hub_client: httpx.Client,
-    ground_client: httpx.Client,
+    hub_client: httpx.Client | None,
+    ground_client: httpx.Client | None,
     cursor: Path,
     now_s: float,
     poll: bool = True,
+    public: PublicUplink | None = None,
 ) -> None:
-    """One tick: poll the hub (optional), then forward what has crossed the link.
+    """One tick: poll the hub, hand crossed items to the public uplink, deliver locally.
 
-    The clients carry their own base_url, so the URL prefixes here are empty.
+    `ground_client=None` means there is no local ground receiver: crossed items count as
+    delivered. The public uplink never blocks local delivery.
     """
-    if poll:
+    if poll and hub_client is not None:
         engine.accept(fetch_outbox(hub_client, "", engine.fetched_id, BATCH), now_s)
     items = engine.due(now_s)
     beacon = engine.due_beacon(now_s)
+    if public is not None:
+        # Public sees every crossed item, even while local delivery keeps failing.
+        public.offer(engine.due(now_s, limit=None), beacon)
+    try:
+        _deliver_local(engine, ground_client, cursor, now_s, items, beacon)
+    finally:
+        if public is not None:
+            public.flush(now_s)
+
+
+def _deliver_local(engine, ground_client, cursor, now_s, items, beacon) -> None:
     if not items and beacon is None:
         return
-    try:
-        post_ground(ground_client, "", beacon, items)
-    except LinkDown:
-        engine.mark_failed(now_s)
-        return
+    if ground_client is not None:
+        try:
+            post_ground(ground_client, "", beacon, items)
+        except LinkDown:
+            engine.mark_failed(now_s)
+            return
     engine.mark_delivered([i.id for i in items], now_s)
     if items:
         save_cursor(cursor, max(i.id for i in items))
