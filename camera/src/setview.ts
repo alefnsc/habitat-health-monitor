@@ -2,7 +2,7 @@ import type { Tracker } from "../../vendor/ground-truth/demo/src/pose/source";
 import type { PageState } from "./main";
 import { COPY } from "./copy";
 import { createRecorder, recordingProblem } from "./pose";
-import { ENVIRONMENT_MENU, analyseRecording, gNoteText, inputProblemText, resultView, toRepMessages } from "./reps";
+import { ENVIRONMENT_MENU, EXERCISE_MENU, analyseRecording, exerciseCaption, gNoteText, inputProblemText, parseExercise, resultView, toRepMessages, type Exercise } from "./reps";
 import { createSequencer } from "./seq";
 import { createSetState } from "./set";
 import { endSession, framesForSet, postRep, postRepsWithRetry, startSession, unloadGuard, type CrewId } from "./session";
@@ -23,6 +23,9 @@ export function mountSet(host: HTMLElement, page: PageState): void {
 
   const crew = h("select", { id: "crew" });
   for (const [id, label] of [["crew-a", "Crew A"], ["crew-b", "Crew B"], ["crew-c", "Crew C"]]) crew.append(h("option", { value: id, text: label }));
+  // No default pick: a forgotten choice must not label the set.
+  const exSel = h("select", { id: "exercise" }, h("option", { value: "", text: COPY["exercise.pick"], selected: "", disabled: "" }));
+  for (const e of EXERCISE_MENU) exSel.append(h("option", { value: e.id, text: e.label }));
   const mass = h("input", { id: "mass", type: "number", min: "0.1", max: "500", step: "0.1", value: "10" });
   const env = h("select", { id: "env" });
   for (const e of ENVIRONMENT_MENU) env.append(h("option", { value: String(e.g), text: e.label }));
@@ -42,9 +45,12 @@ export function mountSet(host: HTMLElement, page: PageState): void {
   let sessionId: string | null = null;
   let g = 9.81;
   let massKg = 10;
+  let exercise: Exercise = "curl";
 
   start.addEventListener("click", async () => {
     msg.textContent = "";
+    const picked = parseExercise(exSel.value);
+    if (!picked) { msg.textContent = COPY["exercise.needed"]; return; }
     const ns = setState.nextSet();
     g = Number(env.value);
     massKg = Number(mass.value);
@@ -52,8 +58,9 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     if (ns.needsCalibration) { msg.textContent = "Calibrate the scale first."; return; }
     if (problem) { msg.textContent = problem; return; }
     try {
-      const s = await startSession({ mass_kg: massKg, g, crew: crew.value as CrewId });
+      const s = await startSession({ mass_kg: massKg, g, crew: crew.value as CrewId, exercise: picked });
       sessionId = s.session;
+      exercise = picked;
       sessionOut.textContent = s.session;
     } catch (e) {
       msg.textContent = e instanceof Error ? e.message : String(e);
@@ -62,6 +69,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     recorder = createRecorder();
     tracker = page.record((s) => recorder.push(s), (e) => (msg.textContent = String(e)));
     start.setAttribute("disabled", "");
+    exSel.setAttribute("disabled", "");
     stop.removeAttribute("disabled");
   });
 
@@ -69,6 +77,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     tracker?.stop();
     stop.setAttribute("disabled", "");
     start.removeAttribute("disabled");
+    exSel.removeAttribute("disabled");
     if (!sessionId) return;
     const id = sessionId;
     void endSession(id).catch(() => {});
@@ -80,11 +89,12 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     const outcome = analyseRecording(frames, inputs, { id, title: "Camera set" });
     const view = resultView(outcome);
     if (view.rows.length) {
-      const table = h("table", {}, h("tr", {}, ...["Rep", COPY["result.peak"], COPY["result.work"], COPY["result.workEcc"], COPY["result.tCon"], COPY["result.tEcc"], COPY["result.rom"], ""].map((t) => h("th", { text: t }))));
+      const table = h("table", {}, h("caption", { text: exerciseCaption(exercise) }), h("tr", {}, ...["Rep", COPY["result.peak"], COPY["result.work"], COPY["result.workEcc"], COPY["result.tCon"], COPY["result.tEcc"], COPY["result.rom"], ""].map((t) => h("th", { text: t }))));
       for (const r of view.rows) {
         table.append(h("tr", {}, h("td", { text: String(r.rep) }), h("td", { text: r.peakN.toFixed(1) }), h("td", { text: r.workJ.toFixed(1) }), h("td", { text: r.eccJ.toFixed(1) }), h("td", { text: r.tConS.toFixed(2) }), h("td", { text: r.tEccS.toFixed(2) }), h("td", { text: r.romM.toFixed(2) }), h("td", {}, h("span", { text: r.badge }), ...r.notes.map((n) => h("div", { text: n })))));
       }
       results.append(table);
+      results.append(h("p", { text: COPY["exercise.note"] }));
       results.append(h("p", { text: gNoteText(g) }));
     }
     if (view.grade) results.append(h("p", { text: `${COPY["result.grade"]}: ${view.grade}` }));
@@ -92,7 +102,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     if (outcome.kind === "analysed") {
       const anchor = recorder.firstFramePerfMs ?? performance.now();
       const msgs = toRepMessages({ ok: true, reps: outcome.reps.map((r) => r.rep) }, {
-        session: id, g, mass_kg: massKg, boot: seq.boot, seq, firstFramePerfMs: anchor, nowPerfMs: performance.now(),
+        session: id, exercise, g, mass_kg: massKg, boot: seq.boot, seq, firstFramePerfMs: anchor, nowPerfMs: performance.now(),
       });
       sendOut.textContent = `${COPY["set.sent"]} 0 of ${msgs.length}`;
       const r = await postRepsWithRetry(msgs, (m) => postRep(m), {
@@ -108,7 +118,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
 
   host.replaceChildren(
     h("h2", { text: "Set" }),
-    h("div", {}, h("label", { for: "crew", text: "Crew " }), crew, " ", h("label", { for: "mass", text: "Mass (kg) " }), mass, " ", h("label", { for: "env", text: "Environment " }), env),
+    h("div", {}, h("label", { for: "crew", text: "Crew " }), crew, " ", h("label", { for: "exercise", text: `${COPY["exercise.label"]} ` }), exSel, " ", h("label", { for: "mass", text: "Mass (kg) " }), mass, " ", h("label", { for: "env", text: "Environment " }), env),
     h("p", { text: COPY["env.note"] }),
     h("div", {}, start, " ", stop),
     sessionOut, msg, results, sendOut,

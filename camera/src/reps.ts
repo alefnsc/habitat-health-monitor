@@ -6,6 +6,19 @@ import type { Sequencer } from "./seq";
 
 export { analyseRecording };
 
+// Picked by the astronaut before the set: wrist-tracked vertical lifts only (no squat, the body mass moves).
+export type Exercise = "curl" | "overhead_press" | "row";
+
+export const EXERCISE_MENU: { id: Exercise; label: string }[] = (["curl", "overhead_press", "row"] as const).map((id) => ({
+  id,
+  label: COPY[`exercise.${id}`],
+}));
+
+export const parseExercise = (value: string): Exercise | null => EXERCISE_MENU.find((e) => e.id === value)?.id ?? null;
+
+export const exerciseCaption = (id: Exercise): string =>
+  COPY["result.exercise"].replace("{label}", EXERCISE_MENU.find((e) => e.id === id)?.label ?? id);
+
 export interface RepMessage {
   v: 1;
   node: "camera";
@@ -27,10 +40,12 @@ export interface RepMessage {
   t_con_ms: number;
   t_ecc_ms: number;
   t_turn_ms: number;
+  exercise: Exercise;
 }
 
 export interface RepContext {
   session: string;
+  exercise: Exercise;
   g: number;
   mass_kg: number;
   boot: number;
@@ -68,6 +83,7 @@ export function toRepMessages(result: { ok: true; reps: RepResult[] } | { ok: fa
       t_con_ms: turn - t0,
       t_ecc_ms: t1 - turn,
       t_turn_ms: turn,
+      exercise: ctx.exercise,
     };
   });
 }

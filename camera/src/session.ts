@@ -1,7 +1,7 @@
 import { framesOf, pickRecordedSide, type WristSample } from "../../vendor/ground-truth/demo/src/pose/landmarks";
 import type { PoseFrame } from "@ground-truth/capture";
 import { COPY } from "./copy";
-import type { RepMessage } from "./reps";
+import type { Exercise, RepMessage } from "./reps";
 
 export class ApiError extends Error {
   status: number;
@@ -24,6 +24,7 @@ export interface Session {
   ended_at: string | null;
   camera_reps: number;
   load_cell_reps: number;
+  exercise: Exercise | null;
 }
 
 export interface PostResult {
@@ -58,7 +59,7 @@ async function send<T>(path: string, body: unknown, fetchImpl: typeof fetch): Pr
 }
 
 // No `session` field: the hub generates s-<epoch_ms> (D5).
-export const startSession = (body: { mass_kg: number; g: number; crew?: CrewId }, fetchImpl: typeof fetch = fetch): Promise<Session> =>
+export const startSession = (body: { mass_kg: number; g: number; crew?: CrewId; exercise?: Exercise }, fetchImpl: typeof fetch = fetch): Promise<Session> =>
   send<Session>("/api/sessions", body, fetchImpl);
 
 export const endSession = (session: string, fetchImpl: typeof fetch = fetch): Promise<Session> =>

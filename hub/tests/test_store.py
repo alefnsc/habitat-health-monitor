@@ -202,3 +202,42 @@ def test_old_reps_table_is_migrated(tmp_path):
     assert {"work_ecc_j", "t_con_ms", "t_ecc_ms", "t_turn_ms"} <= cols
     row, _ = s2.insert_rep(parse_rep(rep_msg(seq=2, rep=2, t_turn_ms=1500)), T0)
     assert row.t_turn_ms == 1500
+
+
+def test_rep_exercise_round_trip(tmp_path):
+    s = make(tmp_path)
+    row, _ = s.insert_rep(parse_rep(rep_msg(exercise="row")), T0)
+    assert row.exercise == "row"
+    assert s.reps_for_session("s1")[0].to_dict()["exercise"] == "row"
+    old, _ = s.insert_rep(parse_rep(rep_msg(seq=2, rep=2)), T0)
+    assert old.exercise is None
+
+
+def test_session_exercise_round_trip(tmp_path):
+    s = make(tmp_path)
+    assert s.insert_session("s1", 10, 9.81, None, T0, exercise="curl")
+    assert s.insert_session("s2", 10, 9.81, None, T0)
+    assert s.session_row("s1")[6] == "curl"
+    assert s.session_row("s2")[6] is None
+
+
+def test_old_tables_get_exercise_columns(tmp_path):
+    p = tmp_path / "old.db"
+    c = sqlite3.connect(p)
+    c.executescript(
+        "CREATE TABLE sessions (session TEXT PRIMARY KEY, mass_kg REAL NOT NULL,"
+        " g REAL NOT NULL, crew TEXT, started_at TEXT NOT NULL, ended_at TEXT);"
+        "INSERT INTO sessions (session, mass_kg, g, started_at)"
+        " VALUES ('old', 10, 9.81, '2026-11-14T12:00:00.000Z');"
+    )
+    c.commit()
+    c.close()
+    s = Store(p)
+    assert s.session_row("old")[6] is None
+    s.close()
+    s2 = Store(p)  # idempotent
+    for table in ("reps", "sessions"):
+        cols = {row[1] for row in s2.conn.execute(f"PRAGMA table_info({table})")}
+        assert "exercise" in cols
+    row, _ = s2.insert_rep(parse_rep(rep_msg(exercise="curl")), T0)
+    assert row.exercise == "curl"

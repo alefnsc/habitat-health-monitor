@@ -98,6 +98,8 @@ FLAGS: frozenset[str] = frozenset(
 CREWS: frozenset[str] = frozenset({"crew-a", "crew-b", "crew-c"})
 SYMPTOM_CODES: frozenset[str] = frozenset({"headache", "fatigue", "nausea", "poor_sleep", "none"})
 REP_SOURCES: frozenset[str] = frozenset({"camera", "load_cell"})
+# Exercises the astronaut picks on the camera page: wrist-tracked vertical lifts only.
+EXERCISES: frozenset[str] = frozenset({"curl", "overhead_press", "row"})
 
 REASON_CODES: tuple[str, ...] = (
     "bad_json",
@@ -163,6 +165,7 @@ class Rep:
     t_con_ms: int | None = None
     t_ecc_ms: int | None = None
     t_turn_ms: int | None = None
+    exercise: str | None = None
 
 
 _READING_FIELDS = (
@@ -349,6 +352,12 @@ def parse_rep(raw: bytes | str | dict, *, max_bytes: int | None = None) -> Rep:
     turn = msg.get("t_turn_ms")
     if turn is not None and not (msg["t0_ms"] <= turn <= msg["t1_ms"]):
         raise ContractError("bad_value:t_turn_ms")
+    exercise = msg.get("exercise")
+    if exercise is not None:
+        if not isinstance(exercise, str):
+            raise ContractError("bad_type:exercise")
+        if exercise not in EXERCISES:
+            raise ContractError("bad_value:exercise")
 
     def opt(x: Any) -> float | None:
         return None if x is None else float(x)
@@ -374,6 +383,7 @@ def parse_rep(raw: bytes | str | dict, *, max_bytes: int | None = None) -> Rep:
         t_con_ms=msg.get("t_con_ms"),
         t_ecc_ms=msg.get("t_ecc_ms"),
         t_turn_ms=turn,
+        exercise=exercise,
     )
 
 
@@ -412,5 +422,5 @@ def rep_to_dict(r: Rep) -> dict:
         "peak_n": r.peak_n, "work_j": r.work_j, "rom_m": r.rom_m, "g": r.g,
         "mass_kg": r.mass_kg, "t0_ms": r.t0_ms, "t1_ms": r.t1_ms,
         "work_ecc_j": r.work_ecc_j, "t_con_ms": r.t_con_ms, "t_ecc_ms": r.t_ecc_ms,
-        "t_turn_ms": r.t_turn_ms,
+        "t_turn_ms": r.t_turn_ms, "exercise": r.exercise,
     }  # fmt: skip

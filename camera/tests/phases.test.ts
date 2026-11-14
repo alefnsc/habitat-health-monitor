@@ -13,7 +13,7 @@ const ok = (reps: RepResult[]): SessionResult =>
   ({ ok: true, reps, totalPositiveWorkJ: 0, maxPeakForceN: 0, quality: {}, provenance: { confidence: "MEDIUM" } }) as unknown as SessionResult;
 const ctx = () => ({
   session: "s-1794657600000", g: 9.81, mass_kg: 10, boot: 1794657600, seq: createSequencer(1794657600),
-  firstFramePerfMs: 1000, nowPerfMs: 9000,
+  firstFramePerfMs: 1000, nowPerfMs: 9000, exercise: "curl" as const,
 });
 
 describe("phase split (D39)", () => {
