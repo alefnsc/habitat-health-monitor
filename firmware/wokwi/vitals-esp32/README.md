@@ -17,6 +17,10 @@ chip's front end, or of any person: any heart rate or SpO2 shown here is a simul
 
 ## Open it on wokwi.com
 
+Saved project (same seven files as this folder at commit 8863ad6): https://wokwi.com/projects/480680478751478785
+
+To rebuild it from scratch:
+
 1. Start a new **ESP32** project (Arduino).
 2. Make these seven files in the project and paste the contents from this folder
    (`firmware/wokwi/vitals-esp32/`):
