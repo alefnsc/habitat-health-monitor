@@ -9,6 +9,7 @@ import { appliesToCrew, applySnapshot } from "./model/status";
 import { board } from "./state";
 import { renderEntry } from "./views/entry";
 import { renderFood } from "./views/food";
+import { renderExercise } from "./views/exercise";
 import { renderHistory } from "./views/history";
 import { loadBoard, renderStatus } from "./views/status";
 import { connectWs, wsUrl } from "./ws";
@@ -70,6 +71,7 @@ export function mountApp(root: HTMLElement): void {
     });
     else if (cur === "entry") renderEntry(screen);
     else if (cur === "history") dispose = renderHistory(screen);
+    else if (cur === "exercise") dispose = renderExercise(screen);
     else if (cur === "food") dispose = renderFood(screen);
     else screen.append(el("p", { text: COPY["screen.pending"] }));
   };
