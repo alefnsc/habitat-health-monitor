@@ -137,10 +137,15 @@ def load_token(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def is_loopback_redirect(redirect_uri: str) -> bool:
+    parts = urlsplit(redirect_uri)
+    return parts.scheme == "http" and parts.hostname in LOOPBACK and bool(parts.port)
+
+
 def wait_for_redirect(redirect_uri: str, timeout_s: float = 300) -> str:
     """Serve one GET on the loopback redirect URI and return the full URL it was called with."""
     parts = urlsplit(redirect_uri)
-    if parts.scheme != "http" or parts.hostname not in LOOPBACK or not parts.port:
+    if not is_loopback_redirect(redirect_uri):
         raise AuthError(f"{redirect_uri} is not a local http redirect; paste the URL instead")
     got: list[str] = []
 
