@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Habitat hub + cabin node setup for a Raspberry Pi 3 Model B on Raspberry Pi OS 64-bit (Bookworm).
+# Habitat hub setup for a Raspberry Pi 3 Model B on Raspberry Pi OS 64-bit (Bookworm).
+# D40: the Pi is the hub host only; cabin-1 comes from the UNO I/O board over USB serial.
 # NOT YET RUN ON HARDWARE. Read docs/pi-setup.md first; run as your normal user (it uses sudo).
 # Safe to run again: each step checks before changing anything.
 #   scripts/pi-setup.sh [--no-services]    (--no-services stops after the Python environment)
@@ -95,22 +96,23 @@ grep -q '^CABIN_I2C_BUS=' .env || printf 'CABIN_I2C_BUS=1\nCABIN_DHT_GPIO=\nCABI
 sudo systemctl enable mosquitto
 sudo systemctl restart mosquitto
 
-say "6/6 systemd units for the hub and cabin-1"
+say "6/6 systemd units for the hub (habitat-cabin is installed, not enabled: D40)"
 for unit in habitat-hub habitat-cabin; do
   sed -e "s|@USER@|$RUN_USER|g" -e "s|@REPO@|$REPO|g" "scripts/systemd/$unit.service.in" \
     | sudo tee "/etc/systemd/system/$unit.service" >/dev/null
 done
 sudo systemctl daemon-reload
-sudo systemctl enable habitat-hub habitat-cabin
+sudo systemctl enable habitat-hub
+sudo systemctl disable --now habitat-cabin 2>/dev/null || true  # a pre-D40 install had it enabled
 sudo systemctl restart habitat-hub
-printf 'cabin-1 starts after the reboot, once /dev/i2c-1 exists.\n'
+printf 'habitat-cabin is installed but not enabled: in D40 cabin-1 comes from the UNO (set HUB_SERIAL_PORT in .env).\n'
 
 cat <<DONE
 
 Done. Next:
   1. sudo reboot            (I2C, 1-Wire and the new groups take effect)
-  2. i2cdetect -y 1         (expect 0x76 or 0x77 for the BME280 and 0x62 for the SCD41)
-  3. systemctl status habitat-hub habitat-cabin
-  4. mosquitto_sub -h 127.0.0.1 -u $MQTT_USER -P '<password>' -v -t 'habitat/v1/r/cabin-1'
+  2. ls /dev/ttyACM* /dev/ttyUSB*   (the UNO I/O board), then set HUB_SERIAL_PORT in .env
+  3. sudo systemctl restart habitat-hub && systemctl status habitat-hub
+  4. curl -s http://127.0.0.1:8000/api/status   (cabin-1 readings every 5 s once the UNO is on USB)
 Not yet run on hardware: report anything that differs.
 DONE

@@ -2,20 +2,36 @@
 
 Educational prototype, not a medical device. Four sketches, one shared library, exact versions below.
 
-## Which hardware runs what (decisions D35 and D36) [confirm: hardware member to review before submission]
+## Which hardware runs what (decision D40, amends D35-D37 and D39) [confirm: hardware member to review before submission]
 
-| Board | Runs | Link |
-|---|---|---|
-| Raspberry Pi 3 Model B | hub, Mosquitto, and the `cabin-1` node (`nodes/cabin_pi`, Python: BME280, SCD41, optional DHT22) | MQTT on localhost; see `docs/pi-setup.md` |
-| UNO+WiFi R3, ATmega328P side | `exercise-uno`: HX711 load cell, servo, buzzer, optional NTC `skin_temp` and KY-039 `hr` (hobby estimates) | USB serial to the Pi, 250000 baud |
-| UNO+WiFi R3, ESP8266 side | optional Wi-Fi bridge for the ATmega's lines; not built, may be cut | MQTT |
-| Battery-powered Wemos D1 mini (ESP8266, `esp8266:esp8266:d1_mini`; ESP32 also builds) | `vitals-esp32` sketch (the directory name is kept): MAX30102 0x57, MLX90614 GY-906 0x5A, MPU6050 0x68 on one 3.3 V I2C bus (decision D37; the DS18B20 is dropped) | Wi-Fi/MQTT |
-| NodeMCU Amica (ESP8266), USB-powered | `tilt-esp8266` sketch (`tilt-1`, D39): KY-017 sealed tilt switch on D5, debounced 30 ms, readings to the hub over Wi-Fi/MQTT | Wi-Fi/MQTT |
-| Wokwi | two twins, because Wokwi has no ESP8266: the Uno rig (`firmware/wokwi/uno-rig/`) and the vitals node on an ESP32 with simulated MAX30102 and MLX90614 chips (`firmware/wokwi/vitals-esp32/`) | n/a |
+Two microcontrollers and a hub computer.
 
-`firmware/cabin-esp8266` is still the empty skeleton. The Pi node replaces it, and it stays only as a fallback.
+| Board | Runs | Wired to it | Link |
+|---|---|---|---|
+| Raspberry Pi 3 Model B (or a laptop) | hub, Mosquitto, console | nothing on the header | see `docs/pi-setup.md` |
+| UNO+WiFi R3, ATmega328P side | `exercise-uno` | DHT11 on D2 (`cabin-1`: `cabin_temp`, `cabin_rh`, hobby estimates), buzzer on D8 (`alarm`) | USB serial to the hub, 250000 baud |
+| UNO+WiFi R3, ESP8266 side | nothing (DIP switch: "USB to ATmega328") | — | — |
+| NodeMCU (ESP8266) on 2 × AA/AAA cells | `tilt-esp8266` (D39) | sealed KY-017 tilt pod on D5 (`tilt-1`: `tilt`) | Wi-Fi/MQTT |
+| Wokwi | two twins, because Wokwi has no ESP8266: the UNO I/O board (`firmware/wokwi/uno-rig/`) and the tilt-1 node on an ESP32 stand-in (`firmware/wokwi/tilt-esp32/`) | — | — |
 
-### Vitals node (D37)
+**`exercise-uno` build flags** (D40 defaults: only what is wired):
+- `ENABLE_DHT=1`;
+- `ENABLE_HX711=0`, `ENABLE_SERVO=0`, `ENABLE_NTC=0`, `ENABLE_KY039=0`;
+- `BUZZER_PASSIVE=0` (1 for a passive buzzer);
+- `DHT_TYPE=DHT11`.
+
+Turn a channel on only when its module is wired. A floating HX711 DOUT reads as "ready" and would stream noise.
+
+**Commands:** `servo`, `cal` and `tare` answer `ok:false, err:"not_built"` while their part is compiled out. `alarm` always works.
+
+**Tilt node power:** 2 × AA/AAA cells in series on **3V3** and **GND**. Never VIN, never more than 3.6 V on 3V3, and no
+CR2032 coin cell, because it cannot supply the Wi-Fi bursts. See `firmware/tilt-esp8266/README.md`.
+
+**Archived** (kept as design history, with their tests):
+- `firmware/vitals-esp32` and `firmware/wokwi/vitals-esp32`: wearable vitals now come from a ring import;
+- `firmware/cabin-esp8266`: the empty skeleton.
+
+### Vitals node (D37, archived in D40)
 
 One 3.3 V I2C bus at 100 kHz (the MLX90614's SMBus limit; the plan's 400 kHz would not work with it):
 - ESP8266 (Wemos D1 mini, same GPIO4/GPIO5): SDA D2 (GPIO4), SCL D1 (GPIO5). Keep D3, D4 and D8 free (boot pins). ESP32: default Wire pins.
@@ -88,9 +104,9 @@ The ESP cores are LGPL-2.1 but bundle Espressif's radio firmware blobs. These ar
 | Adafruit BusIO | 1.17.4 | MIT | cabin |
 | Sensirion I2C SCD4x | 1.1.0 | BSD-3-Clause | cabin |
 | Sensirion Core | 0.7.3 | BSD-3-Clause | cabin |
-| DHT sensor library | 1.4.7 | MIT | cabin |
-| HX711 Arduino Library (bogde) | 0.7.5 | MIT | exercise |
-| Servo | 1.3.0 | LGPL-2.1-or-later | exercise |
+| DHT sensor library | 1.4.7 | MIT | exercise (DHT11, D40), cabin |
+| HX711 Arduino Library (bogde) | 0.7.5 | MIT | exercise, only with `ENABLE_HX711=1` |
+| Servo | 1.3.0 | LGPL-2.1-or-later | exercise, only with `ENABLE_SERVO=1` |
 | BH1750 (optional F9) | 1.3.0 | MIT | cabin, only if built |
 | MFRC522 (optional F17) | 1.4.12 | Unlicense | cabin, only if built |
 | Adafruit MLX90614 Library (optional F18) | 2.1.7 | BSD-3-Clause | cabin, only if built |
@@ -126,19 +142,29 @@ c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test
 
 Each prints `ok`.
 
-Host tests for the tilt node (no board needed) and, below, the exercise rig (Uno) with its optional analog channels:
+UNO I/O board (`exercise-uno`) host tests, builds and the Wokwi twin:
+
+```
+firmware/exercise-uno/test/run_host_tests.sh          # pure logic: line format, commands, cal maths, NTC, pulse
+arduino-cli compile --fqbn arduino:avr:uno firmware/exercise-uno   # D40 defaults: DHT11 + buzzer
+arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_HX711=1 -DENABLE_SERVO=1" firmware/exercise-uno
+firmware/wokwi/uno-rig/check_sync.sh                  # the Wokwi copy must equal exercise-uno.ino
+firmware/wokwi/uno-rig/build.sh                       # the twin build (sketch + wokwi_twin.h)
+```
+
+Every optional channel defaults to 0 except the DHT11 (D40); turn one on only when its module is wired.
+`seq` is one counter shared by all channels and both nodes (`cabin-1`, `exercise-1`), so each node's `seq` has gaps.
+
+tilt-1 node and its Wokwi twin:
 
 ```
 firmware/tilt-esp8266/test/run_host_tests.sh            # pure logic: tilt debounce, heartbeat, serial line
-firmware/exercise-uno/test/run_host_tests.sh          # pure logic: line format, commands, cal maths, NTC, pulse
-arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_NTC=0 -DENABLE_KY039=0" firmware/exercise-uno
-firmware/wokwi/uno-rig/check_sync.sh                  # the Wokwi copy must equal exercise-uno.ino
+arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
+arduino-cli compile --fqbn esp32:esp32:esp32 --library firmware/libraries/HabitatNode firmware/tilt-esp8266   # the Wokwi stand-in
+firmware/wokwi/tilt-esp32/check_sync.sh
 ```
 
-`ENABLE_NTC` and `ENABLE_KY039` default to 1; turn a channel off when its module is not wired, so a floating analog pin never publishes numbers.
-`seq` is one counter shared by all channels, so `load_raw` has gaps when NTC or KY-039 lines are interleaved.
-
-Vitals node:
+Vitals node (archived in D40, kept as design history):
 
 ```
 cp firmware/vitals-esp32/secrets.example.h firmware/vitals-esp32/secrets.h   # fill in; git-ignored

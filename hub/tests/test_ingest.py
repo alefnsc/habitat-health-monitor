@@ -86,6 +86,18 @@ def test_expected_node(ing, store):
     assert res.reason == "topic_node_mismatch" and store.count("readings") == 0
 
 
+def test_expected_node_collection(ing, store):
+    both = {"exercise-1", "cabin-1"}
+    ok = ing.ingest_reading(msg(node="cabin-1"), channel="serial", expected_node=both)
+    assert ok.reason is None
+    bad = ing.ingest_reading(
+        msg(node="vitals-1", ind="hr", unit="bpm", val=70, dev="MAX30102"),
+        channel="serial",
+        expected_node=both,
+    )
+    assert bad.reason == "topic_node_mismatch"
+
+
 def test_ingest_internal(ing, store, events):
     r = Reading(1, "nasa", 0, 1763121600000, 0, "space_weather", 2.0, "level", "nasa", "DONKI",
                 ("ok",), None, None)  # fmt: skip

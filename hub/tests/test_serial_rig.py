@@ -65,7 +65,7 @@ def test_ack_line(ing, caplog):
 
 def test_wrong_node_and_too_long(ing):
     st = new_stats()
-    bad = json.dumps(msg(ind="load_raw", unit="N", dev="HX711")).encode()
+    bad = json.dumps(msg(node="vitals-1", ind="load_raw", unit="N", dev="HX711")).encode()
     assert handle_line(ing, bad + b"\n", st).reason == "topic_node_mismatch"
     assert handle_line(ing, b"{" + b"x" * 300 + b"}\n", st).reason == "too_large"
 
@@ -126,7 +126,8 @@ def test_reconnect(ing, settings, clock, monkeypatch):
     time.sleep(0.2)
     link.stop()
     assert link.stats()["reconnects"] == 1 and link.stats()["stored"] > 2
-    assert [True] in seen and [False] in seen and seen[-1] == [True]
+    # D40: exercise-1 and cabin-1 share the cable, so both flip together
+    assert [True, True] in seen and [False, False] in seen and seen[-1] == [True, True]
 
 
 def test_disabled_without_port(settings, clock):
@@ -145,3 +146,22 @@ def test_capture_contract():
         if raw.startswith("{") and '"type"' not in raw:
             r = parse_reading(raw, max_bytes=256)
             assert (r.node, r.ind) == ("exercise-1", "load_raw")
+
+
+def test_cabin_line_accepted_and_tilt_rejected_over_serial(ing):
+    # D40: the UNO also reads the DHT11, so cabin-1 lines share the serial link
+    st = new_stats()
+    cab = msg(node="cabin-1", boot=1, seq=1, ind="cabin_temp", unit="C", val=23.0, dev="DHT11")
+    assert handle_line(ing, json.dumps(cab).encode() + b"\n", st).reason is None
+    tilt = msg(node="tilt-1", boot=1, seq=2, ind="tilt", unit="state", val=1, dev="KY017")
+    res = handle_line(ing, json.dumps(tilt).encode() + b"\n", st)
+    assert res.reason == "topic_node_mismatch"
+
+
+def test_serial_nodes_go_online_and_offline_together(ing, settings, clock):
+    reg = NodeRegistry(clock)
+    link = RigLink(settings, ing, nodes=reg)
+    link._set_online(True)
+    assert {s.node for s in reg.snapshot() if s.online} == {"exercise-1", "cabin-1"}
+    link._set_online(False)
+    assert not any(s.online for s in reg.snapshot())

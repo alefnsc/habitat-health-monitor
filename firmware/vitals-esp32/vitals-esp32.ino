@@ -1,3 +1,4 @@
+// ARCHIVED (decision D40): wearable vitals come from a ring import; there is no vitals board. Kept as design history.
 // vitals node (F11, F12 as MLX90614, F13a; decision D37): one battery-powered board, one 3.3 V I2C bus.
 //   MAX30102 0x57  hr every 1 s, spo2 every 4 s (estimates from the Maxim reference algorithm)
 //   MLX90614 0x5A  skin_temp every 2 s, non-contact object temperature (hobby estimate)

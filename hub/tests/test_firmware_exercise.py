@@ -15,11 +15,8 @@ TWIN = FW / "wokwi" / "uno-rig"
 
 # Pin names from docs.wokwi.com/parts/<type>, read 2026-11-14.
 PART_PINS = {
-    "wokwi-hx711": {"VCC", "DT", "SCK", "GND"},
-    "wokwi-servo": {"PWM", "V+", "GND"},
+    "wokwi-dht22": {"VCC", "SDA", "NC", "GND"},
     "wokwi-buzzer": {"1", "2"},
-    "wokwi-ntc-temperature-sensor": {"VCC", "OUT", "GND"},
-    "wokwi-potentiometer": {"VCC", "SIG", "GND"},
 }
 UNO_PINS = {"5V", "GND.1", "GND.2", "GND.3", "A0", "A1"} | {str(i) for i in range(14)}
 
@@ -34,7 +31,7 @@ def test_twin_diagram_parts_and_pins() -> None:
     d = json.loads((TWIN / "diagram.json").read_text())
     parts = {p["id"]: p for p in d["parts"]}
     assert len(parts) == len(d["parts"]), "duplicate part ids"
-    assert {p["type"] for p in d["parts"]} >= {"wokwi-arduino-uno", *PART_PINS, "wokwi-text"}
+    assert {p["type"] for p in d["parts"]} == {"wokwi-arduino-uno", *PART_PINS, "wokwi-text"}
     for a, b, *_ in d["connections"]:
         for end in (a, b):
             pid, pin = end.split(":", 1)
@@ -47,28 +44,36 @@ def test_twin_diagram_parts_and_pins() -> None:
 def test_twin_wiring_matches_sketch_pins() -> None:
     d = json.loads((TWIN / "diagram.json").read_text())
     wires = {frozenset(c[:2]) for c in d["connections"]}
-    for a, b in [
-        ("hx711:DT", "uno:3"),
-        ("hx711:SCK", "uno:4"),
-        ("servo:PWM", "uno:6"),
-        ("buzzer:2", "uno:8"),
-        ("ntc:OUT", "uno:A0"),
-        ("pulse_pot:SIG", "uno:A1"),
-    ]:
+    for a, b in [("dht:SDA", "uno:2"), ("buzzer:2", "uno:8")]:
         assert frozenset((a, b)) in wires, (a, b)
-    for line in (
-        "PIN_HX_DOUT = 3, PIN_HX_SCK = 4, PIN_SERVO = 6, PIN_BUZZER = 8",
-        "PIN_NTC = A0, PIN_PULSE = A1",
-    ):
-        assert line in SKETCH.read_text()
+    assert "PIN_DHT = 2," in SKETCH.read_text() and "PIN_BUZZER = 8;" in SKETCH.read_text()
 
 
 def test_twin_simulated_parts_are_labelled() -> None:
     d = json.loads((TWIN / "diagram.json").read_text())
     texts = " ".join(p["attrs"]["text"] for p in d["parts"] if p["type"] == "wokwi-text").lower()
-    assert "pulse stand-in (simulated)" in texts
-    assert "skin probe stand-in (simulated)" in texts
-    assert "load cell (simulated)" in texts
+    assert "dht11 stand-in (simulated)" in texts
+    assert "not a medical device" in texts
+    # D40: the load cell and pulse module are not on the board
+    assert "load cell" not in texts and "pulse" not in texts
+
+
+def test_twin_header_sets_stand_ins_and_bench_has_none() -> None:
+    h = (TWIN / "wokwi_twin.h").read_text()
+    assert "#define DHT_TYPE DHT22" in h and "#define BUZZER_PASSIVE 1" in h
+    assert '__has_include("wokwi_twin.h")' in SKETCH.read_text()
+    assert not (SKETCH.parent / "wokwi_twin.h").exists()  # the bench build keeps DHT11 + active
+
+
+def test_sketch_defaults_match_d40() -> None:
+    text = SKETCH.read_text()
+    for flag, val in [
+        ("ENABLE_DHT", 1), ("ENABLE_HX711", 0), ("ENABLE_SERVO", 0),
+        ("ENABLE_NTC", 0), ("ENABLE_KY039", 0), ("BUZZER_PASSIVE", 0),
+    ]:  # fmt: skip
+        assert f"#ifndef {flag}\n#define {flag} {val}\n#endif" in text, flag
+    assert "#define DHT_TYPE DHT11" in text
+    assert 'NODE_CABIN[] = "cabin-1"' in text
 
 
 def test_twin_toml_points_at_arduino_cli_output() -> None:
@@ -78,7 +83,15 @@ def test_twin_toml_points_at_arduino_cli_output() -> None:
 
 def test_twin_libraries_cover_sketch_includes() -> None:
     libs = (TWIN / "libraries.txt").read_text()
-    assert "HX711" in libs and "Servo" in libs
+    assert "DHT sensor library@1.4.7" in libs
+    assert "HX711" not in libs and "Servo" not in libs  # compiled out in the D40 defaults
+
+
+def test_readme_lists_every_paste_file() -> None:
+    readme = (TWIN / "README.md").read_text()
+    for f in ("sketch.ino", "wokwi_twin.h", "diagram.json", "libraries.txt"):
+        assert f in readme and (TWIN / f).is_file(), f
+    assert "480675272836723713" in readme
 
 
 def test_no_company_name_in_rig_files() -> None:

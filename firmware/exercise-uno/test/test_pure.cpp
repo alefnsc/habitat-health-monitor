@@ -25,7 +25,7 @@ int main() {
     assert(fmtVal(o, 3, 1234.5f) == 0);
   }
   {  // reading line is valid contract-v1 JSON with the expected fields
-    size_t n = buildReading(buf, sizeof buf, 3, 41, "load_raw", 98.1f, "N", "HX711", QF_SETTLING);
+    size_t n = buildReading(buf, sizeof buf, "exercise-1", 3, 41, "load_raw", 98.1f, "N", "HX711", QF_SETTLING);
     assert(n == strlen(buf));
     JsonDocument d;
     assert(!deserializeJson(d, buf));
@@ -38,11 +38,11 @@ int main() {
     assert(!d["type"].is<const char*>());
   }
   {  // clean reading carries ["ok"]; several flags keep contract order
-    buildReading(buf, sizeof buf, 1, 1, "hr", 72, "bpm", "KY039", 0);
+    buildReading(buf, sizeof buf, "exercise-1", 1, 1, "hr", 72, "bpm", "KY039", 0);
     JsonDocument d;
     assert(!deserializeJson(d, buf));
     assert(d["q"].size() == 1 && std::string(d["q"][0].as<const char*>()) == "ok");
-    buildReading(buf, sizeof buf, 1, 1, "load_raw", 1, "N", "HX711", QF_SETTLING | QF_OUT_OF_RANGE);
+    buildReading(buf, sizeof buf, "exercise-1", 1, 1, "load_raw", 1, "N", "HX711", QF_SETTLING | QF_OUT_OF_RANGE);
     JsonDocument e;
     assert(!deserializeJson(e, buf));
     assert(e["q"].size() == 2 && std::string(e["q"][0].as<const char*>()) == "settling" &&
@@ -50,16 +50,16 @@ int main() {
   }
   {  // bench_line_budget: boot 999, seq 7 digits (35 h at 80 SPS), |val| < 1000 N and one flag
      // stay within 160 bytes; absurd counters and three flags stay within the 256-byte contract limit
-    size_t n = buildReading(buf, sizeof buf, 999, 9999999, "load_raw", -999.99f, "N", "HX711",
+    size_t n = buildReading(buf, sizeof buf, "exercise-1", 999, 9999999, "load_raw", -999.99f, "N", "HX711",
                             QF_OUT_OF_RANGE);
     assert(n > 0 && n <= 160);
-    n = buildReading(buf, sizeof buf, 999, 9999999, "load_raw", -999.99f, "N", "HX711",
+    n = buildReading(buf, sizeof buf, "exercise-1", 999, 9999999, "load_raw", -999.99f, "N", "HX711",
                      QF_SETTLING | QF_OUT_OF_RANGE);
     assert(n > 0 && n <= 175);  // both flags together are rare (a calibrated cell, first 2 s, overloaded)
-    n = buildReading(buf, sizeof buf, 4294967295u, 4294967295u, "load_raw", -9999999.0f, "N",
+    n = buildReading(buf, sizeof buf, "exercise-1", 4294967295u, 4294967295u, "load_raw", -9999999.0f, "N",
                      "HX711", QF_SETTLING | QF_OUT_OF_RANGE | QF_NO_CONTACT);
     assert(n > 0 && n <= 256);
-    assert(buildReading(buf, 40, 1, 1, "load_raw", 1, "N", "HX711", 0) == 0);  // too small
+    assert(buildReading(buf, 40, "exercise-1", 1, 1, "load_raw", 1, "N", "HX711", 0) == 0);  // too small
   }
   {  // acks
     buildAck(buf, sizeof buf, "servo", true, NULL);
@@ -164,6 +164,27 @@ int main() {
       h.push((uint16_t)(512 + 40.0 * sin(ph)), t);
     }
     assert(h.settling());
+  }
+  {  // node per line: the DHT11 lines say cabin-1 (D40)
+    buildReading(buf, sizeof buf, "cabin-1", 2, 7, "cabin_temp", 23.5f, "C", "DHT11", 0);
+    JsonDocument d;
+    assert(!deserializeJson(d, buf));
+    assert(str(d, "node") == "cabin-1" && str(d, "ind") == "cabin_temp" && str(d, "dev") == "DHT11");
+    assert(fabs(d["val"].as<double>() - 23.5) < 1e-4);
+    size_t n = buildReading(buf, sizeof buf, "cabin-1", 999, 9999999, "cabin_rh", 100.0f, "%", "DHT11",
+                            QF_OUT_OF_RANGE);
+    assert(n > 0 && n <= 160);
+  }
+  {  // DHT11 range flags (datasheet ranges 0..50 C and 20..90 %RH); NaN is out of range
+    assert(rangeFlag(23.0f, 0, 50) == 0 && rangeFlag(0.0f, 0, 50) == 0 && rangeFlag(50.0f, 0, 50) == 0);
+    assert(rangeFlag(-1.0f, 0, 50) == QF_OUT_OF_RANGE && rangeFlag(51.0f, 0, 50) == QF_OUT_OF_RANGE);
+    assert(rangeFlag(95.0f, 20, 90) == QF_OUT_OF_RANGE && rangeFlag(NAN, 0, 50) == QF_OUT_OF_RANGE);
+  }
+  {  // three failed reads in a row before no_contact; a good read resets the count
+    FailCount f; memset(&f, 0, sizeof f);
+    assert(!f.fail() && !f.fail() && f.fail() && f.fail());
+    f.ok();
+    assert(!f.fail());
   }
   puts("ok");
   return 0;

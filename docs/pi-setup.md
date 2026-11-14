@@ -1,21 +1,27 @@
-# Raspberry Pi 3 setup: hub and cabin node
+# Raspberry Pi 3 setup: the hub host
 
 Status: **not yet run on hardware.** `scripts/pi-setup.sh` passes `shellcheck` and `bash -n` and the cabin
 node is host-tested with a fake I2C bus, but nothing here has been run on a Pi. Expect to fix small things.
 Educational prototype, not a medical device.
 
-Decision D36: a Raspberry Pi 3 Model B v1.2 is the hub host (Mosquitto, FastAPI hub, console) and also
-runs the `cabin-1` node, reading the cabin sensors on its own I2C bus. The Uno side of the UNO+WiFi
-board stays the exercise rig, connected to the Pi by USB serial. The vitals node stays on a battery
-board (safety rule: nothing body-worn is cabled to the Pi, see `docs/safety-checklist.md`).
+Decision D40 (amends D36): a Raspberry Pi 3 Model B v1.2 is the hub host (Mosquitto, FastAPI hub, console) and
+nothing else. **Nothing is wired to its 40-pin header.** The UNO I/O board (the ATmega328P side of the UNO+WiFi board,
+with a DHT11 and the buzzer) plugs into a Pi USB port. It sends `cabin-1` readings over serial and takes the alarm
+commands. The `tilt-1` NodeMCU runs on its own cells and reaches the broker over Wi-Fi. A laptop can run the same hub
+when the Pi is not ready: `scripts/dev-up.sh`.
 
 ## What you need
 
 - Pi 3 Model B v1.2 with Raspberry Pi OS **64-bit, Bookworm** (Lite is fine), SSH or a screen, network.
-- A good 5 V 2.5 A supply. An SCD41 measurement peaks near 200 mA and a weak rail causes brown-outs.
-- BME280 and SCD41 modules (3.3 V). Optional DHT22 with a 10 kOhm pull-up on the data line.
+- A good 5 V 2.5 A micro-USB supply and a microSD card (8 GB or more).
+- The UNO I/O board on a USB cable (it is powered from the Pi).
 
-## Wiring (Pi 40-pin header)
+## Optional, not used in D40: cabin sensors on the Pi header
+
+Only if a BME280 or SCD41 is fitted later. `nodes/cabin_pi` also publishes as `cabin-1`, so run it **instead of** the
+UNO's DHT11, never next to it: build `exercise-uno` with `-DENABLE_DHT=0`, then
+`sudo systemctl enable --now habitat-cabin`. Two sources on one node would collide on `(node, boot, seq)`, and the
+hub would drop one copy as a duplicate.
 
 | Pi pin | Signal | Goes to |
 |---|---|---|
@@ -49,29 +55,30 @@ What it does, in order:
    `/etc/mosquitto/conf.d/habitat.conf` sets the listener on 1883 with `allow_anonymous false`. No secret is
    committed, and none is on a command line.
 6. Renders `scripts/systemd/habitat-hub.service.in` and `habitat-cabin.service.in` into
-   `/etc/systemd/system/`, enables them and starts the hub.
+   `/etc/systemd/system/`, then enables and starts the hub. `habitat-cabin` is installed but **not enabled** (D40).
 
 `scripts/pi-setup.sh --no-services` stops after step 4 (Python environment only).
 
 ## After the reboot
 
 ```bash
-i2cdetect -y 1                                   # 0x76 or 0x77, and 0x62
-systemctl status habitat-hub habitat-cabin
-journalctl -u habitat-cabin -f                   # "# bme280 at 0x76", "# cabin-1 boot=1"
-mosquitto_sub -h 127.0.0.1 -u habitat -P '<password>' -v -t 'habitat/v1/r/cabin-1'
+ls /dev/ttyACM* /dev/ttyUSB*                     # the UNO I/O board; put it in HUB_SERIAL_PORT in .env
+sudo systemctl restart habitat-hub && systemctl status habitat-hub
+journalctl -u habitat-hub -f                     # "rig connected on /dev/ttyACM0"
+curl -s http://127.0.0.1:8000/api/status         # cabin-1 readings every 5 s
+mosquitto_sub -h 127.0.0.1 -u habitat -P '<password>' -v -t 'habitat/v1/r/tilt-1'
 ```
 
-Without a broker, bench-check the sensors alone: `.venv/bin/python -m nodes.cabin_pi --stdout`.
+Set the UNO+WiFi DIP switch to "USB to ATmega328" (`firmware/README.md`) before plugging it in.
 
 Things the script does not do:
 - Build the console: copy `console/dist` (and `camera/dist`) to the Pi from the machine that built them [confirm].
-- Set `HUB_SERIAL_PORT` (usually `/dev/ttyACM0` or `/dev/ttyUSB0` for the Uno rig) in `.env`. Edit it, then
+- Set `HUB_SERIAL_PORT` (usually `/dev/ttyACM0` or `/dev/ttyUSB0` for the UNO I/O board) in `.env`. Edit it, then
   `sudo systemctl restart habitat-hub`.
 - Open the Pi to the internet. The broker listens on the local network only because the router does not
   forward it; keep it that way.
 
-## Cabin node, `nodes/cabin_pi`
+## Cabin node on the Pi, `nodes/cabin_pi` (optional, not enabled in D40)
 
 Node `cabin-1`, contract v1, `src` `hobby`. Readings go to `habitat/v1/r/cabin-1` every 5 s at QoS 1;
 `habitat/v1/status/cabin-1` carries a retained `online`, with a last will of `offline`.
