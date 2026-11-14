@@ -1,0 +1,106 @@
+[
+  {
+    "id": "intake_sodium_max",
+    "ind": "intake_sodium_mg",
+    "window": "dose_24h",
+    "ok": {
+      "max": 2300
+    },
+    "watch": {
+      "max": 3500
+    },
+    "act": {},
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): JSC-67378 Rev 1, sodium; JSC-E-DAA-TN71711",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target."
+  },
+  {
+    "id": "intake_sodium_floor",
+    "ind": "intake_sodium_mg",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 1500
+    },
+    "watch": {
+      "min": 500
+    },
+    "act": {},
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): JSC-67378 Rev 1, sodium; JSC-E-DAA-TN71711",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_iron_max",
+    "ind": "intake_iron_mg",
+    "window": "dose_24h",
+    "ok": {
+      "max": 8
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): JSC-67378 Rev 1, iron",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target."
+  },
+  {
+    "id": "intake_water_floor",
+    "ind": "intake_water_ml",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 2100
+    },
+    "watch": {
+      "min": 2000
+    },
+    "act": {},
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): JSC-67378 Rev 1, fluid",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_vitd_floor",
+    "ind": "intake_vitd_ug",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 25
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): NASA-STD-3001 Vol 2 Rev F Table 7.1-2",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_calcium_floor",
+    "ind": "intake_calcium_mg",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 1000
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): JSC-67378 Rev 1, calcium",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_calcium_max",
+    "ind": "intake_calcium_mg",
+    "window": "dose_24h",
+    "ok": {
+      "max": 2500
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_std",
+    "source_ref": "PLACEHOLDER (verify): JSC-67378 Rev 1, calcium upper limit",
+    "url": "https://ntrs.nasa.gov/citations/20205008306",
+    "note": "PLACEHOLDER. PLACEHOLDER, NOT APPROVED: planning value from NU8, awaiting M1 review. Reference value for a population, not a personal target."
+  }
+]
