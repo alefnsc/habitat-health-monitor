@@ -18,6 +18,22 @@
       "attrs": {}
     },
     {
+      "type": "chip-nimh-pack",
+      "id": "pack",
+      "top": 120,
+      "left": -190,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_pack",
+      "top": 90,
+      "left": -260,
+      "attrs": {
+        "text": "4×AA Ni-MH pack (drawing only, 4.8–5.6 V): + → VIN, − → GND"
+      }
+    },
+    {
       "type": "wokwi-text",
       "id": "label_board",
       "top": -60,
@@ -32,7 +48,7 @@
       "top": 0,
       "left": 180,
       "attrs": {
-        "text": "KY-017 stand-in (simulated): slide right = tilted (tilt 1), left = at rest (tilt 0). GPIO14 = D5 on the NodeMCU"
+        "text": "KY-017 stand-in (simulated): pin 1 = + (3V3), middle = S (D5 / GPIO14), pin 3 = − (GND). Slide right = tilted."
       }
     },
     {
@@ -65,9 +81,17 @@
   ],
   "connections": [
     [
-      "esp:D14",
+      "tilt_sw:1",
+      "esp:3V3",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
       "tilt_sw:2",
-      "green",
+      "esp:D14",
+      "yellow",
       [
         "v0"
       ]
@@ -75,6 +99,22 @@
     [
       "tilt_sw:3",
       "esp:GND.1",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pack:+",
+      "esp:VIN",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pack:-",
+      "esp:GND.2",
       "black",
       [
         "v0"

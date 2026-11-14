@@ -16,6 +16,22 @@ replace the old exercise rig (HX711, servo, NTC, pulse potentiometer) in place. 
 renamed "UNO I/O board twin". The four files match commit 8a38e07 byte for byte (SHA-256 checked after a reload).
 A run showed `cabin-1` lines every 5 s, `alarm` acked `ok:true`, and `servo` answered `not_built`.
 
+## Real bench wiring (also written on the Wokwi canvas)
+
+The canvas is the wiring map for the real board, an Arduino UNO R3 or the UNO+WiFi's ATmega side. Both run the same
+`arduino:avr:uno` firmware. Wire colours on the canvas: red 5V, black GND, green D2, purple D8.
+
+| Module | Module pin | Board pin |
+|---|---|---|
+| DHT11 module | S (data) | D2 |
+| DHT11 module | + | 5V |
+| DHT11 module | − | GND |
+| Buzzer module | S | D8 |
+| Buzzer module | − | GND |
+| Buzzer module | middle pin | 5V, **only if it is printed + or VCC** |
+
+Match each pin by its printed letter, not by its position: module batches order their pins differently.
+
 ## What runs where (also written on the Wokwi canvas)
 
 - **Code:** the same sketch as the real board, `firmware/exercise-uno/exercise-uno.ino`. `hub/tests/test_firmware_exercise.py`
