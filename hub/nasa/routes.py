@@ -8,9 +8,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
+from hub.nasa.actuator import NoActiveAlert
 from hub.nasa.spaceweather import space_weather_state
 from hub.nasa.state import NasaState, get_nasa_state
 
@@ -44,7 +46,7 @@ def get_space_weather(state: NasaState = Depends(get_nasa_state)) -> dict[str, A
         "stale": st.stale,
         "route": st.route,
         "events": st.events,
-        "ack": getattr(state.policy, "ack", None) if state.policy is not None else None,
+        "ack": _ack_body(getattr(state.policy, "ack", None)),
         "disclaimer": DISCLAIMER,
     }
 
@@ -108,3 +110,27 @@ def get_iss_reference(state: NasaState = Depends(get_nasa_state)) -> Any:  # noq
             "career_fraction": est.career_fraction if est else None,
         },
     }
+
+
+def _ack_body(ack: Any) -> Any:
+    if ack is None or isinstance(ack, dict):
+        return ack
+    return {"crew": ack.crew, "at": _z(ack.at), "event_id": ack.event_id}
+
+
+class AckRequest(BaseModel):
+    crew: str
+
+
+@router.post("/api/nasa/space-weather/ack", response_model=None)
+def post_space_weather_ack(body: AckRequest, state: NasaState = Depends(get_nasa_state)) -> Any:  # noqa: B008
+    if body.crew not in state.crews:
+        raise HTTPException(status_code=422, detail="unknown crew")
+    policy = state.policy
+    try:
+        if policy is None:
+            raise NoActiveAlert
+        ack = policy.acknowledge(body.crew, state.clock())
+    except NoActiveAlert:
+        return JSONResponse({"reason": "no_active_alert"}, status_code=409)
+    return {"ack": _ack_body(ack)}
