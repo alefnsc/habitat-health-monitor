@@ -89,12 +89,14 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     if (view.grade) results.append(h("p", { text: `${COPY["result.grade"]}: ${view.grade}` }));
     for (const n of view.notes) results.append(h("p", { text: n }));
     if (outcome.kind === "analysed") {
+      const anchor = recorder.firstFramePerfMs ?? performance.now();
       const msgs = toRepMessages({ ok: true, reps: outcome.reps.map((r) => r.rep) }, {
-        session: id, g, mass_kg: massKg, boot: seq.boot, seq, firstFramePerfMs: recorder.firstFramePerfMs ?? performance.now(), nowPerfMs: performance.now(),
+        session: id, g, mass_kg: massKg, boot: seq.boot, seq, firstFramePerfMs: anchor, nowPerfMs: performance.now(),
       });
       sendOut.textContent = `${COPY["set.sent"]} 0 of ${msgs.length}`;
       const r = await postRepsWithRetry(msgs, (m) => postRep(m), {
         intervalMs: 2000, maxTries: 15,
+        age: (m) => Math.max(0, Math.round(performance.now() - (anchor + m.t1_ms))),
         onPending: (n) => { pendingReps = n; sendOut.textContent = `${COPY["set.sent"]} ${msgs.length - n} of ${msgs.length}, ${n} waiting`; },
       });
       pendingReps = r.pending;
