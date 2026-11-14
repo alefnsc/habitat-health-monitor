@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from hub.contract import CREWS, ContractError
 from hub.ingest import Ingestor
 from hub.store import Store, StoredReading, StoredRep
+from hub.tilt import tilt_for_rep
 from hub.timeutil import parse_iso, to_iso
 
 log = logging.getLogger("hub.exercise")
@@ -297,6 +298,7 @@ def pairs_for(store: Store, manager: SessionManager, session: str) -> dict | Non
                 "camera": c.to_dict() if c else None,
                 "load_cell": lc.to_dict() if lc else None,
                 "work_cell_j": work_cell_j(store, sess, lc, c),
+                "tilt": tilt_for_rep(store, c) if c else None,
             }
         )
     return {"session": session, "pairs": pairs}
