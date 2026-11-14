@@ -94,11 +94,13 @@ class DoseWriter:
             return
         if self._written_day == est.mission_day:
             return
+        # +1 ms: readings are unique on (node, boot, seq) across indicators, and the
+        # space_weather reading from the same poll cycle uses the plain epoch ms.
         reading = Reading(
             v=1,
             node="nasa",
             boot=0,
-            seq=int(now.timestamp() * 1000),
+            seq=int(now.timestamp() * 1000) + 1,
             age_ms=0,
             ind="rad_dose_cum",
             val=est.effective_msv,

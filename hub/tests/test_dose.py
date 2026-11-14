@@ -70,7 +70,7 @@ async def test_tick_writes_reading(tmp_path):
     assert (r.node, r.boot, r.seq, r.ind, r.val, r.unit, r.src, r.dev, r.q, r.crew) == (
         "nasa",
         0,
-        1794657600000,
+        1794657600001,
         "rad_dose_cum",
         90.0,
         "mSv",
