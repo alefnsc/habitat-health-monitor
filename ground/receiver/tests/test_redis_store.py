@@ -89,3 +89,26 @@ def test_purge_crew():
     items = [x["id"] for a in s.arrivals_after(0, 10) for x in a.items]
     assert items == [2]
     assert s.summary().stored == 1
+
+
+def test_arrivals_cap_trims_beacon_only_arrivals():
+    s = RedisStore(MemoryKV(), cap_arrivals=2, clock=lambda: 1.0)
+    for _ in range(3):
+        s.ingest({"state": "contact"}, [], T)
+    assert [a.arrival_id for a in s.arrivals_after(0, 10)] == [2, 3]
+    assert s.summary().arrivals == 2
+
+
+def test_within_batch_duplicates_are_stored_once():
+    s, _ = make()
+    r = s.ingest(None, [it(2), it(2), it(1)], T)
+    assert r.stored == 2
+    assert [x["id"] for x in s.arrivals_after(0, 10)[0].items] == [1, 2]
+
+
+def test_purge_crew_survives_null_payload():
+    s, _ = make()
+    s.ingest(None, [{"id": 1, "kind": "reading", "created_at": T, "payload": None}, it(2, "crew-a")], T)
+    assert s.purge_crew("crew-a") == 1
+    items = [x["id"] for a in s.arrivals_after(0, 10) for x in a.items]
+    assert items == [1]

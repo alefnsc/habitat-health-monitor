@@ -23,14 +23,27 @@ def _empty_state() -> dict[str, Any]:
 
 
 class RedisStore:
+    """Ground store for the public site, one sorted-set member per arrival.
+
+    Assumptions:
+    - Single writer. One link simulator posts arrivals sequentially, purge_crew is run by hand,
+      and the read-modify-write in ingest and purge_crew is not atomic.
+    - Items arrive in increasing outbox-id order. Ids at or below max_id are ignored (the
+      idempotency rule), and duplicates within one batch are stored once.
+    - On this public store, summary().missing_ids counts outbox ids that are not stored
+      (filtered by consent, purged or lost). It is not a loss metric.
+    """
+
     def __init__(
         self,
         kv: KV,
         cap_items: int = 20000,
         retention_s: int = 48 * 3600,
         clock: Callable[[], float] = time.time,
+        cap_arrivals: int = 4000,
     ) -> None:
         self.kv, self.cap, self.retention, self.clock = kv, cap_items, retention_s, clock
+        self.cap_arrivals = cap_arrivals
 
     def _load(self) -> dict[str, Any]:
         raw = self.kv.get(STATE)
@@ -42,7 +55,11 @@ class RedisStore:
 
     def _trim(self, st: dict[str, Any], now: float) -> None:
         idx = st["index"]
-        while idx and (st["stored"] > self.cap or now - idx[0][2] > self.retention):
+        while idx and (
+            st["stored"] > self.cap
+            or st["arrivals"] > self.cap_arrivals
+            or now - idx[0][2] > self.retention
+        ):
             aid, n, _, _ = idx.pop(0)
             self.kv.zremrangebyscore(ARRIVALS, aid, aid)
             st["stored"] -= n
@@ -53,7 +70,13 @@ class RedisStore:
     def ingest(self, beacon: dict | None, items: list[dict], received_at: str) -> IngestResult:
         st, now = self._load(), self.clock()
         top = st["max_id"]
-        new = sorted((i for i in items if top is None or i["id"] > top), key=lambda i: i["id"])
+        seen: set[int] = set()
+        unique: list[dict] = []
+        for i in items:
+            if i["id"] not in seen:
+                seen.add(i["id"])
+                unique.append(i)
+        new = sorted((i for i in unique if top is None or i["id"] > top), key=lambda i: i["id"])
         aid = st["next_arrival_id"]
         arrival = Arrival(aid, received_at, beacon, new)
         self.kv.zadd(ARRIVALS, {json.dumps(asdict(arrival)): aid})
@@ -86,7 +109,9 @@ class RedisStore:
         counts: dict[int, tuple[int, int | None]] = {}
         for a in rows:
             before = len(a["items"])
-            a["items"] = [x for x in a["items"] if x.get("payload", {}).get("crew") != crew]
+            a["items"] = [
+                x for x in a["items"] if (x.get("payload") or {}).get("crew") != crew
+            ]
             removed += before - len(a["items"])
             kept[json.dumps(a)] = a["arrival_id"]
             counts[a["arrival_id"]] = (
