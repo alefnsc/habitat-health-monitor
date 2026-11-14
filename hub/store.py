@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS assessments (
 );
 CREATE INDEX IF NOT EXISTS assessments_reading ON assessments(reading_id);
 CREATE INDEX IF NOT EXISTS assessments_rule ON assessments(rule_id, ind, crew, id);
+CREATE TABLE IF NOT EXISTS food_log (
+  meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  crew TEXT, eaten_at TEXT NOT NULL, created_at TEXT NOT NULL, items TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS food_log_eaten ON food_log(eaten_at);
 CREATE TABLE IF NOT EXISTS outbox (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   kind TEXT NOT NULL, created_at TEXT NOT NULL, payload TEXT NOT NULL
@@ -115,6 +120,18 @@ class StoredRep:
     t1_ms: int
     measured_at: str
     received_at: str
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class MealRow:
+    meal_id: int
+    crew: str | None
+    eaten_at: str
+    created_at: str
+    items: list[dict]
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -378,6 +395,32 @@ class Store:
         with self.lock:
             row = self.conn.execute(sql, args).fetchone()
         return row[0] if row else None
+
+    # food log (NU14)
+
+    def insert_meal(
+        self, crew: str | None, eaten_at: datetime, created_at: datetime, items: list[dict]
+    ) -> int:
+        with self.lock:
+            cur = self.conn.execute(
+                "INSERT INTO food_log (crew, eaten_at, created_at, items) VALUES (?,?,?,?)",
+                (crew, to_iso(eaten_at), to_iso(created_at), json.dumps(items)),
+            )
+            self.conn.commit()
+            return int(cur.lastrowid)
+
+    def meals_between(self, start: datetime, end: datetime, crew: str | None) -> list[MealRow]:
+        """Meals with start < eaten_at <= end, ascending; crew None returns every crew."""
+        sql = "SELECT meal_id, crew, eaten_at, created_at, items FROM food_log"
+        sql += " WHERE eaten_at>? AND eaten_at<=?"
+        args: list = [to_iso(start), to_iso(end)]
+        if crew is not None:
+            sql += " AND crew=?"
+            args.append(crew)
+        sql += " ORDER BY eaten_at, meal_id"
+        with self.lock:
+            rows = self.conn.execute(sql, args).fetchall()
+        return [MealRow(r[0], r[1], r[2], r[3], json.loads(r[4])) for r in rows]
 
     # outbox
 
