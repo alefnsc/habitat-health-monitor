@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "resolveJsonModule": true,
+    "types": ["node", "vite/client"],
+    "paths": {
+      "@ground-truth/physics": ["../vendor/ground-truth/physics/src/index.ts"],
+      "@ground-truth/capture": ["../vendor/ground-truth/capture/src/index.ts"]
+    }
+  },
+  "include": ["src", "tests", "../vendor/ground-truth/demo/src"]
+}

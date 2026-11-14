@@ -1,0 +1,4 @@
+url=https://github.com/alefnsc/ground-truth
+commit=0940adab0ec33dd5127d7efdacfbc6744a31e4d6
+vendored_at=2026-11-14
+paths=packages/physics packages/capture packages/demo/src/pose/source.ts packages/demo/src/pose/landmarks.ts packages/demo/src/model/captureFlow.ts packages/demo/src/model/scenarios.ts packages/demo/scripts/copy-wasm.mjs packages/demo/scripts/verify-model.mjs packages/demo/public/models/NOTICE.md LICENSE
