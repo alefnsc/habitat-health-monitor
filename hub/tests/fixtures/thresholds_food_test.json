@@ -1,0 +1,10 @@
+[
+  {"id": "t_na_max", "ind": "intake_sodium_mg", "window": "dose_24h",
+   "ok": {"max": 2300}, "watch": {"max": 3500}, "act": {},
+   "source_kind": "nasa_std", "source_ref": "test fixture, not a nutrition claim",
+   "url": "", "note": "test fixture"},
+  {"id": "t_na_floor", "ind": "intake_sodium_mg", "window": "sum_24h_floor",
+   "ok": {"min": 1500}, "watch": {"min": 500}, "act": {},
+   "source_kind": "nasa_std", "source_ref": "test fixture, not a nutrition claim",
+   "url": "", "note": "test fixture"}
+]
