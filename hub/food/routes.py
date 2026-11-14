@@ -11,7 +11,10 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
 from hub.food.catalog import Catalog
+from hub.food.day import food_day
 from hub.food.log import FoodError, FoodWriter, MealItem, MealRequest
+from hub.food.references import load_references
+from hub.timeutil import parse_iso
 
 router = APIRouter()
 
@@ -98,3 +101,38 @@ async def post_log(request: Request) -> JSONResponse:
         },
         status_code=201,
     )
+
+
+def _ctx(request: Request):
+    return getattr(request.app.state, "ctx", None)
+
+
+@router.get("/api/food/references")
+def get_references(request: Request) -> JSONResponse:
+    ctx = _ctx(request)
+    if ctx is None:
+        return JSONResponse({"reason": "food_unavailable"}, status_code=503)
+    try:
+        return JSONResponse(load_references(ctx.settings.food_references_path))
+    except ValueError as e:
+        return JSONResponse({"reason": f"references_unavailable: {e}"}, status_code=503)
+
+
+@router.get("/api/food/day")
+def get_day(request: Request) -> JSONResponse:
+    ctx = _ctx(request)
+    if ctx is None:
+        return JSONResponse({"reason": "food_unavailable"}, status_code=503)
+    q = request.query_params
+    crew = q.get("crew") or None
+    if crew is not None and crew not in ctx.settings.crews:
+        return _reject("bad_crew")
+    try:
+        at = parse_iso(q["at"]) if q.get("at") else request.app.state.clock()
+    except ValueError:
+        return _reject("bad_time")
+    body = food_day(
+        ctx.store, ctx.assessor, crew, at, crews=ctx.settings.crews,
+        rules=getattr(ctx.assessor, "rules", []),
+    )  # fmt: skip
+    return JSONResponse(body)
