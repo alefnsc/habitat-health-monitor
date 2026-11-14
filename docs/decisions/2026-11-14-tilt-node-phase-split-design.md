@@ -27,7 +27,7 @@ Each exercise rep reports its concentric work, its eccentric work and the time s
 ## 4. Firmware: `firmware/tilt-esp8266`
 
 - Reads D5 with a 30 ms software debounce. The debounce is a pure function with host tests, following the `exercise-uno` pattern.
-- Publishes contract-v1 readings over MQTT to the hub's broker: `{node: "tilt-1", ind: "tilt", unit: "state", val: 0 | 1, dev: "KY017", src: "hobby", age_ms, seq, boot}`. Value 1 means the switch is tripped.
+- Publishes contract-v1 readings over MQTT to the hub's broker: `{node: "tilt-1", ind: "tilt", unit: "state", val: 0 | 1, dev: "KY017", src: "hobby", age_ms, seq, boot}`. Value 1 means the switch is tripped. The firmware reports the raw state; the pod is mounted so that it reads 0 with the weight at rest, and the bench check confirms this on the console before a set.
 - Sends one reading on every debounced change, plus a heartbeat with the current state every 10 s.
 
 ## 5. Data flow
@@ -44,22 +44,28 @@ Each exercise rep reports its concentric work, its eccentric work and the time s
 
 ### 5.2 Camera (`camera/src`)
 
-From the same per-interval work terms the camera already computes, w = (m·g + F_device)·Δy + ½m(v_j² − v_i²):
+No new trajectory code. The vendored capture library already returns, for each rep, `positiveWorkJ` and `negativeWorkJ` (the sums of the per-interval work w = (m·g + F_device)·Δy + ½m(v_j² − v_i²) over w > 0 and w < 0) and `liftDurationS` (movement onset to the first sample at the top level). The camera only maps them into the rep message:
 
-- **Phase:** each interval's phase comes from the sign of the vertical wrist velocity. Intervals with |v| < 0.05 m/s keep the previous phase.
-- **Concentric work:** the sum of w > 0. This equals today's `work_j`, which is unchanged.
-- **Eccentric work:** the sum of |w| over w < 0, sent as `work_ecc_j`.
-- **Times:** `t_con_ms` and `t_ecc_ms` are the summed interval durations of each phase. `t_turn_ms` is the time of the change from concentric to eccentric, at the top of the rep.
+- **Concentric work:** `work_j` = `positiveWorkJ`, unchanged.
+- **Eccentric work:** `work_ecc_j` = −`negativeWorkJ` (≥ 0).
+- **Turnaround:** `t_turn_ms` = round((`startS` + `liftDurationS`) × 1000), on the same timebase as `t0_ms` and `t1_ms`.
+- **Times:** `t_con_ms` = `t_turn_ms` − `t0_ms`; `t_ecc_ms` = `t1_ms` − `t_turn_ms`. The eccentric time includes any pause at the top.
 - **g:** the configured menu value, shown as "configured g".
+- **Display:** the camera's result table after a set shows concentric J, eccentric J and both phase times. (The console has no per-rep view; it shows only daily exercise totals.)
 
 ### 5.3 Hub
 
-- **One clock.** Each event is placed at hub time = receive time − `age_ms`. For a camera rep, the turnaround is at hub_t1 − (t1_ms − t_turn_ms), where hub_t1 = receive time − `age_ms` (the camera anchors `age_ms` on t1).
-- **Join.** A `tilt` change is a `tilt-1` reading whose value differs from the previous one; heartbeats that repeat the value are not changes. The node is not session-aware, so the time window alone selects the changes. For each camera rep, take the change nearest the turnaround within the rep window ± 500 ms. Store:
-  - `tilt_offset_ms` = tilt change time − camera turnaround time (signed);
-  - `tilt_seen` = false when no change falls in the window (the weight never passed the trip angle).
-- **Validation.** `hub/validation.py` adds a tilt-vs-camera summary next to the load-cell vs camera one: the share of reps with `tilt_seen`, and the median and 95th percentile of |offset|.
-- **Console.** The rep row shows concentric J, eccentric J, the phase times and the offset.
+- **One clock.** The store already keeps `measured_at` = receive time − `age_ms` for every reading and rep. The camera anchors `age_ms` on t1, so a camera rep's t1 is at its `measured_at`, its t0 is at `measured_at` − (t1_ms − t0_ms), and its turnaround is at `measured_at` − (t1_ms − t_turn_ms).
+- **What the switch shows.** The switch trips when the weight tilts past its trip angle and releases when it comes back. In a rep it therefore *rises* (0 → 1) during the concentric phase and *falls* (1 → 0) during the eccentric phase. It does not flip at the top.
+- **Changes.** A `tilt` change is a `tilt-1` reading whose value differs from the previous one. Heartbeats that repeat the value are not changes. The node is not session-aware, so the time window alone selects the changes.
+- **Witness per camera rep.** Look for rise → fall pairs with both changes inside [t0 − 500 ms, t1 + 500 ms] in hub time. When there are several, take the pair whose midpoint is nearest the camera turnaround. Report:
+  - `seen`: a pair was found (false means the weight never passed the trip angle in that rep);
+  - `turn_inside`: the camera turnaround lies between the rise and the fall;
+  - `offset_ms`: midpoint(rise, fall) − turnaround (signed);
+  - `rise_at` and `fall_at`: the change times.
+- **Computed on read.** The witness is computed when `GET /api/reps` is served (in `pairs_for`), as `pair["tilt"]` for every pair with a camera rep. It is not stored, because a tilt change can arrive after the rep message and the values derive from rows already stored. Only the four camera fields of §5.1 become new rep columns.
+- **Quiet indicator.** `tilt` joins the assessor's ungated set (as `motion` and `load_raw` are), so its readings are stored without an "unknown" assessment each.
+- **Validation.** `hub/validation.py` adds three rows next to the load-cell vs camera ones: the share of camera reps with a tilt witness, the share whose turnaround falls inside the tilt interval, and the median and 95th percentile of |offset|.
 
 ## 6. Safety checklist additions (`docs/safety-checklist.md`)
 
@@ -79,8 +85,9 @@ The vitals node runs on a **Wemos D1 mini** (ESP8266, `esp8266:esp8266:d1_mini`)
 ## 8. Testing
 
 - **Contract:** the new node, dev and ind are accepted. A `tilt` reading with a wrong unit is rejected.
-- **Camera (vitest):** on a synthetic up-and-down trajectory, concentric and eccentric work each come out ≈ m·g·h. The phase times and the turnaround match the synthetic profile, and `work_j` is unchanged.
-- **Hub join:** synthetic times cover a change on time, a late change, a change outside the window (`tilt_seen` false) and two changes in one window (the nearest wins). The signed offset is computed correctly.
+- **Camera (vitest):** from a synthetic rep result, the message carries `work_ecc_j` = −`negativeWorkJ`, the turnaround from `startS` + `liftDurationS`, and phase times that add up to t1 − t0. `work_j` is unchanged.
+- **Hub witness:** synthetic changes cover a rise and fall around the turnaround, a pair late by 300 ms (still seen, offset positive), a pair outside the window (not seen), a rise with no fall (not seen), heartbeats (ignored), and two pairs in one window (the one nearest the turnaround wins).
+- **Store:** the four new rep columns round-trip, and an old database without them is migrated in place.
 - **Firmware:** host tests for the debounce (bounce bursts under 30 ms collapse into one change).
 - **Bench smoke:** five slow reps with the sealed pod on the desk weight. The console shows the split and the offsets, and the validation summary lists the five reps.
 
