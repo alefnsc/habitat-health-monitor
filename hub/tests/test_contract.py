@@ -303,3 +303,16 @@ def test_rep_phase_fields():
     ]
     for m, reason in cases:
         assert reason_of(m, rep=True) == reason
+
+
+def test_rep_exercise_field():
+    # Older reps carry no exercise and still validate.
+    assert parse_rep(REP).exercise is None
+    assert parse_rep(mod(REP, exercise=None)).exercise is None
+    assert rep_to_dict(parse_rep(REP))["exercise"] is None
+    for ex in ("curl", "overhead_press", "row"):
+        r = parse_rep(mod(REP, exercise=ex))
+        assert r.exercise == ex and rep_to_dict(r)["exercise"] == ex
+    assert validate_rep(mod(REP, exercise="squat")) == ["bad_value:exercise"]
+    assert validate_rep(mod(REP, exercise="")) == ["bad_value:exercise"]
+    assert validate_rep(mod(REP, exercise=1)) == ["bad_type:exercise"]

@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS reps (
   peak_n REAL NOT NULL, work_j REAL, rom_m REAL, g REAL NOT NULL, mass_kg REAL NOT NULL,
   t0_ms INTEGER NOT NULL, t1_ms INTEGER NOT NULL,
   measured_at TEXT NOT NULL, received_at TEXT NOT NULL,
-  work_ecc_j REAL, t_con_ms INTEGER, t_ecc_ms INTEGER, t_turn_ms INTEGER,
+  work_ecc_j REAL, t_con_ms INTEGER, t_ecc_ms INTEGER, t_turn_ms INTEGER, exercise TEXT,
   UNIQUE (node, boot, seq)
 );
 CREATE INDEX IF NOT EXISTS reps_session ON reps(session);
@@ -51,7 +51,7 @@ CREATE INDEX IF NOT EXISTS assessments_reading ON assessments(reading_id);
 CREATE INDEX IF NOT EXISTS assessments_rule ON assessments(rule_id, ind, crew, id);
 CREATE TABLE IF NOT EXISTS sessions (
   session TEXT PRIMARY KEY, mass_kg REAL NOT NULL, g REAL NOT NULL, crew TEXT,
-  started_at TEXT NOT NULL, ended_at TEXT
+  started_at TEXT NOT NULL, ended_at TEXT, exercise TEXT
 );
 CREATE TABLE IF NOT EXISTS food_log (
   meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,20 +74,22 @@ _A_COLS = (
 )
 _P_COLS = (
     "id, node, boot, seq, age_ms, type, session, rep, src, peak_n, work_j, rom_m, g, mass_kg, "
-    "t0_ms, t1_ms, measured_at, received_at, work_ecc_j, t_con_ms, t_ecc_ms, t_turn_ms"
+    "t0_ms, t1_ms, measured_at, received_at, work_ecc_j, t_con_ms, t_ecc_ms, t_turn_ms, exercise"
 )
-# Columns added after the first release (D39). Old databases get them through _migrate.
-_REP_PHASE_COLS = (
-    ("work_ecc_j", "REAL"), ("t_con_ms", "INTEGER"), ("t_ecc_ms", "INTEGER"),
-    ("t_turn_ms", "INTEGER"),
+_S_COLS = "session, mass_kg, g, crew, started_at, ended_at, exercise"
+# Columns added after the first release (D39; exercise pick). Old databases get them through _migrate.
+_ADDED_COLS = (
+    ("reps", "work_ecc_j", "REAL"), ("reps", "t_con_ms", "INTEGER"),
+    ("reps", "t_ecc_ms", "INTEGER"), ("reps", "t_turn_ms", "INTEGER"),
+    ("reps", "exercise", "TEXT"), ("sessions", "exercise", "TEXT"),
 )  # fmt: skip
 
 
 def _migrate(conn: sqlite3.Connection) -> None:
-    have = {row[1] for row in conn.execute("PRAGMA table_info(reps)")}
-    for name, kind in _REP_PHASE_COLS:
+    for table, name, kind in _ADDED_COLS:
+        have = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
         if name not in have:
-            conn.execute(f"ALTER TABLE reps ADD COLUMN {name} {kind}")
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {kind}")
 
 
 @dataclass(frozen=True)
@@ -141,6 +143,7 @@ class StoredRep:
     t_con_ms: int | None = None
     t_ecc_ms: int | None = None
     t_turn_ms: int | None = None
+    exercise: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -181,7 +184,7 @@ def _rep_row(row: tuple) -> StoredRep:
         session=row[6], rep=row[7], src=row[8], peak_n=row[9], work_j=row[10], rom_m=row[11],
         g=row[12], mass_kg=row[13], t0_ms=row[14], t1_ms=row[15], measured_at=row[16],
         received_at=row[17], work_ecc_j=row[18], t_con_ms=row[19], t_ecc_ms=row[20],
-        t_turn_ms=row[21],
+        t_turn_ms=row[21], exercise=row[22],
     )  # fmt: skip
 
 
@@ -331,13 +334,13 @@ class Store:
                 cur = self.conn.execute(
                     "INSERT INTO reps (node, boot, seq, age_ms, type, session, rep, src, peak_n,"
                     " work_j, rom_m, g, mass_kg, t0_ms, t1_ms, measured_at, received_at,"
-                    " work_ecc_j, t_con_ms, t_ecc_ms, t_turn_ms)"
-                    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    " work_ecc_j, t_con_ms, t_ecc_ms, t_turn_ms, exercise)"
+                    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         r.node, r.boot, r.seq, r.age_ms, r.type, r.session, r.rep, r.src,
                         r.peak_n, r.work_j, r.rom_m, r.g, r.mass_kg, r.t0_ms, r.t1_ms,
                         measured, to_iso(received_at), r.work_ecc_j, r.t_con_ms, r.t_ecc_ms,
-                        r.t_turn_ms,
+                        r.t_turn_ms, r.exercise,
                     ),
                 )  # fmt: skip
                 self.conn.commit()
@@ -424,14 +427,21 @@ class Store:
     # sessions and reps (H15, H16)
 
     def insert_session(
-        self, session: str, mass_kg: float, g: float, crew: str | None, started_at: datetime
+        self,
+        session: str,
+        mass_kg: float,
+        g: float,
+        crew: str | None,
+        started_at: datetime,
+        exercise: str | None = None,
     ) -> bool:
         """False when the id already exists."""
         with self.lock:
             try:
                 self.conn.execute(
-                    "INSERT INTO sessions (session, mass_kg, g, crew, started_at) VALUES (?,?,?,?,?)",
-                    (session, mass_kg, g, crew, to_iso(started_at)),
+                    "INSERT INTO sessions (session, mass_kg, g, crew, started_at, exercise)"
+                    " VALUES (?,?,?,?,?,?)",
+                    (session, mass_kg, g, crew, to_iso(started_at), exercise),
                 )
                 self.conn.commit()
                 return True
@@ -450,13 +460,12 @@ class Store:
     def session_row(self, session: str) -> tuple | None:
         with self.lock:
             return self.conn.execute(
-                "SELECT session, mass_kg, g, crew, started_at, ended_at FROM sessions"
-                " WHERE session=?",
+                f"SELECT {_S_COLS} FROM sessions WHERE session=?",
                 (session,),
             ).fetchone()
 
     def session_rows(self, active_only: bool = False) -> list[tuple]:
-        sql = "SELECT session, mass_kg, g, crew, started_at, ended_at FROM sessions"
+        sql = f"SELECT {_S_COLS} FROM sessions"
         if active_only:
             sql += " WHERE ended_at IS NULL"
         sql += " ORDER BY started_at DESC, rowid DESC"

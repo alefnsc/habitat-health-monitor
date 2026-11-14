@@ -48,7 +48,7 @@ def test_session_api(client):
     assert first == {
         "session": "s-1794657600000", "mass_kg": 10, "g": 9.81, "crew": "crew-a",
         "started_at": "2026-11-14T12:00:00.000Z", "ended_at": None, "camera_reps": 0,
-        "load_cell_reps": 0,
+        "load_cell_reps": 0, "exercise": None,
     }  # fmt: skip
     assert (
         client.post("/api/sessions", json={"session": "s2", "mass_kg": 5, "g": 1.62}).status_code
@@ -86,6 +86,37 @@ def test_rep_from_stream(client, clock):
     items = client.get("/api/outbox?limit=1000").json()["items"]
     assert [i["kind"] for i in items].count("rep") == 1
     assert client.get("/api/sessions").json()[0]["load_cell_reps"] == 1
+
+
+def test_session_exercise(client):
+    r = client.post(
+        "/api/sessions", json={"session": "s1", "mass_kg": 10, "g": 9.81, "exercise": "curl"}
+    )
+    assert r.status_code == 201 and r.json()["exercise"] == "curl"
+    assert client.get("/api/sessions").json()[0]["exercise"] == "curl"
+    assert client.post("/api/sessions/s1/end").json()["exercise"] == "curl"
+    for exercise, reason in (
+        ("squat", "bad_value:exercise"),
+        ("", "bad_value:exercise"),
+        (5, "bad_type:exercise"),
+    ):
+        r = client.post("/api/sessions", json={"mass_kg": 10, "g": 9.81, "exercise": exercise})
+        assert r.status_code == 422 and r.json()["reason"] == reason
+    r = client.post(
+        "/api/sessions", json={"session": "s2", "mass_kg": 10, "g": 9.81, "exercise": None}
+    )
+    assert r.status_code == 201 and r.json()["exercise"] is None
+
+
+def test_load_cell_rep_takes_session_exercise(client, clock):
+    client.post(
+        "/api/sessions", json={"session": "s1", "mass_kg": 10, "g": 9.81, "exercise": "row"}
+    )
+    feed_rep(client, clock)
+    (rep,) = client.app.state.store.reps_for_session("s1")
+    assert (rep.src, rep.exercise) == ("load_cell", "row")
+    items = client.get("/api/outbox?limit=1000").json()["items"]
+    assert [i["payload"]["exercise"] for i in items if i["kind"] == "rep"] == ["row"]
 
 
 def test_camera_rep_count(client):

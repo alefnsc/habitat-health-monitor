@@ -131,6 +131,14 @@ def test_camera_only_session(client):
     assert p["load_cell"] is None and p["work_cell_j"] is None
 
 
+def test_pairs_carry_exercise(client):
+    start(client)
+    post_rep(client, n=1, exercise="overhead_press")
+    post_rep(client, n=2)
+    pairs = client.get("/api/reps?session=s1").json()["pairs"]
+    assert [p["camera"]["exercise"] for p in pairs] == ["overhead_press", None]
+
+
 def test_unknown_and_missing(client):
     r = client.get("/api/reps?session=nope")
     assert r.status_code == 404 and r.json() == {"reason": "unknown_session"}

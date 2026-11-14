@@ -8,6 +8,7 @@ const SESSION = { session: "s-1794657600000", mass_kg: 10, g: 9.81, crew: "crew-
 const msg = (seq: number): RepMessage => ({
   v: 1, node: "camera", boot: 1, seq, age_ms: 0, type: "rep", session: "s", rep: seq, src: "camera", peak_n: 1, work_j: 1,
   rom_m: 0.5, g: 9.81, mass_kg: 10, t0_ms: 0, t1_ms: 1000, work_ecc_j: 0, t_con_ms: 500, t_ecc_ms: 500, t_turn_ms: 500,
+  exercise: "curl",
 });
 const res = (dup = false): PostResult => ({ id: 1, measured_at: "x", duplicate: dup, results: [] });
 
@@ -24,6 +25,13 @@ describe("session", () => {
     expect(JSON.parse(init.body)).toEqual({ mass_kg: 10, g: 9.81, crew: "crew-a" });
     expect("session" in JSON.parse(init.body)).toBe(false);
     expect(s).toMatchObject({ session: "s-1794657600000", ended_at: null, camera_reps: 0, load_cell_reps: 0 });
+  });
+
+  test("test_start_session_sends_exercise", async () => {
+    const f = vi.fn().mockResolvedValue(json({ ...SESSION, exercise: "row" }, 201));
+    const s = await startSession({ mass_kg: 10, g: 9.81, crew: "crew-a", exercise: "row" }, f as unknown as typeof fetch);
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ mass_kg: 10, g: 9.81, crew: "crew-a", exercise: "row" });
+    expect(s.exercise).toBe("row");
   });
 
   test("test_end_session", async () => {

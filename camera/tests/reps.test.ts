@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { RefusalReason, RepResult, SessionResult } from "@ground-truth/capture";
 import { G_ENV_MS2 } from "@ground-truth/physics";
 import { createSequencer } from "../src/seq";
-import { ENVIRONMENT_MENU, analyseRecording, inputProblemText, refusalText, resultView, toRepMessages } from "../src/reps";
+import { ENVIRONMENT_MENU, EXERCISE_MENU, analyseRecording, exerciseCaption, inputProblemText, parseExercise, refusalText, resultView, toRepMessages } from "../src/reps";
 import { refusalSentences, repNotes } from "../../vendor/ground-truth/demo/src/model/captureFlow";
 import { syntheticSession } from "../../vendor/ground-truth/capture/test/helpers";
 import { ruleBrand, ruleCalories, ruleDiagnosis, ruleNonEnglish, ruleTreatmentDose } from "../../console/tests/honesty";
@@ -17,6 +17,7 @@ const ok = (reps: RepResult[]): SessionResult =>
   ({ ok: true, reps, totalPositiveWorkJ: 0, maxPeakForceN: 0, quality: {}, provenance: { confidence: "MEDIUM" } }) as unknown as SessionResult;
 const ctx = (seq = createSequencer(1794657600)) => ({
   session: "s-1794657600000", g: 9.81, mass_kg: 10, boot: 1794657600, seq, firstFramePerfMs: 1000, nowPerfMs: 9000,
+  exercise: "curl" as const,
 });
 const ALL: RefusalReason[] = ["NO_SCALE", "LOW_FRAME_RATE", "LANDMARK_LOST", "GAP_TOO_LONG", "TOO_SHORT", "NO_REPS"];
 
@@ -106,5 +107,28 @@ describe("reps", () => {
     expect(repNotes(r).length).toBe(2);
     const m = toRepMessages(ok([r]), ctx());
     expect(Object.keys(m[0])).not.toContain("filterLimited");
+  });
+
+  test("test_exercise_menu", () => {
+    // Only wrist-tracked vertical lifts: the body mass does not move, so the vendored physics fits.
+    expect(EXERCISE_MENU.map((e) => e.id)).toEqual(["curl", "overhead_press", "row"]);
+    expect(EXERCISE_MENU.map((e) => e.label)).toEqual(["Dumbbell curl", "Overhead press", "Row"]);
+    for (const e of EXERCISE_MENU) expect(/squat/i.test(`${e.id} ${e.label}`)).toBe(false);
+  });
+
+  test("test_parse_exercise", () => {
+    expect(parseExercise("row")).toBe("row");
+    expect(parseExercise("overhead_press")).toBe("overhead_press");
+    for (const v of ["", "squat", "Row", "curl "]) expect(parseExercise(v)).toBeNull();
+  });
+
+  test("test_rep_carries_exercise", () => {
+    const m = toRepMessages(ok([rep({}), rep({ startS: 4 })]), { ...ctx(), exercise: "row" });
+    expect(m.map((x) => x.exercise)).toEqual(["row", "row"]);
+  });
+
+  test("test_exercise_caption", () => {
+    expect(exerciseCaption("overhead_press")).toBe("Exercise: Overhead press");
+    expect(exerciseCaption("curl")).toBe("Exercise: Dumbbell curl");
   });
 });

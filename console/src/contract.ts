@@ -71,6 +71,9 @@ export interface ReadingMessage {
   code?: SymptomCode;
 }
 
+// Picked on the camera page before a set (wrist-tracked vertical lifts). Older reps have none.
+export type Exercise = "curl" | "overhead_press" | "row";
+
 export interface RepMessage {
   v: 1;
   node: string;
@@ -88,6 +91,7 @@ export interface RepMessage {
   mass_kg: number;
   t0_ms: number;
   t1_ms: number;
+  exercise?: Exercise | null;
 }
 
 export interface AssessmentResult {
@@ -148,6 +152,7 @@ export interface Session {
   ended_at: string | null;
   camera_reps: number;
   load_cell_reps: number;
+  exercise?: Exercise | null;
 }
 
 export type StoredRep = RepMessage & { id: number; measured_at: string };

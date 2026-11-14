@@ -9,7 +9,7 @@ from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 
-from hub.contract import CREWS, ContractError
+from hub.contract import CREWS, EXERCISES, ContractError
 from hub.ingest import Ingestor
 from hub.store import Store, StoredReading, StoredRep
 from hub.tilt import tilt_for_rep
@@ -120,6 +120,7 @@ class Session:
     ended_at: str | None
     camera_reps: int
     load_cell_reps: int
+    exercise: str | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -139,7 +140,7 @@ class SessionManager:
 
     def _to_session(self, row: tuple) -> Session:
         cam, cell = self.store.rep_counts(row[0])
-        return Session(row[0], row[1], row[2], row[3], row[4], row[5], cam, cell)
+        return Session(row[0], row[1], row[2], row[3], row[4], row[5], cam, cell, row[6])
 
     def _activate(self, row: tuple) -> None:
         self._active_id = row[0]
@@ -162,13 +163,24 @@ class SessionManager:
     def list(self) -> list[Session]:
         return [self._to_session(r) for r in self.store.session_rows()]
 
-    def start(self, session: str | None, mass_kg: float, g: float, crew: str | None) -> Session:
+    def start(
+        self,
+        session: str | None,
+        mass_kg: float,
+        g: float,
+        crew: str | None,
+        exercise: str | None = None,
+    ) -> Session:
         if not mass_kg > 0:
             raise SessionError("bad_value:mass_kg")
         if g < 0:
             raise SessionError("bad_value:g")
         if crew is not None and crew not in CREWS:
             raise SessionError("bad_crew")
+        if exercise is not None and not isinstance(exercise, str):
+            raise SessionError("bad_type:exercise")
+        if exercise is not None and exercise not in EXERCISES:
+            raise SessionError("bad_value:exercise")
         now = self.clock()
         if session is None:
             session = f"s-{int(now.timestamp() * 1000)}"
@@ -179,7 +191,7 @@ class SessionManager:
                 raise SessionError("session_exists")
             if self._active_id is not None:
                 self.end(self._active_id)
-            self.store.insert_session(session, mass_kg, g, crew, now)
+            self.store.insert_session(session, mass_kg, g, crew, now, exercise)
             row = self.store.session_row(session)
             assert row is not None
             self._activate(row)
@@ -226,7 +238,7 @@ class SessionManager:
                 "seq": self.store.next_rep_seq(RIG_NODE, r.boot), "age_ms": 0, "type": "rep",
                 "session": row[0], "rep": cand.rep, "src": "load_cell", "peak_n": cand.peak_n,
                 "work_j": None, "rom_m": None, "g": EARTH_G, "mass_kg": row[1],
-                "t0_ms": cand.t0_ms, "t1_ms": cand.t1_ms,
+                "t0_ms": cand.t0_ms, "t1_ms": cand.t1_ms, "exercise": row[6],
             }  # fmt: skip
             res = self.ingestor.ingest_rep(rep, channel="internal")
             if res.reason is not None:

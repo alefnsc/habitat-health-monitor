@@ -321,7 +321,7 @@ def create_app(
         try:
             sess = await run_in_threadpool(
                 sessions.start, body.get("session"), float(body["mass_kg"]), float(body["g"]),
-                body.get("crew"),
+                body.get("crew"), body.get("exercise"),
             )  # fmt: skip
         except SessionError as e:
             return reject(e.reason, 409 if e.reason == "session_exists" else 422)
