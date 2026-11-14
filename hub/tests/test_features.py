@@ -9,6 +9,7 @@ from fastapi import APIRouter, Request
 from fastapi.testclient import TestClient
 
 from hub.api import create_app
+from hub.commands import CommandRouter
 from hub.config import FEATURE_NAMES
 from hub.features import HubContext
 from hub.tests.helpers import FOOD_RULES, MAIN_RULES
@@ -176,7 +177,7 @@ def test_app_state_ctx(settings, clock, monkeypatch):
         assert (c.store, c.ingestor, c.assessor) == (
             app.state.store, app.state.ingestor, app.state.assessor,
         )  # fmt: skip
-        assert c.clock is clock and c.commands is None
+        assert c.clock is clock and isinstance(c.commands, CommandRouter)
 
 
 def test_router_included(stub_n, settings, clock, tmp_path):
@@ -246,7 +247,7 @@ def test_lifespan_hooks(stub_n, settings, clock):
         assert c.get("/api/status").status_code == 200
         assert len(CALLS["run_poller"]) == 1 and CALLS["iss_start"] and CALLS["mcp_enter"]
     pol = CALLS["ActuatorPolicy"][0]
-    assert pol[0][0] is None and pol[0][1] is app.state.ingestor
+    assert pol[0][0] is app.state.ctx.commands and pol[0][1] is app.state.ingestor
     assert pol[1]["crews"] == ("crew-a", "crew-b", "crew-c")
     after = CALLS["run_poller"][0][1]["after_poll"]
     assert len(after) == 2

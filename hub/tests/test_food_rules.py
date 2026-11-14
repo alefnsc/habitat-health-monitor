@@ -11,7 +11,9 @@ from hub.thresholds import SOURCE_KINDS, band_status, load_rules, rules_for
 ROOT = Path(__file__).resolve().parents[2]
 REAL = ROOT / "data/food/thresholds_food.json"
 # D33: waits for the H agent to add `nasa_doc` to SOURCE_KINDS; runs automatically after.
-pytestmark = pytest.mark.skipif("nasa_doc" not in SOURCE_KINDS, reason="nasa_doc not in SOURCE_KINDS yet")
+pytestmark = pytest.mark.skipif(
+    "nasa_doc" not in SOURCE_KINDS, reason="nasa_doc not in SOURCE_KINDS yet"
+)
 IDS = {
     "intake_sodium_max", "intake_sodium_floor", "intake_iron_max", "intake_water_floor",
     "intake_vitd_floor", "intake_calcium_floor", "intake_calcium_max",

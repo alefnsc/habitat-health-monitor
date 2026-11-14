@@ -74,7 +74,9 @@ def _day(catalog: Catalog, r: random.Random, block: int, blocks: int, rng_: Rang
                 pool = [p for p in pool if p in catalog.items]
                 items.append({"food_id": r.choice(pool), "servings": r.choice([0.5, 1, 1, 1.5, 2])})
             for _k in range(r.randint(1, 2)):
-                items.append({"food_id": r.choice(drinks), "servings": r.choice([1, 1.5, 2, 2.5, 3])})
+                items.append(
+                    {"food_id": r.choice(drinks), "servings": r.choice([1, 1.5, 2, 2.5, 3])}
+                )
             seen: dict[str, float] = {}
             for it in items:
                 seen[it["food_id"]] = min(4.0, seen.get(it["food_id"], 0) + it["servings"])
@@ -156,7 +158,11 @@ def load_seed_meals(store, doc: dict, catalog: Catalog, now: datetime) -> int:
 def _write_replay(path: Path, lines: list[ReplayLine]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
-        f.writelines(json.dumps({"t_ms": ln.t_ms, "kind": ln.kind, "msg": ln.msg}, separators=(",", ":")) + "\n" for ln in lines)
+        f.writelines(
+            json.dumps({"t_ms": ln.t_ms, "kind": ln.kind, "msg": ln.msg}, separators=(",", ":"))
+            + "\n"
+            for ln in lines
+        )
 
 
 def main(argv: list[str] | None = None) -> int:

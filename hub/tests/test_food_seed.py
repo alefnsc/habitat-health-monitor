@@ -31,7 +31,9 @@ def test_label_and_determinism():
     b = generate_seed(CAT, seed=1, blocks=3, crews=["crew-a"], plan={})
     assert a == b and a["label"].startswith("SYNTHETIC")
     assert FIT["label"].startswith("SYNTHETIC") and FLAGS["label"].startswith("SYNTHETIC")
-    assert FIT == generate_seed(CAT, seed=FIT["seed"], blocks=3, crews=FIT["crew"], plan=PLANS["fit"])
+    assert FIT == generate_seed(
+        CAT, seed=FIT["seed"], blocks=3, crews=FIT["crew"], plan=PLANS["fit"]
+    )
 
 
 def test_fit_crew_days():

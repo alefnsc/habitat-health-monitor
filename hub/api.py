@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.concurrency import run_in_threadpool
 
 from hub.assess import Assessor, load_escalation, status_body
+from hub.commands import CommandRouter
 from hub.config import Settings, load_settings
 from hub.contract import CREWS, DERIVED, INDICATORS, ContractError
 from hub.crew import CrewRegistry, parse_badge, validate_crew_post
@@ -193,11 +194,16 @@ def create_app(
     app.state.features = features
     app.state.extra_subscriptions = ("habitat/v1/badge/+",)
     app.state.mqtt_handlers = {"badge": on_badge_message}
-    ctx = HubContext(settings, store, ingestor, assessor, bus, nodes, crew_registry, None, clock)
     rig: RigLink | None = None
     if "serial" in settings.features and settings.serial_port:
         rig = RigLink(settings, ingestor, nodes)
+        app.state.extra_subscriptions += ("habitat/v1/cmd/exercise-1",)
+        app.state.mqtt_handlers["cmd"] = rig.send_raw
     app.state.rig = rig
+    commands = CommandRouter(rig, publisher)
+    ctx = HubContext(
+        settings, store, ingestor, assessor, bus, nodes, crew_registry, commands, clock
+    )
     runtime = wire_features(app, features, ctx)
     app.state.runtime = runtime
     app.mount("/camera", BuildMount(settings.camera_dist, "npm --prefix camera run build"))

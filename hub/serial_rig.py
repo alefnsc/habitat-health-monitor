@@ -11,7 +11,9 @@ import time
 
 import serial
 
+from hub.commands import Command, encode_command, parse_command
 from hub.config import Settings
+from hub.contract import ContractError
 from hub.ingest import Ingestor, IngestResult
 from hub.mqtt import NodeRegistry
 
@@ -73,17 +75,43 @@ class RigLink:
         self._thread: threading.Thread | None = None
         self._port: serial.Serial | None = None
         self._lock = threading.Lock()
+        self._write_lock = threading.Lock()
+        self._state: dict[str, Command] = {}  # last servo and alarm, re-sent after a reconnect
 
     def stats(self) -> dict[str, int]:
         with self._lock:
             return dict(self._stats)
 
-    def write(self, data: bytes) -> None:
-        """Send a command line to the rig (used by the command router, H14)."""
+    def send(self, c: Command) -> bool:
+        """Write one command line to the rig; False (never an exception) when not connected."""
         port = self._port
         if port is None:
-            raise serial.SerialException("rig port closed")
-        port.write(data)
+            log.warning("rig not connected, dropped %s", c.cmd)
+            return False
+        try:
+            with self._write_lock:
+                port.write(encode_command(c))
+        except (serial.SerialException, OSError) as e:
+            log.warning("rig write failed: %s", e)
+            return False
+        if c.cmd in ("servo", "alarm"):
+            self._state[c.cmd] = c
+        return True
+
+    def send_raw(self, node: str, payload: bytes) -> bool:
+        """MQTT bridge for habitat/v1/cmd/exercise-1: validate, then write."""
+        try:
+            return self.send(parse_command(payload))
+        except ContractError as e:
+            log.info("reject channel=cmd reason=%s", e.reason)
+            return False
+
+    def resend_state(self, port: serial.Serial) -> None:
+        for name in ("servo", "alarm"):
+            c = self._state.get(name)
+            if c is not None:
+                with self._write_lock:
+                    port.write(encode_command(c))
 
     @property
     def connected(self) -> bool:
@@ -128,6 +156,10 @@ class RigLink:
                     self._stats["reconnects"] += 1
             first = False
             self._set_online(True)
+            try:
+                self.resend_state(port)
+            except (serial.SerialException, OSError) as e:
+                log.warning("rig state re-send failed: %s", e)
             log.info("rig connected on %s", self.settings.serial_port)
             try:
                 self._read(port)
