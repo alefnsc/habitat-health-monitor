@@ -1,8 +1,14 @@
 # Habitat Health Monitor
 
-A crew-facing health monitor for a space habitat that keeps working with no link to Earth. Real sensor circuits (ESP32, ESP8266, Arduino Uno) feed a local hub. The hub checks every reading against a stated source: NASA-STD-3001 for the cabin and radiation, and labelled clinical references (not NASA-published) for vital signs. It then tells the astronaut what to do and whom to tell, and syncs to a public "ground segment" page over a simulated Mars link with light-time delay and blackouts. It is not a medical device: hobby-sensor values are labelled estimates, and it never diagnoses.
+## What it is
 
-Built during the NASA Space Apps Challenge 2026 (challenge: *Create Health Monitoring Software for Astronauts on Space Missions*). Licensed under Apache-2.0.
+A crew-facing health monitor for a space habitat that keeps working with no link to Earth. Real sensor circuits (UNO+WiFi board, Arduino Uno, ESP8266) feed a local hub. The hub checks every reading against a stated source: NASA-STD-3001 for the cabin and radiation, and labelled clinical references (not NASA-published) for vital signs. It then tells the astronaut what to do and whom to tell, and syncs to a public "ground segment" page over a simulated Mars link with light-time delay and blackouts.
+
+Built during the NASA Space Apps Challenge 2026 (challenge: *Create Health Monitoring Software for Astronauts on Space Missions*).
+
+## Not a medical device
+
+Hobby-sensor values are labelled estimates. The software never diagnoses and never gives treatment doses. Vital-sign bands are labelled "not NASA-published".
 
 ## Quick start (hub)
 
@@ -24,14 +30,6 @@ mosquitto -c hub/mosquitto/habitat.conf -v
 
 Copy `.env.example` to `.env` and fill it in locally. Never commit `.env`, the broker password file or any API key.
 
-## Links
-
-See `docs/decisions/links.md`.
-
-## AI use
-
-AI coding assistants were used to write parts of this project. Full disclosure: `docs/AI_DISCLOSURE.md` (added during the event).
-
 ## Run the hub (development)
 
 1. `mosquitto -c hub/mosquitto/habitat.conf` (create `hub/mosquitto/passwd` first; it is git-ignored)
@@ -41,3 +39,37 @@ AI coding assistants were used to write parts of this project. Full disclosure: 
 
 Settings come from `HUB_*` environment variables (see `.env.example`). Without a broker the HTTP API
 still serves and the MQTT subscriber keeps retrying.
+
+## Hardware
+
+Circuit diagrams and the bill of materials are in `docs/` (DRAFT [confirm: hardware member to review before submission]).
+
+## Safety
+
+Everything that touches a person runs on battery only. See `docs/safety-checklist.md`.
+
+## Data sources
+
+See `DATA_SOURCES.md`.
+
+## Validation
+
+See `docs/validation.md`.
+
+## Prior work
+
+The prior-work library is declared in `docs/decisions/links.md` and used only at its pinned commit.
+
+## Links
+
+See `docs/decisions/links.md`.
+
+## AI use
+
+DRAFT [confirm: operator and hardware member review this text before submission]
+
+Claude Code (Anthropic) helped plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware and validation work, and reviewed the outputs. Every AI-assisted commit carries a `Co-Authored-By` trailer. No AI-generated images, video or voice are used. Full disclosure: [docs/AI_DISCLOSURE.md](docs/AI_DISCLOSURE.md).
+
+## Licence
+
+Apache-2.0. See `LICENSE`.
