@@ -1,0 +1,6 @@
+# Wokwi project for the exercise rig twin (Arduino Uno only: Wokwi has no ESP8266).
+# Build first with ./build.sh, which compiles the real sketch from firmware/exercise-uno.
+[wokwi]
+version = 1
+firmware = 'build/exercise-uno.ino.hex'
+elf = 'build/exercise-uno.ino.elf'

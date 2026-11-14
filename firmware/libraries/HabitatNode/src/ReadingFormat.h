@@ -14,11 +14,11 @@ enum Ind : uint8_t {
   IND_LOAD_RAW, IND_COUNT
 };
 
-// Device table index (section 4.1 dev list, plus MPU6050).
+// Device table index (section 4.1 dev list, plus MPU6050, and the D35 hobby modules NTC and KY039).
 enum Dev : uint8_t {
   DEV_MAX30102, DEV_DS18B20, DEV_MLX90614, DEV_SCD41, DEV_BME280, DEV_DHT22,
   DEV_DHT11, DEV_BH1750, DEV_HX711, DEV_H10, DEV_MANUAL, DEV_CAMERA,
-  DEV_MPU6050, DEV_COUNT
+  DEV_MPU6050, DEV_NTC, DEV_KY039, DEV_COUNT
 };
 
 // Quality flag bits (section 4.4, node-raised ones). Bit order is output order.

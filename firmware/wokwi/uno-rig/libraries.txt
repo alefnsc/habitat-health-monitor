@@ -1,0 +1,3 @@
+# Libraries for the exercise rig twin. EEPROM ships with the Uno core.
+HX711 Arduino Library@0.7.5
+Servo

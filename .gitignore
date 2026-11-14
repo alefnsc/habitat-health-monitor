@@ -21,3 +21,6 @@ ground/receiver/var/
 linksim/var/
 ground/public/replay.json
 ground/public/guidance.json
+
+# Wokwi twin build output
+firmware/wokwi/*/build/

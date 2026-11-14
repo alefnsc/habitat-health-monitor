@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "author": "Habitat Health Monitor team",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-hx711", "id": "hx711", "top": -150, "left": 250, "attrs": { "type": "50kg" } },
+    { "type": "wokwi-servo", "id": "servo", "top": -160, "left": 480, "attrs": { "horn": "single" } },
+    { "type": "wokwi-buzzer", "id": "buzzer", "top": -60, "left": 650, "attrs": { "volume": "0.1" } },
+    {
+      "type": "wokwi-ntc-temperature-sensor",
+      "id": "ntc",
+      "top": 220,
+      "left": 330,
+      "attrs": { "temperature": "34" }
+    },
+    { "type": "wokwi-potentiometer", "id": "pulse_pot", "top": 220, "left": 520, "attrs": { "value": "512" } },
+    {
+      "type": "wokwi-text",
+      "id": "label_pot",
+      "top": 310,
+      "left": 500,
+      "attrs": { "text": "pulse stand-in (simulated)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_ntc",
+      "top": 310,
+      "left": 330,
+      "attrs": { "text": "skin probe stand-in (simulated)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_cell",
+      "top": -175,
+      "left": 250,
+      "attrs": { "text": "load cell (simulated)" }
+    }
+  ],
+  "connections": [
+    [ "hx711:VCC", "uno:5V", "red", [ "v0" ] ],
+    [ "hx711:GND", "uno:GND.2", "black", [ "v0" ] ],
+    [ "hx711:DT", "uno:3", "green", [ "v0" ] ],
+    [ "hx711:SCK", "uno:4", "orange", [ "v0" ] ],
+    [ "servo:PWM", "uno:6", "orange", [ "v0" ] ],
+    [ "servo:V+", "uno:5V", "red", [ "v0" ] ],
+    [ "servo:GND", "uno:GND.2", "black", [ "v0" ] ],
+    [ "buzzer:2", "uno:8", "purple", [ "v0" ] ],
+    [ "buzzer:1", "uno:GND.1", "black", [ "v0" ] ],
+    [ "ntc:VCC", "uno:5V", "red", [ "v0" ] ],
+    [ "ntc:GND", "uno:GND.2", "black", [ "v0" ] ],
+    [ "ntc:OUT", "uno:A0", "blue", [ "v0" ] ],
+    [ "pulse_pot:VCC", "uno:5V", "red", [ "v0" ] ],
+    [ "pulse_pot:GND", "uno:GND.2", "black", [ "v0" ] ],
+    [ "pulse_pot:SIG", "uno:A1", "blue", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}

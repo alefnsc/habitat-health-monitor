@@ -81,6 +81,19 @@ int main() {
     formatReading(r, "vitals-1", 3, 10250, buf, sizeof buf);
     assert(std::strstr(buf, "\"val\":0.123,"));
   }
+  {  // test_format_hobby_modules (D35): NTC skin probe and KY039 pulse module
+    PendingReading r{1, 0, IND_SKIN_TEMP, 33.456f, DEV_NTC, Q_SETTLING};
+    formatReading(r, "exercise-1", 1, 0, buf, sizeof buf);
+    JsonDocument d;
+    assert(!deserializeJson(d, buf));
+    assert(std::string(d["dev"].as<const char*>()) == "NTC");
+    r = PendingReading{2, 0, IND_HR, 72.0f, DEV_KY039, 0};
+    formatReading(r, "exercise-1", 1, 0, buf, sizeof buf);
+    JsonDocument e;
+    assert(!deserializeJson(e, buf));
+    assert(std::string(e["dev"].as<const char*>()) == "KY039");
+    assert(std::string(e["unit"].as<const char*>()) == "bpm");
+  }
   std::puts("ok");
   return 0;
 }
