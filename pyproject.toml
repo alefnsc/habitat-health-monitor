@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "habitat"
+version = "0.1.0"
+description = "Offline habitat health monitor: hub, link simulator and ground receiver"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi",
+  "uvicorn[standard]",
+  "aiomqtt",
+  "paho-mqtt>=2",
+  "pyserial",
+  "httpx",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "respx", "pytest-asyncio"]
+analysis = ["matplotlib", "numpy"]
+
+[tool.setuptools.packages.find]
+where = [".", "ground"]
+include = ["hub*", "linksim*", "receiver*"]
+
+[tool.pytest.ini_options]
+testpaths = ["hub/tests", "linksim/tests"]
+markers = ["broker: needs a live Mosquitto on 127.0.0.1:1883"]
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
