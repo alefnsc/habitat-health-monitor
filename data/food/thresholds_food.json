@@ -1,1 +1,106 @@
-[]
+[
+  {
+    "id": "intake_sodium_max",
+    "ind": "intake_sodium_mg",
+    "window": "dose_24h",
+    "ok": {
+      "max": 2300
+    },
+    "watch": {
+      "max": 3500
+    },
+    "act": {},
+    "source_kind": "nasa_doc",
+    "source_ref": "NASA JSC-67378 Rev 1, p. 6 and Table 1 (ok up to 2300 mg per day); JSC-E-DAA-TN71711 Req. 23, p. 34 (3500)",
+    "url": "https://ntrs.nasa.gov/api/citations/20205008306/downloads/JSC67378%20Expl%20Nutr%20Reqs%20042020.pdf",
+    "note": "Sodium upper limits. Watch and act bands come from the superseded 2005 table (JSC-E-DAA-TN71711): historical operating band. The 2300 to 3500 interval is read as watch. Reference value for a population, not a personal target."
+  },
+  {
+    "id": "intake_sodium_floor",
+    "ind": "intake_sodium_mg",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 1500
+    },
+    "watch": {
+      "min": 500
+    },
+    "act": {},
+    "source_kind": "nasa_doc",
+    "source_ref": "NASA JSC-67378 Rev 1, p. 6 and Table 1 (1500 mg per day); JSC-E-DAA-TN71711 Req. 23, p. 34 (500)",
+    "url": "https://ntrs.nasa.gov/api/citations/20205008306/downloads/JSC67378%20Expl%20Nutr%20Reqs%20042020.pdf",
+    "note": "Sodium lower limits. Watch and act bands come from the superseded 2005 table (JSC-E-DAA-TN71711): historical operating band. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_iron_max",
+    "ind": "intake_iron_mg",
+    "window": "dose_24h",
+    "ok": {
+      "max": 8
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_doc",
+    "source_ref": "NASA JSC-67378 Rev 1, p. 6 and Table 1 (iron not to exceed 8 mg per day)",
+    "url": "https://ntrs.nasa.gov/api/citations/20205008306/downloads/JSC67378%20Expl%20Nutr%20Reqs%20042020.pdf",
+    "note": "Iron upper limit. No act band: the 2005 table is ambiguous. Reference value for a population, not a personal target."
+  },
+  {
+    "id": "intake_water_floor",
+    "ind": "intake_water_ml",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 2100
+    },
+    "watch": {
+      "min": 2000
+    },
+    "act": {},
+    "source_kind": "nasa_doc",
+    "source_ref": "NASA JSC-67378 Rev 1, p. 3 and Table 1 (no less than 2100 mL for women, 2500 mL for men); JSC-E-DAA-TN71711 Req. 6, p. 30 (2 L)",
+    "url": "https://ntrs.nasa.gov/api/citations/20205008306/downloads/JSC67378%20Expl%20Nutr%20Reqs%20042020.pdf",
+    "note": "Fluid intake floor, women's value because crew sex is not recorded. The Vol 2 water figure is a supply requirement, not an intake one. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_vitd_floor",
+    "ind": "intake_vitd_ug",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 25
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F [V2 7100], Table 7.1-2, pp. 116 to 117",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "Vitamin D floor. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_calcium_floor",
+    "ind": "intake_calcium_mg",
+    "window": "sum_24h_floor",
+    "ok": {
+      "min": 1000
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_doc",
+    "source_ref": "NASA JSC-67378 Rev 1, p. 6 and Table 1 (1000 to 1200 mg per day)",
+    "url": "https://ntrs.nasa.gov/api/citations/20205008306/downloads/JSC67378%20Expl%20Nutr%20Reqs%20042020.pdf",
+    "note": "Calcium floor, lower edge of the current range. Reference value for a population, not a personal target. Judged after 20 h of logging."
+  },
+  {
+    "id": "intake_calcium_max",
+    "ind": "intake_calcium_mg",
+    "window": "dose_24h",
+    "ok": {
+      "max": 2500
+    },
+    "watch": {},
+    "act": null,
+    "source_kind": "nasa_doc",
+    "source_ref": "NASA JSC-67378 Rev 1, p. 6 (not to exceed 2500 mg per day)",
+    "url": "https://ntrs.nasa.gov/api/citations/20205008306/downloads/JSC67378%20Expl%20Nutr%20Reqs%20042020.pdf",
+    "note": "Calcium upper limit. Reference value for a population, not a personal target."
+  }
+]

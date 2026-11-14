@@ -1,0 +1,659 @@
+{
+ "label": "SYNTHETIC: generated, not real people",
+ "generator": "python -m hub.food.seed",
+ "seed": 20261114,
+ "blocks": 3,
+ "crew": [
+  "crew-a",
+  "crew-b",
+  "crew-c"
+ ],
+ "adjustments": [],
+ "body_mass_kg": {
+  "crew-a": 66.2,
+  "crew-b": 68.9,
+  "crew-c": 73.7
+ },
+ "meals": [
+  {
+   "crew": "crew-a",
+   "t_minus_h": 49.0,
+   "items": [
+    {
+     "food_id": "almonds-raw",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 2
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 53.0,
+   "items": [
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 2
+    },
+    {
+     "food_id": "pasta-dry",
+     "servings": 0.5
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 2
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 58.0,
+   "items": [
+    {
+     "food_id": "pasta-dry",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 3
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 63.0,
+   "items": [
+    {
+     "food_id": "tuna-light-canned-water",
+     "servings": 1
+    },
+    {
+     "food_id": "pasta-dry",
+     "servings": 2
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 25.0,
+   "items": [
+    {
+     "food_id": "apricots-dried",
+     "servings": 1
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 29.0,
+   "items": [
+    {
+     "food_id": "peanut-butter-smooth",
+     "servings": 0.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 3
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 1
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 34.0,
+   "items": [
+    {
+     "food_id": "saltine-crackers",
+     "servings": 1.5
+    },
+    {
+     "food_id": "instant-tea-prepared",
+     "servings": 1
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 39.0,
+   "items": [
+    {
+     "food_id": "white-rice-dry",
+     "servings": 2
+    },
+    {
+     "food_id": "rolled-oats-dry",
+     "servings": 1.5
+    },
+    {
+     "food_id": "salmon-pink-canned",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 2
+    },
+    {
+     "food_id": "instant-tea-prepared",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 1.0,
+   "items": [
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 2
+    },
+    {
+     "food_id": "white-rice-dry",
+     "servings": 1
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 1.5
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 1
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 5.0,
+   "items": [
+    {
+     "food_id": "rye-crispbread",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 1.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 10.0,
+   "items": [
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 0.5
+    },
+    {
+     "food_id": "almonds-raw",
+     "servings": 1
+    },
+    {
+     "food_id": "prunes-dried",
+     "servings": 2
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-a",
+   "t_minus_h": 15.0,
+   "items": [
+    {
+     "food_id": "popcorn-air-popped",
+     "servings": 1
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 3
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 1.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 49.0,
+   "items": [
+    {
+     "food_id": "dates-medjool",
+     "servings": 2
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 1.5
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 3
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 53.0,
+   "items": [
+    {
+     "food_id": "flour-tortilla-shelf-stable",
+     "servings": 1
+    },
+    {
+     "food_id": "peanuts-dry-roasted-unsalted",
+     "servings": 1
+    },
+    {
+     "food_id": "white-rice-dry",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 58.0,
+   "items": [
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 1
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 3
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 63.0,
+   "items": [
+    {
+     "food_id": "prunes-dried",
+     "servings": 0.5
+    },
+    {
+     "food_id": "almond-milk-shelf-stable",
+     "servings": 1
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 25.0,
+   "items": [
+    {
+     "food_id": "cashews-dry-roasted-unsalted",
+     "servings": 0.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 29.0,
+   "items": [
+    {
+     "food_id": "apricots-dried",
+     "servings": 1.5
+    },
+    {
+     "food_id": "salmon-pink-canned",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 2.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 1.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 34.0,
+   "items": [
+    {
+     "food_id": "white-rice-dry",
+     "servings": 1.5
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 1.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 2.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 39.0,
+   "items": [
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 0.5
+    },
+    {
+     "food_id": "raisins-dark",
+     "servings": 1
+    },
+    {
+     "food_id": "instant-tea-prepared",
+     "servings": 2.5
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 3
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 1.0,
+   "items": [
+    {
+     "food_id": "salmon-pink-canned",
+     "servings": 1
+    },
+    {
+     "food_id": "rye-crispbread",
+     "servings": 0.5
+    },
+    {
+     "food_id": "dates-medjool",
+     "servings": 1
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 2.5
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 1
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 5.0,
+   "items": [
+    {
+     "food_id": "granola-bar-hard-plain",
+     "servings": 2
+    },
+    {
+     "food_id": "instant-tea-prepared",
+     "servings": 1
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 10.0,
+   "items": [
+    {
+     "food_id": "rye-crispbread",
+     "servings": 1
+    },
+    {
+     "food_id": "popcorn-air-popped",
+     "servings": 1
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 4.0
+    }
+   ]
+  },
+  {
+   "crew": "crew-b",
+   "t_minus_h": 15.0,
+   "items": [
+    {
+     "food_id": "chickpeas-canned",
+     "servings": 0.5
+    },
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 1
+    },
+    {
+     "food_id": "prunes-dried",
+     "servings": 1.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 1.5
+    },
+    {
+     "food_id": "instant-tea-prepared",
+     "servings": 1.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 49.0,
+   "items": [
+    {
+     "food_id": "saltine-crackers",
+     "servings": 0.5
+    },
+    {
+     "food_id": "cranberries-dried-sweetened",
+     "servings": 1
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 1
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 53.0,
+   "items": [
+    {
+     "food_id": "almonds-raw",
+     "servings": 2
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 4.0
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 58.0,
+   "items": [
+    {
+     "food_id": "prunes-dried",
+     "servings": 1
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 2
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 63.0,
+   "items": [
+    {
+     "food_id": "raisins-dark",
+     "servings": 1
+    },
+    {
+     "food_id": "saltine-crackers",
+     "servings": 2
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 1.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 3
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 25.0,
+   "items": [
+    {
+     "food_id": "fruit-bar-nonfat",
+     "servings": 0.5
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 3
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 29.0,
+   "items": [
+    {
+     "food_id": "rye-crispbread",
+     "servings": 2
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 4.0
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 34.0,
+   "items": [
+    {
+     "food_id": "walnuts-english",
+     "servings": 0.5
+    },
+    {
+     "food_id": "fruit-bar-nonfat",
+     "servings": 0.5
+    },
+    {
+     "food_id": "chicken-canned",
+     "servings": 1.5
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 2
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 39.0,
+   "items": [
+    {
+     "food_id": "white-rice-dry",
+     "servings": 1.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 4.0
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 1.0,
+   "items": [
+    {
+     "food_id": "almonds-raw",
+     "servings": 1.5
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 2.5
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 1.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 5.0,
+   "items": [
+    {
+     "food_id": "white-rice-dry",
+     "servings": 1
+    },
+    {
+     "food_id": "milk-powder-nonfat-d",
+     "servings": 4.0
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 10.0,
+   "items": [
+    {
+     "food_id": "almonds-raw",
+     "servings": 1
+    },
+    {
+     "food_id": "salmon-pink-canned",
+     "servings": 2
+    },
+    {
+     "food_id": "apple-juice-canned",
+     "servings": 1.5
+    }
+   ]
+  },
+  {
+   "crew": "crew-c",
+   "t_minus_h": 15.0,
+   "items": [
+    {
+     "food_id": "walnuts-english",
+     "servings": 0.5
+    },
+    {
+     "food_id": "orange-juice-canned",
+     "servings": 2
+    }
+   ]
+  }
+ ]
+}

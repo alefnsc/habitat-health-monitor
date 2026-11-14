@@ -14,7 +14,7 @@ Generic foods in the style of long-shelf-life space food. These are not NASA men
 
 **DATA_SOURCES.md entry: USDA FoodData Central.** Nutrient values for 31 generic shelf-stable foods come from USDA FoodData Central, CC0 1.0, credit requested: "USDA FoodData Central". Release used: SR Legacy, April 2018, CSV bulk download (`FoodData_Central_sr_legacy_food_csv_2018-04`, https://fdc.nal.usda.gov/download-datasets/). No Branded records are used. The values are copied unchanged, one FDC id per item, and `tools/food/check_against_bulk.py` checks them against the downloaded files.
 
-**DATA_SOURCES.md entry: NASA nutrition documents.** Reference values and rule sources for food and fluid come from NASA JSC-67378 Rev 1 (Nutritional Requirements for Exploration Missions) and NASA-STD-3001 Volume 2 Rev F. Each food rule shows its source reference. (Exact rule values are pending the Science review, M1.)
+**DATA_SOURCES.md entry: NASA nutrition documents.** Rule values for sodium, iron, fluid and calcium come from NASA JSC-67378 Rev 1 (Nutritional Requirements for Exploration Missions up to 365 days), a NASA program document, not NASA-STD-3001. The vitamin D floor comes from NASA-STD-3001 Volume 2 Rev F, Table 7.1-2. The sodium watch and act bands come from the superseded 2005 table JSC-E-DAA-TN71711 and are labelled as a historical operating band. Each food rule shows its source reference and page.
 
 **NASA Data field (one sentence).** Without JSC-67378 and NASA-STD-3001 the food screen would have no reference values or rule sources to judge against.
 

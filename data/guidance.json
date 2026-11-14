@@ -445,5 +445,105 @@
   "risk_title": "Behavioral health (HRP risk 99)",
   "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=99",
   "why": "Mood is an early sign of how the crew copes with isolation and confinement. A low trend is a prompt to talk and ask for support."
+ },
+ {
+  "id": "intake_sodium_max.watch",
+  "rule_id": "intake_sodium_max",
+  "status": "watch",
+  "do_now": "Check that every meal and drink was logged, and that logged items report sodium. Logged totals may be incomplete.",
+  "tell": "Tell the CMO at the next check-in if the total stays above the NASA reference range.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_sodium_max.act",
+  "rule_id": "intake_sodium_max",
+  "status": "act",
+  "do_now": "The 24 h sodium total is well above the NASA reference range for a population. Check the log for entry errors.",
+  "tell": "Tell the CMO now if the total is confirmed.",
+  "escalate_to": "cmo",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_sodium_floor.watch",
+  "rule_id": "intake_sodium_floor",
+  "status": "watch",
+  "do_now": "The 24 h sodium total is below the NASA reference range for a population. Check that all meals were logged.",
+  "tell": "Tell the CMO at the next check-in if it stays low.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_sodium_floor.act",
+  "rule_id": "intake_sodium_floor",
+  "status": "act",
+  "do_now": "The 24 h sodium total is far below the NASA reference range for a population. Check that all meals and drinks were logged.",
+  "tell": "Tell the CMO now if the total is confirmed.",
+  "escalate_to": "cmo",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_iron_max.watch",
+  "rule_id": "intake_iron_max",
+  "status": "watch",
+  "do_now": "The 24 h iron total is above the NASA reference limit for a population. Check the log for entry errors.",
+  "tell": "Tell the CMO at the next check-in if it stays above the limit.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_water_floor.watch",
+  "rule_id": "intake_water_floor",
+  "status": "watch",
+  "do_now": "The logged fluid in the last 24 h is below the NASA reference range for a population. Check that every drink was logged, and drink water.",
+  "tell": "Tell the CMO at the next check-in if it stays low.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_water_floor.act",
+  "rule_id": "intake_water_floor",
+  "status": "act",
+  "do_now": "The logged fluid in the last 24 h is far below the NASA reference range for a population. Check the log and drink water now.",
+  "tell": "Tell the CMO now if the total is confirmed.",
+  "escalate_to": "cmo",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_vitd_floor.watch",
+  "rule_id": "intake_vitd_floor",
+  "status": "watch",
+  "do_now": "The logged vitamin D total is below the NASA reference value for a population. Check that logged items report vitamin D.",
+  "tell": "Tell the CMO at the next check-in if it stays low.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_calcium_floor.watch",
+  "rule_id": "intake_calcium_floor",
+  "status": "watch",
+  "do_now": "The logged calcium total is below the NASA reference range for a population. Check that logged items report calcium.",
+  "tell": "Tell the CMO at the next check-in if it stays low.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "intake_calcium_max.watch",
+  "rule_id": "intake_calcium_max",
+  "status": "watch",
+  "do_now": "The 24 h calcium total is above the NASA reference limit for a population. Check the log for entry errors.",
+  "tell": "Tell the CMO at the next check-in if it stays above the limit.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
  }
 ]
