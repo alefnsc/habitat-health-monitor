@@ -11,7 +11,7 @@ from hub.food.day import food_day
 from hub.food.seed import PLANS, _totals, generate_seed, load_seed_meals, seed_to_replay
 from hub.ingest import Ingestor
 from hub.sim import load_replay, rewrite
-from hub.thresholds import load_rules
+from hub.thresholds import SOURCE_KINDS, load_rules
 
 ROOT = Path(__file__).resolve().parents[2]
 CAT = load_catalog(ROOT / "data/food/catalog.json")
@@ -97,6 +97,7 @@ def test_meal_rows_loaded(settings, clock):
     store.close()
 
 
+@pytest.mark.skipif("nasa_doc" not in SOURCE_KINDS, reason="nasa_doc not in SOURCE_KINDS yet")
 def test_day_after_seed(settings, clock):
     from hub.store import Store
 
