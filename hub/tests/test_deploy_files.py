@@ -11,7 +11,7 @@ def _names(lines):
 
 
 def test_function_requirements_match_pyproject():
-    req = _names((ROOT / "requirements.txt").read_text().splitlines())
+    req = _names((ROOT / "api" / "requirements.txt").read_text().splitlines())
     py = tomllib.loads((ROOT / "pyproject.toml").read_text())
     allowed = _names(py["project"]["dependencies"]) | _names(py["project"]["optional-dependencies"]["cloud"])
     assert {"fastapi", "upstash-redis"} <= req
@@ -20,6 +20,7 @@ def test_function_requirements_match_pyproject():
 
 def test_vercel_json_routes_and_output():
     cfg = json.loads((ROOT / "vercel.json").read_text())
+    assert cfg["framework"] is None
     assert cfg["outputDirectory"] == "ground/dist"
     assert {"source": "/ground/(.*)", "destination": "/api/index"} in cfg["rewrites"]
     assert "ground/receiver/**" in cfg["functions"]["api/index.py"]["includeFiles"]

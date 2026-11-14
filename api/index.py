@@ -1,4 +1,5 @@
 """Hosting entry point for the public ground segment (D38)."""
+# Dependencies come from api/requirements.txt: the builder uses the nearest manifest, not the root pyproject.toml.
 
 import os
 import sys

@@ -1,4 +1,5 @@
 {
+  "framework": null,
   "buildCommand": "npm --prefix ground ci && npm --prefix ground run build:public && npm --prefix console ci && CONSOLE_BASE=/console/ npm --prefix console run build:replay && cp -r console/dist-replay ground/dist/console",
   "outputDirectory": "ground/dist",
   "rewrites": [{ "source": "/ground/(.*)", "destination": "/api/index" }],
