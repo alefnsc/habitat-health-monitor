@@ -26,3 +26,84 @@ tr.greyed { opacity: 0.5; }
 .status-unknown { color: #6e7781; }
 dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
 dt { font-weight: bold; }
+
+/* Overview: habitat map + Mars link (plain SVG) */
+:root {
+  --ov-ink: #1f2328;
+  --ov-muted: #59636e;
+  --ov-wall: #8c959f;
+  --ov-room: #d0d7de;
+  --ov-node: #ffffff;
+  --ov-node-edge: #8c959f;
+  --ov-lit: #f5a623;
+  --ov-lit-ink: #1f1300;
+  --ov-link: #8c959f;
+  --ov-alert: #cf222e;
+  --ov-mars: #c1502e;
+  --ov-earth: #2f6fdb;
+  --ov-halo: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ov-ink: #e6edf3;
+    --ov-muted: #9198a1;
+    --ov-wall: #6e7681;
+    --ov-room: #30363d;
+    --ov-node: #0d1117;
+    --ov-node-edge: #6e7681;
+    --ov-alert: #f85149;
+    --ov-halo: #0d1117;
+  }
+}
+.overview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0.75rem 0;
+}
+.overview svg {
+  flex: 1 1 22rem;
+  max-width: 40rem;
+  height: auto;
+  font-family: system-ui, sans-serif;
+}
+.overview text { fill: var(--ov-ink); }
+.overview .ov-title { font-size: 13px; font-weight: 700; }
+.overview .ov-legend { font-size: 11px; fill: var(--ov-muted); }
+.overview .wall { fill: none; stroke: var(--ov-wall); stroke-width: 2; }
+.overview .room { fill: none; stroke: var(--ov-room); stroke-width: 1.5; }
+.overview .room-label { font-size: 11px; fill: var(--ov-muted); font-weight: 600; }
+.overview .wire, .overview .uplink { stroke: var(--ov-wall); stroke-width: 1.5; fill: none; }
+.overview .wire.dashed { stroke-dasharray: 4 3; }
+.overview .wire-label {
+  font-size: 9.5px; fill: var(--ov-muted); text-anchor: middle;
+  paint-order: stroke; stroke: var(--ov-halo); stroke-width: 3px;
+}
+.overview .node rect { fill: var(--ov-node); stroke: var(--ov-node-edge); stroke-width: 1.5; }
+.overview .node text { text-anchor: middle; }
+.overview .node-title { font-size: 13px; font-weight: 700; }
+.overview .node-sub { font-size: 11px; fill: var(--ov-muted); }
+.overview .node.lit rect {
+  fill: var(--ov-lit); stroke: var(--ov-lit);
+  filter: drop-shadow(0 0 6px var(--ov-lit));
+}
+.overview .node.lit text { fill: var(--ov-lit-ink); }
+.overview .node.absent rect { stroke-dasharray: 4 3; opacity: 0.6; }
+.overview .node.absent .node-title, .overview .node.absent .node-sub { opacity: 0.6; }
+.overview .node-note { font-size: 9px; fill: var(--ov-muted); font-style: italic; }
+.overview .lt { font-size: 26px; font-weight: 800; text-anchor: middle; }
+.overview .lt-none { font-size: 16px; text-anchor: middle; fill: var(--ov-muted); }
+.overview .lt-sub { font-size: 11px; fill: var(--ov-muted); text-anchor: middle; }
+.overview .link-line { stroke: var(--ov-link); stroke-width: 3; }
+.overview .gap { stroke: var(--ov-alert); stroke-width: 5; stroke-dasharray: 8 5; }
+.overview .packet { fill: var(--ov-lit); }
+.overview .packet.big { stroke: var(--ov-lit-ink); stroke-width: 1; }
+.overview .blackout rect { fill: var(--ov-alert); }
+.overview .blackout text { fill: #ffffff; font-size: 12px; font-weight: 800; text-anchor: middle; letter-spacing: 0.04em; }
+.overview .planet.mars { fill: var(--ov-mars); }
+.overview .planet.earth { fill: var(--ov-earth); }
+.overview .end-name { font-size: 13px; font-weight: 700; text-anchor: middle; }
+.overview .end-state { font-size: 11px; fill: var(--ov-muted); }
+.overview .end-state.start { text-anchor: start; }
+.overview .end-state.end { text-anchor: end; }
+.overview .end-state.down { fill: var(--ov-alert); font-weight: 700; }
