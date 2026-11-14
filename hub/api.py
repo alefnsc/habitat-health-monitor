@@ -11,6 +11,7 @@ from collections.abc import Callable
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 
+import httpx
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,7 +27,9 @@ from hub.events import EventBus
 from hub.exercise import SessionError, SessionManager, pairs_for
 from hub.features import HubContext, load_features, wire_features
 from hub.ingest import Ingestor, IngestResult
+from hub.link import LinkWatcher, fetch_link_state
 from hub.mqtt import MqttPublisher, NodeRegistry, run_subscriber
+from hub.prompts import PromptError, PromptService
 from hub.serial_rig import RigLink
 from hub.staticmount import BuildMount
 from hub.store import Store
@@ -92,9 +95,14 @@ def create_app(
         crew_for=crew_registry.get,
     )
     publisher = MqttPublisher()
+    link_client = httpx.Client()
+    watcher = LinkWatcher(settings, link_client, bus.publish) if settings.linksim_url else None
     sessions = SessionManager(store, ingestor, clock)
     ingestor.add_listener(sessions.on_load_raw)
     app_sessions = sessions
+    prompts = PromptService(store, ingestor, settings, clock, bus.publish)
+    assessor.on_alert(prompts.on_alert)
+    sessions.on_end(prompts.on_session_end)
     features = load_features(settings)
 
     def snapshot_frame() -> None:
@@ -122,6 +130,18 @@ def create_app(
         await runtime.start(stop)
         if rig is not None:
             rig.start()
+        if watcher is not None:
+            watcher.start()
+
+        async def prompt_ticker() -> None:
+            while True:
+                await asyncio.sleep(30)
+                try:
+                    await asyncio.to_thread(prompts.tick, clock())
+                except Exception:
+                    log.exception("prompt tick failed")
+
+        ticker = asyncio.create_task(prompt_ticker())
         tasks: list[asyncio.Task] = []
         bus.loop = asyncio.get_running_loop()
         if settings.mqtt_host:
@@ -141,6 +161,10 @@ def create_app(
         try:
             yield
         finally:
+            ticker.cancel()
+            if watcher is not None:
+                await asyncio.to_thread(watcher.stop)
+            link_client.close()
             if rig is not None:
                 await asyncio.to_thread(rig.stop)
             await runtime.stop()
@@ -161,6 +185,7 @@ def create_app(
     app.state.clock = clock
     app.state.bus = bus
     app.state.sessions = app_sessions
+    app.state.prompts = prompts
     app.state.nodes = nodes
     app.state.crew = crew_registry
     app.state.publisher = publisher
@@ -315,6 +340,58 @@ def create_app(
         body = pairs_for(store, sessions, session)
         if body is None:
             return reject("unknown_session", 404)
+        return JSONResponse(body)
+
+    @app.get("/api/prompts")
+    def get_prompts(request: Request) -> JSONResponse:
+        q = request.query_params
+        crew = q.get("crew") or None
+        if crew is not None and crew not in CREWS:
+            return reject("bad_crew")
+        try:
+            rows = prompts.pending(crew, q.get("status") or "open")
+        except PromptError as e:
+            return reject(e.reason, e.status)
+        return JSONResponse([p.to_dict() for p in rows])
+
+    @app.post("/api/prompts")
+    async def post_prompt(request: Request) -> JSONResponse:
+        try:
+            body = json.loads(await request.body())
+        except ValueError:
+            return reject("bad_json")
+        if not isinstance(body, dict):
+            return reject("bad_json")
+        if "kind" not in body:
+            return reject("missing_field:kind")
+        try:
+            p = await run_in_threadpool(prompts.create, body["kind"], body.get("crew"))
+        except PromptError as e:
+            return reject(e.reason, e.status)
+        return JSONResponse(p.to_dict(), status_code=201)
+
+    @app.post("/api/prompts/{prompt_id}/answer")
+    async def answer_prompt(prompt_id: int, request: Request) -> JSONResponse:
+        try:
+            body = json.loads(await request.body())
+        except ValueError:
+            return reject("bad_json")
+        if not isinstance(body, dict):
+            return reject("bad_json")
+        readings = body.get("readings", [])
+        if not isinstance(readings, list):
+            return reject("bad_type:readings")
+        try:
+            out = await run_in_threadpool(
+                prompts.answer, prompt_id, readings, bool(body.get("skipped", False))
+            )
+        except PromptError as e:
+            return reject(e.reason, e.status)
+        return JSONResponse(out)
+
+    @app.get("/api/link")
+    def get_link() -> JSONResponse:
+        body = fetch_link_state(link_client, settings.linksim_url, settings.link_config)
         return JSONResponse(body)
 
     @app.get("/api/status")
