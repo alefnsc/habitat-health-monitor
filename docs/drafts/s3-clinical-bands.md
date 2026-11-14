@@ -1,6 +1,10 @@
 # S3 draft: clinical references and bands for the vital signs
 
-Status: DRAFT for operator approval. Nothing is encoded until the operator approves (D29).
+Status: **APPROVED by the operator 2026-11-14 ~10:22** (relayed by the orchestrator). Approved decisions:
+- `glucose_high` kept, labelled "screening prompt, not a diagnosis; timing unknown".
+- BP rows kept, labelled "team choice; single reading is a screening prompt".
+- Citations: AHA/ACC 2025 and ADA 2026 (no primary quote was retrievable; shown as cited).
+- The OCHMO sleep claim ("about 6 h in flight") stays off every card.
 Drafted by the S agent, 2026-11-14. **All rows below are clinical or team-convention bands and are not NASA-published.** Every card must show the label "not NASA-published" (or "Team convention, not clinical" for mood). source_kind is `clinical_ref` except `mood_self` and `mood_7d` (`team_convention`, D13).
 
 Verification status by source (what I could actually open on 2026-11-14):
