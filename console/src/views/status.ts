@@ -63,9 +63,9 @@ function wearerPanel(): HTMLElement {
   return wrap;
 }
 
-export function renderStatus(root: HTMLElement, onTile?: (t: Tile) => void): () => void {
+export function renderStatus(root: HTMLElement, onTile?: (t: Tile) => void, live = true): () => void {
   const host = el("div");
-  root.replaceChildren(host, wearerPanel());
+  root.replaceChildren(host, ...(live ? [wearerPanel()] : []));
   const draw = () => {
     const tiles = buildTiles(board.entries, Date.now());
     const byId = new Map(tiles.map((t) => [t.id, t]));
@@ -85,7 +85,7 @@ export function renderStatus(root: HTMLElement, onTile?: (t: Tile) => void): () 
   const unsub = board.subscribe(draw);
   const tick = setInterval(draw, 5000);
   draw();
-  void loadBoard();
+  if (live) void loadBoard();
   return () => {
     unsub();
     clearInterval(tick);

@@ -7,6 +7,8 @@ import { CREW, currentCrew, onCrewChange, setCurrentCrew } from "./crew";
 import { el } from "./dom";
 import { appliesToCrew, applySnapshot } from "./model/status";
 import { board } from "./state";
+import { SCREENS, screenFromHash, type Screen } from "./screens";
+import { mountReplayApp } from "./replay/app";
 import { renderEntry } from "./views/entry";
 import { renderFood } from "./views/food";
 import { renderExercise } from "./views/exercise";
@@ -16,17 +18,15 @@ import { refreshBanner, renderNasa, startBanner } from "./views/nasa";
 import { loadBoard, renderStatus } from "./views/status";
 import { connectWs, wsUrl } from "./ws";
 
-export const SCREENS = ["status", "entry", "history", "exercise", "food", "nasa", "prompts", "body"] as const;
-export type Screen = (typeof SCREENS)[number];
-
-export function screenFromHash(hash: string): Screen {
-  const name = hash.replace(/^#\/?/, "").split("/")[0];
-  return (SCREENS as readonly string[]).includes(name) ? (name as Screen) : "status";
-}
+export { SCREENS, screenFromHash, type Screen };
 
 const HUB_LOST_AFTER_MS = 5000;
 
 export function mountApp(root: HTMLElement): void {
+  if (import.meta.env.MODE === "replay") {
+    void mountReplayApp(root, { base: import.meta.env.BASE_URL, fetchImpl: (u) => fetch(u) });
+    return;
+  }
   const lost = el("div", { class: "hub-lost", role: "alert", hidden: true, text: COPY["app.hubLost"] });
   const nav = el("nav", { class: "nav", "aria-label": "Screens" });
   const crewSel = el("select", { id: "crew-select" });

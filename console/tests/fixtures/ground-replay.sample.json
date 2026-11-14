@@ -1,0 +1,161 @@
+{
+ "v": 1,
+ "kind": "ground-replay",
+ "label": "Recorded session, 2026-11-15, São Paulo",
+ "exported_at": "2026-11-15T00:00:00Z",
+ "t0": "2026-11-15T12:00:00Z",
+ "light_time_s": 720,
+ "time_scale": 60,
+ "arrivals": [
+  {
+   "at_ms": 0,
+   "beacon": {
+    "link": {
+     "state": "contact",
+     "light_time_s": 720,
+     "time_scale": 60,
+     "queue_len": 0,
+     "last_blackout": null
+    },
+    "hold_s": 12,
+    "in_flight": 0,
+    "fetched_id": 0,
+    "delivered_id": 0,
+    "last_blackout_cause": null,
+    "sent_at": "2026-11-15T12:00:00Z"
+   },
+   "items": [
+    {
+     "id": 1,
+     "kind": "reading",
+     "created_at": "2026-11-15T12:00:00Z",
+     "payload": {
+      "id": 1,
+      "v": 1,
+      "node": "sim-1",
+      "boot": 1,
+      "seq": 1,
+      "age_ms": 0,
+      "ind": "hr",
+      "val": 70,
+      "unit": "bpm",
+      "src": "hobby",
+      "dev": "MAX30102",
+      "q": [
+       "ok"
+      ],
+      "crew": null,
+      "code": null,
+      "measured_at": "2026-11-15T12:00:00Z",
+      "received_at": "2026-11-15T12:00:00Z",
+      "derived_from": null,
+      "status": "ok",
+      "rule_id": null,
+      "source_kind": null,
+      "escalate_to": "self"
+     }
+    }
+   ]
+  },
+  {
+   "at_ms": 5000,
+   "beacon": {
+    "link": {
+     "state": "blackout",
+     "light_time_s": 720,
+     "time_scale": 60,
+     "queue_len": 0,
+     "last_blackout": null
+    },
+    "hold_s": 12,
+    "in_flight": 0,
+    "fetched_id": 0,
+    "delivered_id": 0,
+    "last_blackout_cause": null,
+    "sent_at": "2026-11-15T12:00:05Z"
+   },
+   "items": [
+    {
+     "id": 2,
+     "kind": "reading",
+     "created_at": "2026-11-15T12:00:05Z",
+     "payload": {
+      "id": 2,
+      "v": 1,
+      "node": "sim-1",
+      "boot": 1,
+      "seq": 2,
+      "age_ms": 0,
+      "ind": "hr",
+      "val": 74,
+      "unit": "bpm",
+      "src": "hobby",
+      "dev": "MAX30102",
+      "q": [
+       "motion"
+      ],
+      "crew": null,
+      "code": null,
+      "measured_at": "2026-11-15T12:00:05Z",
+      "received_at": "2026-11-15T12:00:05Z",
+      "derived_from": null,
+      "status": "unknown",
+      "rule_id": null,
+      "source_kind": null,
+      "escalate_to": "self"
+     }
+    }
+   ]
+  },
+  {
+   "at_ms": 9000,
+   "beacon": null,
+   "items": [
+    {
+     "id": 3,
+     "kind": "reading",
+     "created_at": "2026-11-15T12:00:09Z",
+     "payload": {
+      "id": 3,
+      "v": 1,
+      "node": "sim-1",
+      "boot": 1,
+      "seq": 3,
+      "age_ms": 0,
+      "ind": "cabin_ppco2",
+      "val": 3.1,
+      "unit": "mmHg",
+      "src": "replay",
+      "dev": "BME280",
+      "q": [
+       "ok"
+      ],
+      "crew": null,
+      "code": null,
+      "measured_at": "2026-11-15T12:00:09Z",
+      "received_at": "2026-11-15T12:00:09Z",
+      "derived_from": null,
+      "status": "watch",
+      "rule_id": "co2_1h",
+      "source_kind": "nasa_std",
+      "escalate_to": "cmo"
+     }
+    },
+    {
+     "id": 4,
+     "kind": "rep",
+     "created_at": "x",
+     "payload": {}
+    },
+    {
+     "id": 5,
+     "kind": "alert",
+     "created_at": "x",
+     "payload": {
+      "ind": "hr"
+     }
+    }
+   ]
+  }
+ ]
+}
