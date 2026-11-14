@@ -11,13 +11,21 @@ import argparse
 import asyncio
 import logging
 import sys
+from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
-from datetime import UTC, date, datetime
-from typing import Literal
+from datetime import UTC, date, datetime, timedelta
+from typing import TYPE_CHECKING, Literal
 
 import httpx
 
+if TYPE_CHECKING:
+    from hub.nasa.config import NasaSettings
+    from hub.nasa.donki_cache import CachedDonki, DonkiCache
+
 log = logging.getLogger(__name__)
+
+POLL_INTERVAL_S = 600
+POLL_WINDOW_DAYS = 7
 
 DONKI_KINDS: tuple[str, ...] = ("FLR", "SEP", "GST", "notifications")
 MAX_WINDOW_DAYS = 60  # probed 2026-11-14: 60 days answers 200, 61 days answers 400
@@ -101,6 +109,62 @@ async def donki_fetch(
         return DonkiResult(kind, _events(r), "api_key", fetched_at)
     except ValueError as exc:
         raise DonkiUnavailable(f"DONKI {kind} key route sent invalid JSON") from exc
+
+
+async def poll_once(
+    now: datetime,
+    *,
+    cache: DonkiCache,
+    client: httpx.AsyncClient,
+    settings: NasaSettings,
+) -> dict[str, CachedDonki | None]:
+    """Fetch the four kinds for [now - 7 days, now]; a failed kind keeps its old file."""
+    end = now.astimezone(UTC).date()
+    start = end - timedelta(days=POLL_WINDOW_DAYS)
+    for kind in DONKI_KINDS:
+        try:
+            res = await donki_fetch(
+                kind,
+                start,
+                end,
+                client=client,
+                base=settings.donki_base,
+                api_key=settings.api_key,
+                now=now,
+            )
+            cache.write(res)
+        except DonkiUnavailable as exc:
+            log.warning("DONKI %s poll failed, cache kept: %s", kind, exc)
+    return {kind: cache.read(kind) for kind in DONKI_KINDS}
+
+
+async def run_poller(
+    stop: asyncio.Event,
+    *,
+    settings: NasaSettings,
+    cache: DonkiCache,
+    client: httpx.AsyncClient,
+    clock: Callable[[], datetime],
+    after_poll: Sequence[Callable[[datetime], Awaitable[None]]] = (),
+    interval_s: int = POLL_INTERVAL_S,
+) -> None:
+    """One cycle at start, then one per interval, until stop is set. Nothing ends the loop."""
+    while not stop.is_set():
+        now = clock()
+        if settings.donki_mode == "live":
+            try:
+                await poll_once(now, cache=cache, client=client, settings=settings)
+            except Exception:
+                log.exception("DONKI poll cycle failed")
+        for cb in after_poll:
+            try:
+                await cb(now)
+            except Exception:
+                log.exception("after_poll callback failed")
+        try:
+            await asyncio.wait_for(stop.wait(), timeout=interval_s)
+        except TimeoutError:
+            pass
 
 
 async def _cli(kind: str, start: date, end: date, api_key: str | None, base: str) -> int:
