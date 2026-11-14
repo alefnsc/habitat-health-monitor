@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import logging
 import os
 from collections.abc import Callable
@@ -18,7 +19,8 @@ from starlette.concurrency import run_in_threadpool
 
 from hub.assess import Assessor, load_escalation, status_body
 from hub.config import Settings, load_settings
-from hub.contract import CREWS, DERIVED, INDICATORS
+from hub.contract import CREWS, DERIVED, INDICATORS, ContractError
+from hub.crew import CrewRegistry, validate_crew_post
 from hub.derive import derive_ppco2
 from hub.events import EventBus
 from hub.ingest import Ingestor, IngestResult
@@ -32,6 +34,8 @@ log = logging.getLogger("hub.api")
 
 DEFAULT_LIMIT = 500
 MAX_LIMIT = 5000
+OUTBOX_DEFAULT = 500
+OUTBOX_MAX = 1000
 
 
 def reject(reason: str, status: int = 422) -> JSONResponse:
@@ -66,6 +70,7 @@ def create_app(
         log.warning("hub clock reads %s; set the system time before recording data", clock())
     bus = EventBus()
     nodes = NodeRegistry(clock)
+    crew_registry = CrewRegistry(store, clock)
     rules = load_rule_files([settings.thresholds_path, settings.food_thresholds_path])
     assessor = Assessor(
         store,
@@ -81,6 +86,7 @@ def create_app(
         emit=bus.publish,
         deriver=derive_ppco2,
         assessor=assessor,
+        crew_for=crew_registry.get,
     )
     publisher = MqttPublisher()
 
@@ -128,6 +134,7 @@ def create_app(
     app.state.clock = clock
     app.state.bus = bus
     app.state.nodes = nodes
+    app.state.crew = crew_registry
     app.state.publisher = publisher
     app.state.node_states = lambda: [n.to_dict() for n in nodes.snapshot()]
     app.state.extra_subscriptions = ()
@@ -187,6 +194,44 @@ def create_app(
             return reject("bad_crew")
         rows = store.readings(ind, since=since, limit=limit, crew=crew)
         return JSONResponse([r.to_dict() for r in rows])
+
+    @app.post("/api/crew")
+    async def post_crew(request: Request) -> JSONResponse:
+        try:
+            try:
+                body = json.loads(await request.body())
+            except ValueError:
+                raise ContractError("bad_json") from None
+            node, crew = validate_crew_post(body)
+        except ContractError as e:
+            return reject(e.reason)
+        crew_registry.set(node, crew)
+        return JSONResponse({"node": node, "crew": crew})
+
+    @app.get("/api/outbox")
+    def get_outbox(request: Request) -> JSONResponse:
+        q = request.query_params
+        try:
+            after = int(q["after"]) if q.get("after") else 0
+        except ValueError:
+            return reject("bad_type:after")
+        if after < 0:
+            return reject("bad_value:after")
+        try:
+            limit = int(q["limit"]) if q.get("limit") else OUTBOX_DEFAULT
+        except ValueError:
+            return reject("bad_type:limit")
+        limit = max(1, min(OUTBOX_MAX, limit))
+        items = store.outbox_after(after, limit)
+        return JSONResponse(
+            {
+                "items": [
+                    {"id": i.id, "kind": i.kind, "created_at": i.created_at, "payload": i.payload}
+                    for i in items
+                ],
+                "last_id": items[-1].id if items else after,
+            }
+        )
 
     @app.get("/api/status")
     def get_status(request: Request) -> JSONResponse:
