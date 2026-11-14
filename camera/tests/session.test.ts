@@ -7,7 +7,7 @@ const json = (b: unknown, status = 200) => new Response(JSON.stringify(b), { sta
 const SESSION = { session: "s-1794657600000", mass_kg: 10, g: 9.81, crew: "crew-a", started_at: "x", ended_at: null, camera_reps: 0, load_cell_reps: 0 };
 const msg = (seq: number): RepMessage => ({
   v: 1, node: "camera", boot: 1, seq, age_ms: 0, type: "rep", session: "s", rep: seq, src: "camera", peak_n: 1, work_j: 1,
-  rom_m: 0.5, g: 9.81, mass_kg: 10, t0_ms: 0, t1_ms: 1000,
+  rom_m: 0.5, g: 9.81, mass_kg: 10, t0_ms: 0, t1_ms: 1000, work_ecc_j: 0, t_con_ms: 500, t_ecc_ms: 500, t_turn_ms: 500,
 });
 const res = (dup = false): PostResult => ({ id: 1, measured_at: "x", duplicate: dup, results: [] });
 

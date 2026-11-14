@@ -1,7 +1,9 @@
+import sqlite3
 import threading
 import time
 from datetime import UTC, datetime, timedelta
 
+from hub.contract import parse_rep
 from hub.store import Store
 from hub.tests.helpers import hr, msg, reading
 
@@ -151,3 +153,52 @@ def test_throughput(tmp_path):
             T0,
         )  # fmt: skip
     assert time.perf_counter() - t < 2.0
+
+
+def rep_msg(**kw) -> dict:
+    base = {
+        "v": 1, "node": "camera", "boot": 1, "seq": 1, "age_ms": 0, "type": "rep",
+        "session": "s1", "rep": 1, "src": "camera", "peak_n": 100.0, "work_j": 10.0,
+        "rom_m": 0.5, "g": 9.81, "mass_kg": 10, "t0_ms": 1000, "t1_ms": 3000,
+    }  # fmt: skip
+    base.update(kw)
+    return base
+
+
+def test_rep_phase_columns_round_trip(tmp_path):
+    s = make(tmp_path)
+    m = rep_msg(work_ecc_j=20.5, t_con_ms=1000, t_ecc_ms=1000, t_turn_ms=2000)
+    row, new = s.insert_rep(parse_rep(m), T0)
+    assert new
+    assert (row.work_ecc_j, row.t_con_ms, row.t_ecc_ms, row.t_turn_ms) == (20.5, 1000, 1000, 2000)
+    assert s.reps_for_session("s1")[0].to_dict()["t_turn_ms"] == 2000
+    old, _ = s.insert_rep(parse_rep(rep_msg(seq=2, rep=2)), T0)
+    assert (old.work_ecc_j, old.t_con_ms, old.t_ecc_ms, old.t_turn_ms) == (None, None, None, None)
+
+
+def test_old_reps_table_is_migrated(tmp_path):
+    p = tmp_path / "old.db"
+    c = sqlite3.connect(p)
+    c.executescript(
+        "CREATE TABLE reps (id INTEGER PRIMARY KEY AUTOINCREMENT, node TEXT NOT NULL,"
+        " boot INTEGER NOT NULL, seq INTEGER NOT NULL, age_ms INTEGER NOT NULL,"
+        " type TEXT NOT NULL, session TEXT NOT NULL, rep INTEGER NOT NULL, src TEXT NOT NULL,"
+        " peak_n REAL NOT NULL, work_j REAL, rom_m REAL, g REAL NOT NULL, mass_kg REAL NOT NULL,"
+        " t0_ms INTEGER NOT NULL, t1_ms INTEGER NOT NULL, measured_at TEXT NOT NULL,"
+        " received_at TEXT NOT NULL, UNIQUE (node, boot, seq));"
+        "INSERT INTO reps (node, boot, seq, age_ms, type, session, rep, src, peak_n, work_j,"
+        " rom_m, g, mass_kg, t0_ms, t1_ms, measured_at, received_at) VALUES ('camera', 1, 1, 0,"
+        " 'rep', 's1', 1, 'camera', 100, 10, 0.5, 9.81, 10, 0, 2000,"
+        " '2026-11-14T12:00:00.000Z', '2026-11-14T12:00:00.000Z');"
+    )
+    c.commit()
+    c.close()
+    s = Store(p)
+    (r,) = s.reps_for_session("s1")
+    assert r.work_j == 10 and r.t_turn_ms is None
+    s.close()
+    s2 = Store(p)  # a second open must not fail: the migration is idempotent
+    cols = {row[1] for row in s2.conn.execute("PRAGMA table_info(reps)")}
+    assert {"work_ecc_j", "t_con_ms", "t_ecc_ms", "t_turn_ms"} <= cols
+    row, _ = s2.insert_rep(parse_rep(rep_msg(seq=2, rep=2, t_turn_ms=1500)), T0)
+    assert row.t_turn_ms == 1500

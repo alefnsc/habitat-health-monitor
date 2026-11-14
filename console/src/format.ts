@@ -2,7 +2,7 @@ import { COPY } from "./copy";
 import type { Ind, QualityFlag, SourceKind, SrcClass, Status } from "./contract";
 
 const DECIMALS: Record<string, number> = {
-  hr: 0, spo2: 0, bp_sys: 0, bp_dia: 0, glucose: 0, cabin_rh: 0, cabin_co2: 0, cabin_lux: 0, load_raw: 0,
+  hr: 0, spo2: 0, bp_sys: 0, bp_dia: 0, glucose: 0, cabin_rh: 0, cabin_co2: 0, cabin_lux: 0, load_raw: 0, tilt: 0,
   space_weather: 0,
   body_temp: 1, skin_temp: 1, cabin_temp: 1, cabin_p: 1, sleep_h: 1, rad_dose_cum: 1,
   cabin_ppco2: 2, motion: 2,

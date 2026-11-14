@@ -80,9 +80,9 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     const outcome = analyseRecording(frames, inputs, { id, title: "Camera set" });
     const view = resultView(outcome);
     if (view.rows.length) {
-      const table = h("table", {}, h("tr", {}, ...["Rep", COPY["result.peak"], COPY["result.work"], COPY["result.rom"], ""].map((t) => h("th", { text: t }))));
+      const table = h("table", {}, h("tr", {}, ...["Rep", COPY["result.peak"], COPY["result.work"], COPY["result.workEcc"], COPY["result.tCon"], COPY["result.tEcc"], COPY["result.rom"], ""].map((t) => h("th", { text: t }))));
       for (const r of view.rows) {
-        table.append(h("tr", {}, h("td", { text: String(r.rep) }), h("td", { text: r.peakN.toFixed(1) }), h("td", { text: r.workJ.toFixed(1) }), h("td", { text: r.romM.toFixed(2) }), h("td", {}, h("span", { text: r.badge }), ...r.notes.map((n) => h("div", { text: n })))));
+        table.append(h("tr", {}, h("td", { text: String(r.rep) }), h("td", { text: r.peakN.toFixed(1) }), h("td", { text: r.workJ.toFixed(1) }), h("td", { text: r.eccJ.toFixed(1) }), h("td", { text: r.tConS.toFixed(2) }), h("td", { text: r.tEccS.toFixed(2) }), h("td", { text: r.romM.toFixed(2) }), h("td", {}, h("span", { text: r.badge }), ...r.notes.map((n) => h("div", { text: n })))));
       }
       results.append(table);
     }

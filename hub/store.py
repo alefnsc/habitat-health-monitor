@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS reps (
   peak_n REAL NOT NULL, work_j REAL, rom_m REAL, g REAL NOT NULL, mass_kg REAL NOT NULL,
   t0_ms INTEGER NOT NULL, t1_ms INTEGER NOT NULL,
   measured_at TEXT NOT NULL, received_at TEXT NOT NULL,
+  work_ecc_j REAL, t_con_ms INTEGER, t_ecc_ms INTEGER, t_turn_ms INTEGER,
   UNIQUE (node, boot, seq)
 );
 CREATE INDEX IF NOT EXISTS reps_session ON reps(session);
@@ -73,8 +74,20 @@ _A_COLS = (
 )
 _P_COLS = (
     "id, node, boot, seq, age_ms, type, session, rep, src, peak_n, work_j, rom_m, g, mass_kg, "
-    "t0_ms, t1_ms, measured_at, received_at"
+    "t0_ms, t1_ms, measured_at, received_at, work_ecc_j, t_con_ms, t_ecc_ms, t_turn_ms"
 )
+# Columns added after the first release (D39). Old databases get them through _migrate.
+_REP_PHASE_COLS = (
+    ("work_ecc_j", "REAL"), ("t_con_ms", "INTEGER"), ("t_ecc_ms", "INTEGER"),
+    ("t_turn_ms", "INTEGER"),
+)  # fmt: skip
+
+
+def _migrate(conn: sqlite3.Connection) -> None:
+    have = {row[1] for row in conn.execute("PRAGMA table_info(reps)")}
+    for name, kind in _REP_PHASE_COLS:
+        if name not in have:
+            conn.execute(f"ALTER TABLE reps ADD COLUMN {name} {kind}")
 
 
 @dataclass(frozen=True)
@@ -124,6 +137,10 @@ class StoredRep:
     t1_ms: int
     measured_at: str
     received_at: str
+    work_ecc_j: float | None = None
+    t_con_ms: int | None = None
+    t_ecc_ms: int | None = None
+    t_turn_ms: int | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -163,7 +180,8 @@ def _rep_row(row: tuple) -> StoredRep:
         id=row[0], v=1, node=row[1], boot=row[2], seq=row[3], age_ms=row[4], type=row[5],
         session=row[6], rep=row[7], src=row[8], peak_n=row[9], work_j=row[10], rom_m=row[11],
         g=row[12], mass_kg=row[13], t0_ms=row[14], t1_ms=row[15], measured_at=row[16],
-        received_at=row[17],
+        received_at=row[17], work_ecc_j=row[18], t_con_ms=row[19], t_ecc_ms=row[20],
+        t_turn_ms=row[21],
     )  # fmt: skip
 
 
@@ -179,6 +197,7 @@ class Store:
             self.conn.execute("PRAGMA foreign_keys=ON")
             self.conn.execute("PRAGMA busy_timeout=5000")
             self.conn.executescript(_SCHEMA)
+            _migrate(self.conn)
             self.conn.commit()
 
     def close(self) -> None:
@@ -311,12 +330,14 @@ class Store:
             try:
                 cur = self.conn.execute(
                     "INSERT INTO reps (node, boot, seq, age_ms, type, session, rep, src, peak_n,"
-                    " work_j, rom_m, g, mass_kg, t0_ms, t1_ms, measured_at, received_at)"
-                    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    " work_j, rom_m, g, mass_kg, t0_ms, t1_ms, measured_at, received_at,"
+                    " work_ecc_j, t_con_ms, t_ecc_ms, t_turn_ms)"
+                    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                     (
                         r.node, r.boot, r.seq, r.age_ms, r.type, r.session, r.rep, r.src,
                         r.peak_n, r.work_j, r.rom_m, r.g, r.mass_kg, r.t0_ms, r.t1_ms,
-                        measured, to_iso(received_at),
+                        measured, to_iso(received_at), r.work_ecc_j, r.t_con_ms, r.t_ecc_ms,
+                        r.t_turn_ms,
                     ),
                 )  # fmt: skip
                 self.conn.commit()

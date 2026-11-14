@@ -17,6 +17,8 @@ This is an educational prototype, not a medical device. IEC 60601-1 compliance i
 9. **Exercise rig mechanics:** clamp the load cell, hook and band so nothing can fly free if the band snaps; keep the HX711 board enclosed or taped; no bare conductor within reach of the handle; stay clear of the swing path. Never pull to the cell's rated capacity to test a flag (F15 uses a temporary low capacity constant).
 10. Every screen, the README and the project page say "educational prototype, not a medical device".
 11. If anything smells hot or a regulator burns a finger: unplug first, then think.
+12. **Mercury tilt switch (KY-017, tilt-1 node):** the capsule holds liquid mercury in glass. It stays in its sealed pod (heat-shrink plus a closed box) and is never opened; only adult team members handle it. If the glass breaks: clear the room and ventilate; no vacuum cleaner and no broom; gloves on, collect the beads with stiff card or an eyedropper; seal everything in a zip bag and take it to a hazardous-waste drop-off, never household trash. Anyone under 18 stays out of the cleanup.
+13. **Neodymium magnets** (they hold the tilt pod on the steel weight) snap together hard and can pinch skin: slide them apart, keep fingers clear, keep them away from cards and phones.
 
 ## Bench checks (tick only after measuring)
 
