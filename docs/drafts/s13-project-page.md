@@ -73,7 +73,7 @@ Three images: one real screenshot and two AI-generated illustrations, each marke
 2. `docs/img/habitat-illustration.png`
    - Caption: One habitat on the simplified circuit: an offline hub, one I/O board for cabin temperature and humidity, a camera that measures exercise work, and a sealed tilt witness. A ring will supply vitals. AI-generated illustration.
    - Alt text: Flat cartoon cutaway of a cylindrical surface habitat with bunks, a galley, an exercise room and a desk corner, with no people.
-     - Callouts read "Hub: logs and judges every reading, works offline", "I/O board on USB: cabin temperature and humidity, alarm", "Camera (computer vision): reps and work in joules", "Tilt node (sealed mercury switch, Wi-Fi board, 2 AA cells): checks rep timing" and "Smart ring (team owner's own): heart rate, SpO2, sleep; import planned, not built yet".
+     - Callouts read "Hub: logs and judges every reading, works offline", "I/O board on USB: cabin temperature and humidity, alarm", "Camera (computer vision): reps and work in joules", "Tilt node (sealed mercury switch, Wi-Fi board, AA cells): checks rep timing" and "Smart ring (team owner's own): heart rate, SpO2, sleep; import planned, not built yet".
      - Footnotes say "The hub works offline; the planned ring import would need the internet." and "Educational prototype, not a medical device. Hobby-sensor values are estimates."
      - A label reads "AI-generated illustration".
 3. `docs/img/same-sensors-three-places.png`
