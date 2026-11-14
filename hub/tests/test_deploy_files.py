@@ -31,3 +31,24 @@ def test_no_provider_names_in_ui_sources():
     for path in list((ROOT / "ground" / "src").glob("*.ts")) + [ROOT / "ground" / "index.html"]:
         text = path.read_text().lower()
         assert "vercel" not in text and "upstash" not in text, path
+
+
+def test_consent_doc_has_both_languages_and_rules():
+    text = (ROOT / "docs" / "consent.md").read_text()
+    for needle in ("## English", "## Português", "48 h", "PUBLIC_CREWS", "purge", "under 18", "menores de 18", "sim-1"):
+        assert needle in text, needle
+    assert text.count("sim-1") >= 2
+
+
+def test_deploy_public_doc_commands_match_code():
+    text = (ROOT / "docs" / "deploy-public.md").read_text()
+    for needle in (
+        "GROUND_INGEST_SECRET",
+        "UPSTASH_REDIS_REST_URL",
+        "KV_REST_API_URL",
+        "PUBLIC_GROUND_URL",
+        "Never replay recordings of real people through node sim-1",
+    ):
+        assert needle in text, needle
+    assert (ROOT / "linksim" / "link.demo.json").exists()
+    assert (ROOT / "data" / "replay" / "l0-synthetic.jsonl").exists()

@@ -57,6 +57,8 @@ Everything that touches a person runs on battery only. See `docs/safety-checklis
 
 See `DATA_SOURCES.md`.
 
+- Consent to publish health readings: docs/consent.md
+
 ## Validation
 
 See `docs/validation.md`.
@@ -68,6 +70,8 @@ The prior-work library is declared in `docs/decisions/links.md` and used only at
 ## Links
 
 See `docs/decisions/links.md`.
+
+- Public ground segment setup: docs/deploy-public.md (consent form: docs/consent.md)
 
 ## AI use
 
