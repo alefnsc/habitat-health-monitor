@@ -11,13 +11,14 @@ The habitat core never calls the cloud: ring vitals are a delayed cloud sync.
 from __future__ import annotations
 
 import argparse
+import getpass
 import os
 import secrets
 import sys
 import time
 import webbrowser
 from collections import Counter
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -42,6 +43,53 @@ from nodes.ring.records import KIND, append_record, load_records
 DEFAULT_HUB = "http://127.0.0.1:8000"
 DEFAULT_TOKEN = "var/ring/token.json"
 DEFAULT_PULLS = "var/ring/pulls.jsonl"
+DEFAULT_REDIRECT = "http://127.0.0.1:8799/callback"
+
+
+def set_env_values(path: Path, values: Mapping[str, str]) -> None:
+    """Set KEY=value lines in a .env file (replace in place or append); the file stays mode 600."""
+    path = Path(path)
+    lines = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
+    out, seen = [], set()
+    for line in lines:
+        key = line.split("=", 1)[0].strip()
+        if "=" in line and not line.lstrip().startswith("#") and key in values:
+            out.append(f"{key}={values[key]}")
+            seen.add(key)
+        else:
+            out.append(line)
+    out += [f"{k}={v}" for k, v in values.items() if k not in seen]
+    tmp = path.with_name(path.name + ".tmp")
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        os.fchmod(fd, 0o600)
+        os.write(fd, ("\n".join(out) + "\n").encode())
+    finally:
+        os.close(fd)
+    os.replace(tmp, path)
+
+
+def fill_missing(
+    env: Mapping[str, str],
+    env_path: Path,
+    ask: Callable[[str], str],
+    ask_secret: Callable[[str], str],
+) -> dict[str, str]:
+    """Ask for the app's client id (echoed) and secret (hidden) when unset; save them to .env."""
+    env, new = dict(env), {}
+    if not env.get("RING_CLIENT_ID"):
+        new["RING_CLIENT_ID"] = ask("Ring app client id: ").strip()
+    if not env.get("RING_CLIENT_SECRET"):
+        new["RING_CLIENT_SECRET"] = ask_secret("Ring app client secret (hidden, press Enter): ").strip()
+    if not env.get("RING_REDIRECT_URI"):
+        new["RING_REDIRECT_URI"] = DEFAULT_REDIRECT
+    if any(not v for v in new.values()):
+        raise AuthError("nothing entered; run `python -m nodes.ring auth` again")
+    if new:
+        set_env_values(env_path, new)
+        env.update(new)
+        print(f"Saved {', '.join(sorted(new))} to {env_path} (mode 600, git-ignored).")
+    return env
 
 
 def load_env(path: Path, environ: Mapping[str, str]) -> dict[str, str]:
@@ -78,17 +126,22 @@ def _replay(args: argparse.Namespace, http: httpx.Client) -> int:
 
 
 def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
+    env = fill_missing(env, Path(args.env_file), input, getpass.getpass)
     cfg = config_from_env(env)
     verifier, challenge = make_pkce()
     state = secrets.token_urlsafe(24)
     url = build_authorize_url(cfg, state, challenge)
-    print("Sign in with the ring account and allow heartrate, spo2 and daily:\n" + url)
-    if not args.no_browser:
-        webbrowser.open(url)
+
+    def open_sign_in() -> None:
+        print("Sign in with the ring account and allow heartrate, spo2 and daily:\n" + url)
+        if not args.no_browser:
+            webbrowser.open(url)
+
     if is_loopback_redirect(cfg.redirect_uri):
-        print(f"Waiting for the redirect on {cfg.redirect_uri} ...")
-        redirect = wait_for_redirect(cfg.redirect_uri)
+        # the callback port is bound before the browser opens (see wait_for_redirect)
+        redirect = wait_for_redirect(cfg.redirect_uri, on_ready=open_sign_in)
     else:
+        open_sign_in()
         redirect = input("Paste the full URL the browser was sent to: ")
     code = code_from_redirect(redirect, state)
     with httpx.Client() as http:
@@ -128,6 +181,7 @@ def build_parser() -> argparse.ArgumentParser:
     au = sub.add_parser("auth", help="sign in once and save the token")
     au.add_argument("--token", default=DEFAULT_TOKEN)
     au.add_argument("--no-browser", action="store_true", help="print the URL, do not open it")
+    au.add_argument("--env-file", default=".env", help="where a typed client id and secret are saved")
     pu = sub.add_parser("pull", help="fetch, save the raw pull, post as src hobby")
     pu.add_argument("--days", type=int, default=2, help="how many days back (default 2)")
     pu.add_argument("--token", default=DEFAULT_TOKEN)

@@ -186,7 +186,9 @@ def test_auth_command_runs_the_code_flow_and_saves_a_private_token(tmp_path, mon
     opened: list[str] = []
     monkeypatch.setattr(cli.webbrowser, "open", lambda url: opened.append(url) or True)
 
-    def fake_wait(redirect_uri: str, timeout_s: float = 300) -> str:
+    def fake_wait(redirect_uri: str, timeout_s: float = 300, on_ready=None) -> str:
+        assert not opened, "the browser must open only after the callback port is bound"
+        on_ready()
         state = parse_qs(urlsplit(opened[0]).query)["state"][0]
         return f"{redirect_uri}?code=C0DE&state={state}"
 
@@ -194,12 +196,44 @@ def test_auth_command_runs_the_code_flow_and_saves_a_private_token(tmp_path, mon
     exch = respx.post(TOKEN_URL).respond(200, json={"access_token": "AT", "refresh_token": "RT",
                                                      "expires_in": 86400})  # fmt: skip
     path = tmp_path / "var" / "ring" / "token.json"
-    assert cli.main(["auth", "--token", str(path)], env=ENV) == 0
+    assert cli.main(["auth", "--token", str(path), "--env-file", str(tmp_path / ".env")], env=ENV) == 0
     form = {k: v[0] for k, v in parse_qs(exch.calls.last.request.content.decode()).items()}
     assert form["code"] == "C0DE" and len(form["code_verifier"]) >= 43
     assert load_token(path)["refresh_token"] == "RT" and path.stat().st_mode & 0o777 == 0o600
     out = capsys.readouterr().out
     assert "AT" not in out.split() and "RT" not in out.split()  # never print the token
+    assert not (tmp_path / ".env").exists()  # nothing was missing, so nothing was written
+
+
+def test_fill_missing_prompts_saves_privately_and_never_prints_the_secret(tmp_path, capsys):
+    env_file = tmp_path / ".env"
+    env_file.write_text("# keep me\nRING_API_BASE=https://api.example.test\nRING_CLIENT_ID=\n"
+                        "RING_CLIENT_SECRET=\nRING_REDIRECT_URI=http://127.0.0.1:8799/callback\n")  # fmt: skip
+    env_file.chmod(0o600)
+    asked: list[str] = []
+    env = {k: v for k, v in ENV.items() if k not in ("RING_CLIENT_ID", "RING_CLIENT_SECRET")}
+    got = cli.fill_missing(env, env_file, lambda p: asked.append(p) or " my-id ",
+                           lambda p: asked.append(p) or "s3cr3t-value")  # fmt: skip
+    assert (got["RING_CLIENT_ID"], got["RING_CLIENT_SECRET"]) == ("my-id", "s3cr3t-value")
+    assert any("hidden" in p for p in asked)
+    text = env_file.read_text()
+    assert text.splitlines() == ["# keep me", "RING_API_BASE=https://api.example.test",
+                                 "RING_CLIENT_ID=my-id", "RING_CLIENT_SECRET=s3cr3t-value",
+                                 "RING_REDIRECT_URI=http://127.0.0.1:8799/callback"]  # fmt: skip
+    assert env_file.stat().st_mode & 0o777 == 0o600
+    assert cli.load_env(env_file, {})["RING_CLIENT_SECRET"] == "s3cr3t-value"
+    assert "s3cr3t" not in capsys.readouterr().out
+
+
+def test_fill_missing_rejects_an_empty_answer_and_defaults_the_redirect(tmp_path):
+    env_file = tmp_path / ".env"
+    with pytest.raises(AuthError, match="nothing entered"):
+        cli.fill_missing({}, env_file, lambda p: "", lambda p: "x")
+    assert not env_file.exists()
+    got = cli.fill_missing({"RING_CLIENT_ID": "a", "RING_CLIENT_SECRET": "b"}, env_file,
+                           lambda p: "", lambda p: "")  # fmt: skip
+    assert got["RING_REDIRECT_URI"] == cli.DEFAULT_REDIRECT == "http://127.0.0.1:8799/callback"
+    assert env_file.stat().st_mode & 0o777 == 0o600
 
 
 def test_dotenv_fills_only_missing_ring_keys(tmp_path):

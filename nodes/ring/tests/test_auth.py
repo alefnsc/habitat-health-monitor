@@ -144,6 +144,18 @@ def test_wait_for_redirect_catches_the_callback_on_loopback():
     assert code_from_redirect(got[0], "s9") == "xyz"
 
 
+def test_wait_for_redirect_refuses_a_port_someone_else_holds():
+    """If another program listens on the callback port, stop before the browser ever opens."""
+    with socket.socket() as other:
+        other.bind(("127.0.0.1", 0))
+        other.listen()
+        uri = f"http://127.0.0.1:{other.getsockname()[1]}/callback"
+        opened: list[bool] = []
+        with pytest.raises(AuthError, match="in use"):
+            wait_for_redirect(uri, timeout_s=1, on_ready=lambda: opened.append(True))
+        assert opened == []
+
+
 def test_wait_for_redirect_refuses_a_non_local_redirect():
     with pytest.raises(AuthError, match="local"):
         wait_for_redirect("https://example.test/callback", timeout_s=1)

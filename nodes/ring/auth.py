@@ -13,7 +13,7 @@ import json
 import os
 import secrets
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -142,8 +142,19 @@ def is_loopback_redirect(redirect_uri: str) -> bool:
     return parts.scheme == "http" and parts.hostname in LOOPBACK and bool(parts.port)
 
 
-def wait_for_redirect(redirect_uri: str, timeout_s: float = 300) -> str:
-    """Serve one GET on the loopback redirect URI and return the full URL it was called with."""
+class _ExclusiveServer(HTTPServer):
+    # No SO_REUSEADDR: binding fails if any other program already listens on this port, so an
+    # authorization code can never be delivered to someone else's server.
+    allow_reuse_address = False
+
+
+def wait_for_redirect(
+    redirect_uri: str, timeout_s: float = 300, on_ready: Callable[[], None] | None = None
+) -> str:
+    """Serve one GET on the loopback redirect URI and return the full URL it was called with.
+
+    The port is bound first; `on_ready` (open the browser) runs only once the port is ours.
+    """
     parts = urlsplit(redirect_uri)
     if not is_loopback_redirect(redirect_uri):
         raise AuthError(f"{redirect_uri} is not a local http redirect; paste the URL instead")
@@ -165,8 +176,17 @@ def wait_for_redirect(redirect_uri: str, timeout_s: float = 300) -> str:
         def log_message(self, *_args: object) -> None:
             return  # keep the code out of the terminal log
 
+    try:
+        server = _ExclusiveServer(("127.0.0.1", parts.port), Handler)
+    except OSError as e:
+        raise AuthError(
+            f"port {parts.port} is in use by another program ({e.strerror}); register a free port "
+            "as the redirect URI and set RING_REDIRECT_URI to match"
+        ) from None
     deadline = time.monotonic() + timeout_s
-    with HTTPServer(("127.0.0.1", parts.port), Handler) as server:
+    with server:
+        if on_ready is not None:
+            on_ready()
         server.timeout = 0.5
         while not got and time.monotonic() < deadline:
             server.handle_request()
