@@ -71,7 +71,10 @@ outside 20–250 bpm, 50–100 % or 0–24 h.
 - `hub/contract.py`: `ring-1` is added to `NODES`, and `RING` to `DEVICES`.
 - `firmware/libraries/HabitatNode/src/ReadingFormat.h` and `.cpp`: `DEV_RING` and `"RING"` are added before
   `DEV_COUNT`. Firmware never sends `RING`; the table is kept in step with the contract.
-- `console/src/copy.ts`: the device label is "Ring (delayed cloud sync)".
+- `console/src/copy.ts`: the device label is "Ring (delayed cloud sync)". The SpO2 tile title changes from "SpO2
+  (finger sensor)" to "SpO2": since D40 there is no finger sensor, and each tile already shows its device badge.
+- The older lane-N wearable *baseline* package (`hub.wearable`, a `baseline_daily` table, plan D12) was optional,
+  was cut, and is not built here. The hub's `wearable` feature flag stays a no-op, because the module is absent.
 - `crew-b` is already in every mirror. It stays out of `PUBLIC_CREWS` until the team owner signs consent.
   linksim is unchanged: body readings reach the public side only for crews in `PUBLIC_CREWS`.
 

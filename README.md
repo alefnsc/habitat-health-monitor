@@ -48,7 +48,7 @@ Layout: two microcontrollers and a hub (decision D40, [confirm: hardware member 
 - **Raspberry Pi 3 Model B** is the hub host (Mosquitto, hub, console), with nothing wired to its header. A laptop runs the hub instead if the Pi is not ready. Setup: `docs/pi-setup.md` (not yet run on hardware).
 - **UNO+WiFi board, ATmega328P side** is the I/O board. It carries a DHT11 (`cabin-1`: cabin temperature and humidity, hobby estimates) and the alarm buzzer, and talks to the hub over USB serial. Its ESP8266 side is unused. Wokwi twin: `firmware/wokwi/uno-rig/`.
 - **NodeMCU (ESP8266)** is the `tilt-1` node: a sealed KY-017 tilt pod on the exercise weight, running on two AA/AAA cells and talking over Wi-Fi/MQTT. Wokwi twin, with an ESP32 standing in: `firmware/wokwi/tilt-esp32/`.
-- Wearable vitals will come from a ring import (next step). No sensor that touches a person is cabled to anything.
+- **Wearable ring** (decision D41): the team owner's own sleep-tracking ring gives `hr` (rest and sleep samples), nightly `spo2` and `sleep_h` as node `ring-1`, device `RING`, through `python -m nodes.ring` (`nodes/ring/README.md`). The habitat core runs offline; ring vitals are a **delayed cloud sync**, always shown with their age and never as live. Replays of recorded pulls are labelled "Replay (recorded)". No sensor that touches a person is cabled to anything.
 
 ## Safety
 

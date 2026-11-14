@@ -83,3 +83,16 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 - Access date: 2026-11-14 (catalogue generated 2026-11-14). Auth: none for the bulk download.
 - Use: nutrient values for the food log.
 - Without it: no catalogue, no food screen.
+
+## Wearable ring (the team owner's own ring)
+
+- Name: Oura Ring cloud API, version 2 (the vendor is named here only; the code and the console say "ring" and device `RING`).
+- Endpoints (base `https://api.ouraring.com`), all `GET`, paged with `next_token`: `/v2/usercollection/heartrate?start_datetime=&end_datetime=` (rows `timestamp`, `timestamp_unix`, `bpm`, `source`), `/v2/usercollection/sleep?start_date=&end_date=` (`day`, `bedtime_end`, `total_sleep_duration` in seconds, `type`), `/v2/usercollection/daily_spo2?start_date=&end_date=` (`day`, `spo2_percentage.average`). Reference: https://cloud.ouraring.com/v2/docs (OpenAPI 1.43, read 2026-11-14).
+- Auth: OAuth2 authorization code with PKCE S256. Authorize `https://cloud.ouraring.com/oauth/authorize`, token `https://api.ouraring.com/oauth/token`; refresh tokens are single-use. Scopes requested: `heartrate`, `spo2`, `daily`. Personal access tokens were deprecated in December 2025 and can no longer be used (https://cloud.ouraring.com/docs/authentication). Every request sends a `User-Agent`. An unapproved developer app is limited to 10 users, which is enough for one.
+- Settings: `RING_API_BASE=https://api.ouraring.com`, `RING_AUTHORIZE_URL=https://cloud.ouraring.com/oauth/authorize`, `RING_TOKEN_URL=https://api.ouraring.com/oauth/token`, plus the app's `RING_CLIENT_ID`, `RING_CLIENT_SECRET` and `RING_REDIRECT_URI` in `.env` (git-ignored).
+- Access date: 2026-11-14. Terms: the vendor's developer terms apply to the app registration; the data is the team owner's own.
+- Whose data: only the team owner's, with their consent at the vendor's sign-in page; readings carry crew `crew-b`, which stays out of `PUBLIC_CREWS` until a signed consent form exists. No minor's data goes through the importer.
+- Mapping (D41): `hr` from `rest` and `sleep` samples only; `sleep_h` from the main (`long_sleep`) period; `spo2` is the nightly average, timed at the end of that night. `skin_temp` is not mapped: the ring reports only a temperature deviation, not a skin temperature.
+- Committed file: `data/replay/ring-synthetic-nights.jsonl`, a **synthetic** pull (invented values in the vendor's field layout, labelled so on its first line). Real pulls are saved to `var/ring/pulls.jsonl` (mode 600, git-ignored) and are never committed.
+- Use: delayed cloud sync of vitals. A pull is `src hobby` with its true age; a replay is `src replay`, shown as "Replay (recorded)". The habitat core never calls the cloud; the importer is a separate process that posts to `POST /api/readings`.
+- Without it: the vitals tiles stay empty; the synthetic replay keeps the demo working with no network.
