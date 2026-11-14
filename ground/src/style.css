@@ -14,3 +14,15 @@ main {
   border-left: 4px solid currentColor;
   padding: 0.5rem 1rem;
 }
+.banner { background: #fff3cd; color: #3b2f00; padding: 0.5rem 1rem; border: 1px solid #c9a400; }
+.silence { font-weight: bold; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.25rem 0.5rem; border-bottom: 1px solid #8884; }
+tr.greyed { opacity: 0.5; }
+.status { font-weight: bold; text-transform: uppercase; }
+.status-ok { color: #1a7f37; }
+.status-watch { color: #9a6700; }
+.status-act { color: #cf222e; }
+.status-unknown { color: #6e7781; }
+dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+dt { font-weight: bold; }

@@ -1,33 +1,26 @@
 import "./style.css";
-import { replayUrl } from "./paths";
+import { apiBase } from "./paths";
+import { emptyView, reduce } from "./model";
+import { render } from "./render";
+import { liveSource } from "./sources";
+import type { GroundView } from "./types";
 
-const app = document.querySelector<HTMLDivElement>("#app")!;
+const root = document.querySelector<HTMLDivElement>("#app")!;
 
-app.innerHTML = `
-  <main>
-    <h1>Ground segment — Earth's view</h1>
-    <p class="notice" role="note">
-      This page shows synthetic or replay data until real data exists.
-      Educational prototype, not a medical device.
-    </p>
-    <p id="status" aria-live="polite">Loading…</p>
-  </main>
-`;
+let view: GroundView = emptyView();
 
-const status = document.querySelector<HTMLParagraphElement>("#status")!;
-
-async function load(): Promise<void> {
-  try {
-    const res = await fetch(replayUrl(import.meta.env.BASE_URL));
-    if (!res.ok) {
-      status.textContent = "Replay data not yet published";
-      return;
-    }
-    await res.json();
-    status.textContent = "Replay data loaded";
-  } catch {
-    status.textContent = "Replay data not yet published";
-  }
+function startLive(): void {
+  const base = apiBase("live", import.meta.env.VITE_API_BASE as string | undefined);
+  liveSource(
+    base,
+    (a) => {
+      view = reduce(view, a, Date.now());
+    },
+    (...args) => fetch(...args),
+  );
+  const draw = () => render(root, view, Date.now(), null);
+  draw();
+  setInterval(draw, 500);
 }
 
-void load();
+startLive();
