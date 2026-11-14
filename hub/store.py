@@ -8,8 +8,10 @@ import threading
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
+from typing import Literal
 
 from hub.contract import Reading, Rep
+from hub.results import AssessmentResult
 from hub.timeutil import to_iso
 
 _SCHEMA = """
@@ -37,6 +39,15 @@ CREATE TABLE IF NOT EXISTS reps (
   UNIQUE (node, boot, seq)
 );
 CREATE INDEX IF NOT EXISTS reps_session ON reps(session);
+CREATE TABLE IF NOT EXISTS assessments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  reading_id INTEGER NOT NULL REFERENCES readings(id),
+  ind TEXT NOT NULL, val REAL, unit TEXT NOT NULL, status TEXT NOT NULL,
+  rule_id TEXT, source_kind TEXT, source_ref TEXT, guidance_id TEXT, escalate_to TEXT NOT NULL,
+  measured_at TEXT NOT NULL, crew TEXT
+);
+CREATE INDEX IF NOT EXISTS assessments_reading ON assessments(reading_id);
+CREATE INDEX IF NOT EXISTS assessments_rule ON assessments(rule_id, ind, crew, id);
 CREATE TABLE IF NOT EXISTS outbox (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   kind TEXT NOT NULL, created_at TEXT NOT NULL, payload TEXT NOT NULL
@@ -46,6 +57,10 @@ CREATE TABLE IF NOT EXISTS outbox (
 _R_COLS = (
     "id, node, boot, seq, age_ms, ind, val, unit, src, dev, q, crew, code, "
     "measured_at, received_at, derived_from"
+)
+_A_COLS = (
+    "id, reading_id, ind, val, unit, status, rule_id, source_kind, source_ref, guidance_id,"
+    " escalate_to, measured_at, crew"
 )
 _P_COLS = (
     "id, node, boot, seq, age_ms, type, session, rep, src, peak_n, work_j, rom_m, g, mass_kg, "
@@ -262,7 +277,7 @@ class Store:
         return _reading_row(row) if row else None
 
     def count(self, table: str) -> int:
-        if table not in {"readings", "reps", "outbox"}:
+        if table not in {"readings", "reps", "outbox", "assessments"}:
             raise ValueError(table)
         with self.lock:
             return self.conn.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
@@ -295,6 +310,74 @@ class Store:
                     (r.node, r.boot, r.seq),
                 ).fetchone()
                 return _rep_row(row), False
+
+    # assessments
+
+    def window_aggregate(
+        self,
+        ind: str,
+        start: datetime | None,
+        end: datetime,
+        crew: str | None,
+        scope_crew: bool,
+        fn: Literal["avg", "sum"],
+    ) -> tuple[float | None, int, str | None]:
+        """(value, row count, earliest measured_at) over assessable rows in (start, end]."""
+        agg = "AVG(val)" if fn == "avg" else "SUM(val)"
+        sql = (
+            f"SELECT {agg}, COUNT(*), MIN(measured_at) FROM readings"
+            " WHERE ind=? AND q='[\"ok\"]' AND measured_at<=?"
+        )
+        args: list = [ind, to_iso(end)]
+        if start is not None:
+            sql += " AND measured_at>?"
+            args.append(to_iso(start))
+        if scope_crew:
+            if crew is None:
+                sql += " AND crew IS NULL"
+            else:
+                sql += " AND crew=?"
+                args.append(crew)
+        with self.lock:
+            val, n, first = self.conn.execute(sql, args).fetchone()
+        return (None if n == 0 else float(val)), n, first
+
+    def insert_assessment(self, a: AssessmentResult) -> AssessmentResult:
+        with self.lock:
+            cur = self.conn.execute(
+                "INSERT INTO assessments (reading_id, ind, val, unit, status, rule_id,"
+                " source_kind, source_ref, guidance_id, escalate_to, measured_at, crew)"
+                " VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+                (
+                    a.reading_id, a.ind, a.val, a.unit, a.status, a.rule_id, a.source_kind,
+                    a.source_ref, a.guidance_id, a.escalate_to, a.measured_at, a.crew,
+                ),
+            )  # fmt: skip
+            self.conn.commit()
+            new_id = int(cur.lastrowid)
+        return AssessmentResult(**{**a.__dict__, "id": new_id})
+
+    def results_for(self, reading_id: int) -> list[AssessmentResult]:
+        with self.lock:
+            rows = self.conn.execute(
+                f"SELECT {_A_COLS} FROM assessments WHERE reading_id=? ORDER BY id",
+                (reading_id,),
+            ).fetchall()
+        return [AssessmentResult(*r) for r in rows]
+
+    def last_status(self, rule_id: str, ind: str, crew: str | None) -> str | None:
+        """The latest non-unknown status of a rule for an indicator and crew."""
+        sql = "SELECT status FROM assessments WHERE rule_id=? AND ind=? AND status!='unknown'"
+        args: list = [rule_id, ind]
+        if crew is None:
+            sql += " AND crew IS NULL"
+        else:
+            sql += " AND crew=?"
+            args.append(crew)
+        sql += " ORDER BY id DESC LIMIT 1"
+        with self.lock:
+            row = self.conn.execute(sql, args).fetchone()
+        return row[0] if row else None
 
     # outbox
 

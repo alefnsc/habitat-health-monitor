@@ -14,11 +14,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
+from hub.assess import Assessor, load_escalation
 from hub.config import Settings, load_settings
 from hub.contract import CREWS, DERIVED, INDICATORS
 from hub.derive import derive_ppco2
 from hub.ingest import Ingestor, IngestResult
 from hub.store import Store
+from hub.thresholds import load_rule_files
 from hub.timeutil import parse_iso
 
 log = logging.getLogger("hub.api")
@@ -55,7 +57,11 @@ def create_app(
     clock = clock or (lambda: datetime.now(UTC))
     owns_store = store is None
     store = store or Store(settings.db_path)
-    ingestor = Ingestor(store, clock, deriver=derive_ppco2)
+    rules = load_rule_files([settings.thresholds_path, settings.food_thresholds_path])
+    assessor = Assessor(
+        store, rules, tz=settings.tz, escalation=load_escalation(settings.guidance_path)
+    )
+    ingestor = Ingestor(store, clock, deriver=derive_ppco2, assessor=assessor)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -69,6 +75,7 @@ def create_app(
     app.state.settings = settings
     app.state.store = store
     app.state.ingestor = ingestor
+    app.state.assessor = assessor
     app.state.clock = clock
 
     app.add_middleware(

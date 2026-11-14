@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING
 
 from hub.contract import INTAKE_INDS
-from hub.store import StoredReading
+
+if TYPE_CHECKING:
+    from hub.store import StoredReading
 
 SEVERITY: dict[str, int] = {"act": 3, "watch": 2, "ok": 1, "unknown": 0}
 
