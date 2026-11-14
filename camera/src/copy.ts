@@ -1,0 +1,23 @@
+// All camera-page text. Linted by console/tests/copy.test.ts (English only, no energy wording, no accuracy claims).
+export const COPY: Record<string, string> = {
+  "page.title": "Camera set",
+  "page.banner": "Educational prototype, not a medical device.",
+  "camera.estimate": "Camera numbers are estimates.",
+  "source.camera": "Use the camera",
+  "source.file": "Load a video file",
+  "insecure": "The camera needs https or localhost. Open this page on the hub machine at http://localhost:8000/camera/, or load a video file.",
+  "noMediaDevices": "This browser has no camera access. Load a video file instead.",
+  "calib.title": "Scale",
+  "calib.knownLength": "Known length (m)",
+  "calib.stature": "Your height (m)",
+  "calib.freeze": "Freeze frame",
+  "calib.tapA": "Tap the first end of the object on the frozen frame.",
+  "calib.tapB": "Tap the second end.",
+  "calib.useKnown": "Use known length",
+  "calib.useStature": "Use height",
+  "calib.statureNote": "Height method uses an unchecked body proportion (0.897); a known length is preferred.",
+  "calib.standInFrame": "Stand fully in frame, upright and side-on, with the eye and the ankle visible.",
+  "calib.noPose": "No person was found in the frozen frame.",
+  "calib.result": "Scale",
+  "calib.unit": "m per frame height",
+};

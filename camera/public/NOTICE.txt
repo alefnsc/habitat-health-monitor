@@ -1,0 +1,17 @@
+Habitat Health Monitor vendors parts of the following prior work. The code is used unedited.
+
+ground-truth
+  URL: https://github.com/alefnsc/ground-truth
+  Commit: 0940adab0ec33dd5127d7efdacfbc6744a31e4d6
+  Licence: Apache License 2.0 (see LICENSE in this folder)
+  Declared as prior work, written 2026-09-23 to 2026-10-11, before the Space Apps 2026 event.
+  Vendored here: packages/physics, packages/capture and six demo modules (see PINNED).
+
+MediaPipe Pose Landmarker lite model
+  File: pose_landmarker_lite.task, 5,777,746 bytes
+  SHA-256: 59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a
+  Licence: Apache License 2.0 (BlazePose GHUM 3D model card, April 16, 2021)
+  Details and the model card's use limits: models/NOTICE.md
+
+@mediapipe/tasks-vision 1.1.0
+  Licence: Apache License 2.0

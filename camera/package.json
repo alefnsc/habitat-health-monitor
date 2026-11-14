@@ -5,6 +5,11 @@
   "type": "module",
   "license": "Apache-2.0",
   "scripts": {
+    "predev": "node scripts/copy-wasm.mjs && node scripts/verify-model.mjs",
+    "dev": "vite",
+    "prebuild": "node scripts/copy-wasm.mjs && node scripts/verify-model.mjs",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {

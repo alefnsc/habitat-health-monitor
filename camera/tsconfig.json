@@ -11,6 +11,7 @@
     "resolveJsonModule": true,
     "types": ["node", "vite/client"],
     "paths": {
+      "@mediapipe/tasks-vision": ["./node_modules/@mediapipe/tasks-vision"],
       "@ground-truth/physics": ["../vendor/ground-truth/physics/src/index.ts"],
       "@ground-truth/capture": ["../vendor/ground-truth/capture/src/index.ts"]
     }

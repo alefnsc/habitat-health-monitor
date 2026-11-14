@@ -27,7 +27,7 @@ describe("network policy", () => {
     const found = Object.values(sources)
       .flatMap(hostsIn)
       // the SVG namespace is an identifier, not a request
-      .filter((host) => host !== "www.w3.org");
+      .filter((host) => host !== "www.w3.org" && host !== "localhost");
     expect(found).toEqual([]);
   });
 
