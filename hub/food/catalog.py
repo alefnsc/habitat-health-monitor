@@ -50,7 +50,9 @@ def _num(item_id: str, field: str, v: object, *, positive: bool = False) -> floa
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         raise CatalogError(f"item {item_id}: {field} must be a number")
     if v < 0 or (positive and v == 0):
-        raise CatalogError(f"item {item_id}: {field} must be {'above 0' if positive else 'at least 0'}")
+        raise CatalogError(
+            f"item {item_id}: {field} must be {'above 0' if positive else 'at least 0'}"
+        )
     return float(v)
 
 

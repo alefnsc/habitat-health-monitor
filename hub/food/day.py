@@ -73,7 +73,8 @@ def food_day(
     start = at - WINDOW
     meals = store.meals_between(start, at, crew)
     totals = {
-        ind: _total(store, assessor, rules, ind, crew, at, crews, len(meals)) for ind in INTAKE_ORDER
+        ind: _total(store, assessor, rules, ind, crew, at, crews, len(meals))
+        for ind in INTAKE_ORDER
     }
     mass = store.latest_reading("body_mass", crew=crew, scope_crew=crew is not None)
     return {

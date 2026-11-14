@@ -32,7 +32,9 @@ def test_http_log(client):
     assert r.status_code == 201
     b = r.json()
     assert isinstance(b["meal_id"], int) and len(b["readings"]) == 9
-    assert all(set(x) == {"ind", "id", "duplicate"} and x["duplicate"] is False for x in b["readings"])
+    assert all(
+        set(x) == {"ind", "id", "duplicate"} and x["duplicate"] is False for x in b["readings"]
+    )
     assert all(isinstance(x["id"], int) for x in b["readings"])
     assert b["not_reported"] == ["intake_vitd_ug"]
     assert {e["status"] for e in b["results"]} == {"unknown"}

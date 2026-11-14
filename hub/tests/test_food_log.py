@@ -57,7 +57,13 @@ def test_meal_readings(rig):
         r = store.get_reading(rid)
         vals[ind] = r.val
         assert not dup
-        assert (r.node, r.src, r.dev, r.crew, tuple(r.q)) == ("food", "self", "catalog", "crew-a", ("ok",))
+        assert (r.node, r.src, r.dev, r.crew, tuple(r.q)) == (
+            "food",
+            "self",
+            "catalog",
+            "crew-a",
+            ("ok",),
+        )
         assert r.boot == 1763121600
     assert vals == pytest.approx(
         {"intake_kcal": 420.0, "intake_protein_g": 8.0, "intake_carb_g": 73.0,

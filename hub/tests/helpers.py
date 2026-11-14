@@ -57,13 +57,14 @@ class Rig:
             tz="America/Sao_Paulo",
             escalation=escalation,
             emit=self.emit,
+            clock=clock,
         )
         self.ing = Ingestor(
             self.store, clock, emit=self.emit, deriver=derive_ppco2, assessor=self.assessor
         )
         self.seq = 0
-        self.alert_cb: list = []
-        self.assessor.on_alert(self.alert_cb.append) if hasattr(self.assessor, "on_alert") else None
+        self.alerts: list = []
+        self.assessor.on_alert(self.alerts.append)
 
     def emit(self, kind, data):
         self.events.append((kind, data))

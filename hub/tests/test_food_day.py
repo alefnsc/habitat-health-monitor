@@ -61,15 +61,25 @@ def put(store, ind, val, hours_ago, crew="crew-a", seq=[0]):  # noqa: B006
 def test_totals_sum_and_null(store):
     put(store, "intake_kcal", 420, 3)
     put(store, "intake_kcal", 420, 1)
-    store.meals += [{"crew": "crew-a", "eaten_at": T - timedelta(hours=h), "items": []} for h in (3, 1)]
+    store.meals += [
+        {"crew": "crew-a", "eaten_at": T - timedelta(hours=h), "items": []} for h in (3, 1)
+    ]
     d = food_day(store, FakeAssessor({}), "crew-a", T, crews=CREWS, rules=[FLOOR, CAP])
     k = d["totals"]["intake_kcal"]
     assert (k["val"], k["meals_reporting"], k["meals_total"]) == (840.0, 2, 2)
     v = d["totals"]["intake_vitd_ug"]
-    assert (v["val"], v["meals_reporting"], v["meals_total"], v["status"]) == (None, 0, 2, "unknown")
+    assert (v["val"], v["meals_reporting"], v["meals_total"], v["status"]) == (
+        None,
+        0,
+        2,
+        "unknown",
+    )
     assert list(d["totals"]) == list(d["totals"])  # all ten present
     assert len(d["totals"]) == 10 and d["body_mass"] is None
-    assert d["window_start"] == "2026-11-13T12:00:00.000Z" and d["window_end"] == "2026-11-14T12:00:00.000Z"
+    assert (
+        d["window_start"] == "2026-11-13T12:00:00.000Z"
+        and d["window_end"] == "2026-11-14T12:00:00.000Z"
+    )
 
 
 def test_window_edges_and_crew_filter(store):
@@ -100,7 +110,14 @@ def test_status_is_live_and_worst_of_crews(store):
 
 def test_floor_judged(store):
     put(store, "intake_sodium_mg", 900, 1)
-    unjudged = FakeAssessor({("intake_sodium_mg", "crew-a"): [res("intake_sodium_max", "ok"), res("intake_sodium_floor", "unknown")]})
+    unjudged = FakeAssessor(
+        {
+            ("intake_sodium_mg", "crew-a"): [
+                res("intake_sodium_max", "ok"),
+                res("intake_sodium_floor", "unknown"),
+            ]
+        }
+    )
     judged = FakeAssessor({("intake_sodium_mg", "crew-a"): [res("intake_sodium_max", "ok"), res("intake_sodium_floor", "watch")]})  # fmt: skip
     r = [FLOOR, CAP]
     a = food_day(store, unjudged, "crew-a", T, crews=CREWS, rules=r)["totals"]
@@ -121,7 +138,9 @@ def _refs(tmp_path, **over):
             "source_ref": "TEST", "url": "https://example.org", "has_rule": True}  # fmt: skip
     item.update(over)
     p = tmp_path / "r.json"
-    p.write_text(json.dumps({"source": "test", "retrieved": "2026-11-14", "items": [item], "notes": []}))
+    p.write_text(
+        json.dumps({"source": "test", "retrieved": "2026-11-14", "items": [item], "notes": []})
+    )
     return p
 
 
@@ -137,6 +156,7 @@ def test_routes_use_ctx(settings, clock, tmp_path):
     app = create_app(settings, clock=clock, store=s)
     refs = _refs(tmp_path)
     from dataclasses import replace
+
     st = replace(settings, food_references_path=refs)
     app.state.ctx = SimpleNamespace(store=s, assessor=FakeAssessor({}), settings=st)
     app.include_router(router)

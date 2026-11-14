@@ -5,12 +5,12 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Callable
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from hub.contract import BODY_INDS, DERIVED, INDICATORS, INTAKE_INDS
-from hub.results import Alert, AssessmentResult, escalate_to_for
+from hub.results import Alert, AssessmentResult, entry_for, escalate_to_for
 from hub.store import Store, StoredReading
 from hub.thresholds import Rule, band_status, rules_for
 from hub.timeutil import parse_iso, to_iso
@@ -64,7 +64,9 @@ class Assessor:
         tz: str,
         escalation: dict[str, str] | None = None,
         emit: Callable[[str, dict], None] | None = None,
+        clock: Callable[[], datetime] | None = None,
     ) -> None:
+        self.clock = clock or (lambda: datetime.now(UTC))
         self.store = store
         self.rules = rules
         self.tz = ZoneInfo(tz)
@@ -139,6 +141,7 @@ class Assessor:
         at = parse_iso(r.measured_at)
         rules = rules_for(self.rules, r.ind)
         results: list[AssessmentResult] = []
+        alerts: list[Alert] = []
         if not rules:
             results.append(
                 self.store.insert_assessment(
@@ -173,11 +176,40 @@ class Assessor:
                 reading_id=r.id,
                 own_val=r.val,
             )
-            results.append(self.store.insert_assessment(res))
-        return results, []
+            prev = self.store.last_status(rule.id, r.ind, r.crew)
+            res = self.store.insert_assessment(res)
+            results.append(res)
+            fires = res.status != "unknown" and res.status != prev
+            if fires and (prev is not None or res.status in ("watch", "act")):
+                alerts.append(
+                    Alert(
+                        id=res.id,
+                        ind=res.ind,
+                        status=res.status,
+                        prev_status=prev,
+                        rule_id=rule.id,
+                        measured_at=res.measured_at,
+                        crew=res.crew,
+                        escalate_to=res.escalate_to,
+                    )
+                )
+        return results, alerts
+
+    def on_alert(self, cb: Callable[[Alert], None]) -> None:
+        self._alert_cbs.append(cb)
 
     def publish_alerts(self, alerts: list[Alert]) -> None:
-        return None
+        """Outbox, emit and call back, in that order, for each alert."""
+        for a in alerts:
+            self.store.append_outbox("alert", a.to_dict(), self.clock())
+            if self.emit is not None:
+                self.emit("alert", a.to_dict())
+            log.info("alert %s %s prev=%s", a.rule_id, a.status, a.prev_status)
+            for cb in self._alert_cbs:
+                try:
+                    cb(a)
+                except Exception:
+                    log.exception("alert callback failed")
 
     # live preview (NU7): nothing stored, alerted or emitted
 
@@ -220,3 +252,15 @@ class Assessor:
                 )
             )
         return out
+
+
+def status_body(store: Store, nodes: list[dict], crew: str | None, now: datetime) -> dict:
+    """GET /api/status body (D2): one worst-of entry per indicator that has any reading."""
+    results = []
+    for ind in [*INDICATORS, *DERIVED]:
+        scoped = crew is not None and ind in CREW_SCOPED
+        r = store.latest_reading(ind, crew=crew, scope_crew=scoped)
+        if r is None:
+            continue
+        results.append(entry_for(r, store.results_for(r.id)).to_dict())
+    return {"crew": crew, "generated_at": to_iso(now), "nodes": nodes, "results": results}

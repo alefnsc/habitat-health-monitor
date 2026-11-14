@@ -190,7 +190,7 @@ def test_load_escalation(tmp_path):
 
 def test_outbox_carries_worst_of(rig):
     rig.put("cabin_temp", 26.0)
-    (item,) = rig.store.outbox_after(0, 10)
+    (item,) = [i for i in rig.store.outbox_after(0, 10) if i.kind == "reading"]
     p = item.payload
     assert (p["status"], p["rule_id"], p["source_kind"], p["escalate_to"]) == (
         "watch", "cabin_performance_temp", "nasa_std", "cmo",

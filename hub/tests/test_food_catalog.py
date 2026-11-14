@@ -42,7 +42,10 @@ def _mutate(tmp_path, fn):
     ("fn", "needle"),
     [
         (lambda d: d["items"][0].update(serving_g=0), "fx-bar: serving_g"),
-        (lambda d: d["items"][0].pop("fluid_ml_per_serving"), "fx-bar: missing fluid_ml_per_serving"),
+        (
+            lambda d: d["items"][0].pop("fluid_ml_per_serving"),
+            "fx-bar: missing fluid_ml_per_serving",
+        ),
         (lambda d: d["items"][1]["per100g"].pop("iron_mg"), "fx-drink: per100g is missing iron_mg"),
         (lambda d: d["items"][1].update(id="fx-bar"), "fx-bar: duplicate id"),
     ],

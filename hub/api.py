@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.concurrency import run_in_threadpool
 
-from hub.assess import Assessor, load_escalation
+from hub.assess import Assessor, load_escalation, status_body
 from hub.config import Settings, load_settings
 from hub.contract import CREWS, DERIVED, INDICATORS
 from hub.derive import derive_ppco2
@@ -59,8 +59,9 @@ def create_app(
     store = store or Store(settings.db_path)
     rules = load_rule_files([settings.thresholds_path, settings.food_thresholds_path])
     assessor = Assessor(
-        store, rules, tz=settings.tz, escalation=load_escalation(settings.guidance_path)
-    )
+        store, rules, tz=settings.tz, escalation=load_escalation(settings.guidance_path),
+        clock=clock,
+    )  # fmt: skip
     ingestor = Ingestor(store, clock, deriver=derive_ppco2, assessor=assessor)
 
     @asynccontextmanager
@@ -77,6 +78,7 @@ def create_app(
     app.state.ingestor = ingestor
     app.state.assessor = assessor
     app.state.clock = clock
+    app.state.node_states = list  # replaced by the NodeRegistry (H8)
 
     app.add_middleware(
         CORSMiddleware,
@@ -132,6 +134,13 @@ def create_app(
             return reject("bad_crew")
         rows = store.readings(ind, since=since, limit=limit, crew=crew)
         return JSONResponse([r.to_dict() for r in rows])
+
+    @app.get("/api/status")
+    def get_status(request: Request) -> JSONResponse:
+        crew = request.query_params.get("crew") or None
+        if crew is not None and crew not in CREWS:
+            return reject("bad_crew")
+        return JSONResponse(status_body(store, app.state.node_states(), crew, clock()))
 
     return app
 
