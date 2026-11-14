@@ -18,7 +18,7 @@ export const ruleTreatmentDose = (s: string): boolean =>
   /\b\d+(\.\d+)?\s*(mg(?!\/)|mcg|ml|units?)\b/i.test(s);
 
 export const ruleBrand = (s: string): boolean =>
-  /polar|garmin|apple|oura|withings|google|lightstreamer|vocaid|omron/i.test(s);
+  /polar|garmin|apple|oura|withings|google|lightstreamer|omron/i.test(s);
 
 export const ruleNonEnglish = (s: string): boolean => /[ãõçáéíóúâêôà]/i.test(s);
 

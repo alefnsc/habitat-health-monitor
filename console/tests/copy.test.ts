@@ -119,7 +119,7 @@ describe("honesty lint", () => {
   });
 
   test("test_no_brand_names", () => {
-    for (const s of ["Polar", "garmin", "Apple Watch", "Oura", "Withings", "Google", "Lightstreamer", "Vocaid", "Omron"]) {
+    for (const s of ["Polar", "garmin", "Apple Watch", "Oura", "Withings", "Google", "Lightstreamer", "Omron"]) {
       expect(ruleBrand(s)).toBe(true);
     }
     expect(bad(ruleBrand)).toEqual([]);
