@@ -49,7 +49,7 @@ python -m nodes.ring replay var/ring/pulls.jsonl
 ## One-time setup (team owner only)
 
 1. Register a developer application on the ring vendor's developer portal (link in `DATA_SOURCES.md`). Give it the
-   redirect URI `http://127.0.0.1:8765/callback`. If the portal refuses it, try `http://localhost:8765/callback`, and
+   redirect URI `http://127.0.0.1:8799/callback`. If the portal refuses it, try `http://localhost:8799/callback`, and
    set `RING_REDIRECT_URI` to match exactly.
 2. Copy the client id and secret into `.env`, which is git-ignored, along with the three URLs from
    `DATA_SOURCES.md`.

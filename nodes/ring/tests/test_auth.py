@@ -32,7 +32,7 @@ TOKEN_URL = "https://auth.example.test/oauth/token"
 CFG = OAuthConfig(
     client_id="cid", client_secret="csecret",
     authorize_url="https://auth.example.test/oauth/authorize", token_url=TOKEN_URL,
-    redirect_uri="http://127.0.0.1:8765/callback",
+    redirect_uri="http://127.0.0.1:8799/callback",
 )  # fmt: skip
 ENV = {"RING_CLIENT_ID": "cid", "RING_CLIENT_SECRET": "csecret",
        "RING_AUTHORIZE_URL": CFG.authorize_url, "RING_TOKEN_URL": TOKEN_URL,
