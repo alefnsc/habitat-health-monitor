@@ -71,3 +71,13 @@ def test_filter_keeps_order():
         item(3, "reading", node="vitals-1", ind="hr", crew="crew-a"),
     ]
     assert [i.id for i in filter_items(items, a)] == [1, 3]
+
+
+def test_public_banner_names_crews_and_reps():
+    from linksim.__main__ import public_banner
+
+    assert public_banner(frozenset(), False) == "public crews: none; reps public: no"
+    assert (
+        public_banner(frozenset({"crew-b", "crew-a"}), True)
+        == "public crews: crew-a,crew-b; reps public: yes"
+    )

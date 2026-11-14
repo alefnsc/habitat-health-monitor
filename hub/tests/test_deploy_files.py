@@ -48,6 +48,10 @@ def test_deploy_public_doc_commands_match_code():
         "KV_REST_API_URL",
         "PUBLIC_GROUND_URL",
         "Never replay recordings of real people through node sim-1",
+        '--ground ""',
+        "public crews:",
+        "PUBLIC_REPS=0",
+        "5 Redis commands",
     ):
         assert needle in text, needle
     assert (ROOT / "linksim" / "link.demo.json").exists()

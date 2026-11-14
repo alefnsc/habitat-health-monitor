@@ -28,6 +28,10 @@ def wall(t: float) -> str:
     return datetime.fromtimestamp(t, UTC).isoformat(timespec="milliseconds").replace("+00:00", "Z")
 
 
+def public_banner(crews: frozenset[str], reps: bool) -> str:
+    return f"public crews: {','.join(sorted(crews)) or 'none'}; reps public: {'yes' if reps else 'no'}"
+
+
 def main() -> None:
     p = argparse.ArgumentParser(prog="linksim")
     p.add_argument("--config", type=Path, default=Path("linksim/link.json"))
@@ -60,10 +64,11 @@ def main() -> None:
         secret = os.environ.get("GROUND_INGEST_SECRET", "")
         if not secret:
             raise SystemExit("GROUND_INGEST_SECRET is required when --public-ground is set")
+        crews = parse_crews(args.public_crews)
         public = PublicUplink(
             httpx.Client(base_url=args.public_ground, timeout=2.0),
             secret,
-            parse_crews(args.public_crews),
+            crews,
             args.public_reps,
             args.public_flush_s,
         )
@@ -72,6 +77,7 @@ def main() -> None:
             "never replay recordings of real people through sim-1 while it is on",
             flush=True,
         )
+        print(public_banner(crews, args.public_reps), flush=True)
     last_poll = last_line = 0.0
     while True:
         now = time.time()
