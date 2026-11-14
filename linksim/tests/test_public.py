@@ -88,7 +88,7 @@ def test_step_feeds_public_and_local_optional(monkeypatch):
         def accept(self, items, now_s):
             pass
 
-        def due(self, now_s):
+        def due(self, now_s, limit=None):
             return [oi(7, ind="cabin_temp")]
 
         def due_beacon(self, now_s):
@@ -136,7 +136,7 @@ def test_step_delivers_locally_when_public_flush_raises(monkeypatch):
     class FakeEngine:
         fetched_id = 0
 
-        def due(self, now_s):
+        def due(self, now_s, limit=None):
             return [oi(7, ind="cabin_temp")]
 
         def due_beacon(self, now_s):

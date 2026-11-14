@@ -89,7 +89,8 @@ def step(
     items = engine.due(now_s)
     beacon = engine.due_beacon(now_s)
     if public is not None:
-        public.offer(items, beacon)
+        # Public sees every crossed item, even while local delivery keeps failing.
+        public.offer(engine.due(now_s, limit=None), beacon)
     try:
         _deliver_local(engine, ground_client, cursor, now_s, items, beacon)
     finally:
