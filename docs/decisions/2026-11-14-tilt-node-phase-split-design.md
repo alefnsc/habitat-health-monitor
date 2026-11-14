@@ -19,6 +19,9 @@ Each exercise rep reports its concentric work, its eccentric work and the time s
 
 ## 3. Hardware: node `tilt-1`
 
+> **Amended by D40** (`2026-11-14-fewer-mcus-design.md`): the node runs on 2 × AA/AAA cells on 3V3 and GND instead of USB
+> from the hub (never VIN, no CR2032), so the pod on the weight has no cable. Its Wokwi twin is `firmware/wokwi/tilt-esp32`.
+
 - **Board:** NodeMCU Amica (ESP8266). D37 had assigned it to the vitals node; the vitals node moves to a Wemos D1 mini running the same sketch and pin map (§7).
 - **Wiring:** KY-017 signal to **D5 (GPIO14)**, VCC to 3V3, GND to GND. Pin order differs between module batches, so read the silkscreen and confirm the switch with a meter before power. D1 and D2 stay free for a later MPU6050 on I2C. D3, D4 and D8 (boot pins) stay free.
 - **Mounting:** the capsule sits under heat-shrink inside a small closed box. The neodymium magnet is glued to the outside of the box, and the box sticks to the steel weight for the desk demonstration.
@@ -79,6 +82,8 @@ No new trajectory code. The vendored capture library already returns, for each r
 - The neodymium magnet stack is a pinch hazard. Keep fingers clear when it snaps onto steel.
 
 ## 7. Amendment to D37
+
+> **Superseded by D40:** there is no vitals board, so no D1 mini. Wearable vitals come from a ring import.
 
 The vitals node runs on a **Wemos D1 mini** (ESP8266, `esp8266:esp8266:d1_mini`), with the same sketch, the same I2C bus on D2/D1 and the same watch-outs. It goes on Saturday's shopping list. The NodeMCU Amica is `tilt-1`.
 

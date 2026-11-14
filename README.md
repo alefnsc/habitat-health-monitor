@@ -2,7 +2,7 @@
 
 ## What it is
 
-A crew-facing health monitor for a space habitat that keeps working with no link to Earth. Real sensor circuits (UNO+WiFi board, Arduino Uno, ESP8266) feed a local hub. The hub checks every reading against a stated source: NASA-STD-3001 for the cabin and radiation, and labelled clinical references (not NASA-published) for vital signs. It then tells the astronaut what to do and whom to tell, and syncs to a public "ground segment" page over a simulated Mars link with light-time delay and blackouts.
+A crew-facing health monitor for a space habitat that keeps working with no link to Earth. Real sensor circuits (an UNO+WiFi board and a NodeMCU) feed a local hub. The hub checks every reading against a stated source: NASA-STD-3001 for the cabin and radiation, and labelled clinical references (not NASA-published) for vital signs. It then tells the astronaut what to do and whom to tell, and syncs to a public "ground segment" page over a simulated Mars link with light-time delay and blackouts.
 
 Built during the NASA Space Apps Challenge 2026 (challenge: *Create Health Monitoring Software for Astronauts on Space Missions*).
 
@@ -44,10 +44,11 @@ still serves and the MQTT subscriber keeps retrying.
 
 Circuit diagrams and the bill of materials are in `docs/` (DRAFT [confirm: hardware member to review before submission]).
 
-Layout (decision D36, [confirm: hardware member to review before submission]):
-- **Raspberry Pi 3 Model B** is the hub host (Mosquitto, hub, console) and runs the `cabin-1` node: a BME280 and an SCD41 on its I2C bus, plus an optional DHT22. Setup: `docs/pi-setup.md` (not yet run on hardware).
-- **UNO+WiFi board, Uno side** is the exercise rig (HX711 load cell, servo, buzzer) and talks to the Pi over USB serial. A Wokwi simulation of it is in `firmware/wokwi/uno-rig/`. The board's ESP8266 side is an optional Wi-Fi bridge and may stay unused.
-- **Vitals node** runs on a battery-powered board. Nothing body-worn is ever cabled to the Pi.
+Layout: two microcontrollers and a hub (decision D40, [confirm: hardware member to review before submission]).
+- **Raspberry Pi 3 Model B** is the hub host (Mosquitto, hub, console), with nothing wired to its header. A laptop runs the hub instead if the Pi is not ready. Setup: `docs/pi-setup.md` (not yet run on hardware).
+- **UNO+WiFi board, ATmega328P side** is the I/O board. It carries a DHT11 (`cabin-1`: cabin temperature and humidity, hobby estimates) and the alarm buzzer, and talks to the hub over USB serial. Its ESP8266 side is unused. Wokwi twin: `firmware/wokwi/uno-rig/`.
+- **NodeMCU (ESP8266)** is the `tilt-1` node: a sealed KY-017 tilt pod on the exercise weight, running on two AA/AAA cells and talking over Wi-Fi/MQTT. Wokwi twin, with an ESP32 standing in: `firmware/wokwi/tilt-esp32/`.
+- Wearable vitals will come from a ring import (next step). No sensor that touches a person is cabled to anything.
 
 ## Safety
 
