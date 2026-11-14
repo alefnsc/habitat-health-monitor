@@ -71,13 +71,13 @@ def test_wrong_node_and_too_long(ing):
 
 
 def test_loop_port_stream(ing, settings, monkeypatch):
-    port = open_port("loop://", 250000)
+    port = open_port("loop://", 100_000_000)  # loop:// emulates baud timing
     monkeypatch.setattr(sr, "open_port", lambda url, baud: port)
     link = RigLink(replace(settings, serial_port="loop://"), ing)
-    for i in range(800):
-        port.write(line(seq=i + 1))
     t = time.perf_counter()
     link.start()
+    feeder = threading.Thread(target=lambda: [port.write(line(seq=i + 1)) for i in range(800)])
+    feeder.start()  # the loop:// queue is bounded, so it is fed while RigLink reads
     while link.stats()["lines"] < 800 and time.perf_counter() - t < 5:
         time.sleep(0.01)
     link.stop()
