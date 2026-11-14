@@ -1,0 +1,343 @@
+[
+  {
+    "id": "co2_1h",
+    "ind": "cabin_ppco2",
+    "window": "mean_1h",
+    "ok": {
+      "max": 3.0
+    },
+    "act": {},
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 6.2.1.3 [V2 6004], p. 51",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "1-hour mean ppCO2 no more than 3 mmHg. Off-nominal CO2 values are not in the standard, so there is no watch band."
+  },
+  {
+    "id": "co2_7d",
+    "ind": "cabin_ppco2",
+    "window": "mean_7d",
+    "ok": {
+      "max": 2.5
+    },
+    "watch": {},
+    "source_kind": "nasa_std",
+    "source_ref": "OCHMO-TB-004 Rev D (10-Mar-26), Background, p. 5; related to [V2 6004]",
+    "url": "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf",
+    "note": "7-day mean below 2.5 mmHg keeps headache risk under 1 %. Technical brief for reference only, not a requirement, and not in Vol 2 Rev F."
+  },
+  {
+    "id": "cabin_health_box_temp",
+    "ind": "cabin_temp",
+    "window": "instant",
+    "ok": {
+      "min": 18,
+      "max": 27
+    },
+    "act": {},
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 6.2.3.1, Figure 6.2-2 [V2 6012], pp. 54-55",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "Bounding box of NASA-STD-3001 Vol 2 Figure 6.2-2 (the figure itself is a polygon). Display aid; the DHT11 is +/-2 C."
+  },
+  {
+    "id": "cabin_health_box_rh",
+    "ind": "cabin_rh",
+    "window": "instant",
+    "ok": {
+      "min": 25,
+      "max": 75
+    },
+    "act": {},
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 6.2.3.1, Figure 6.2-2 [V2 6012], pp. 54-55",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "Bounding box of NASA-STD-3001 Vol 2 Figure 6.2-2. RH 25 to 75 % holds across the whole figure. Below 25 % is also a static and ignition concern."
+  },
+  {
+    "id": "cabin_performance_temp",
+    "ind": "cabin_temp",
+    "window": "instant",
+    "ok": {
+      "min": 20,
+      "max": 25
+    },
+    "watch": {},
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 6.2.3.2, Figure 6.2-3 [V2 6013], pp. 55-56",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "Performance zone for comfort and performance (20-25 C), not a health limit."
+  },
+  {
+    "id": "cabin_performance_rh",
+    "ind": "cabin_rh",
+    "window": "instant",
+    "ok": {
+      "min": 30,
+      "max": 60
+    },
+    "watch": {},
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 6.2.3.2, Figure 6.2-3 [V2 6013], pp. 55-56",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "Performance zone for comfort and performance (30-60 % RH), not a health limit."
+  },
+  {
+    "id": "lux_general",
+    "ind": "cabin_lux",
+    "window": "instant",
+    "ok": {
+      "min": 350
+    },
+    "watch": {},
+    "source_kind": "nasa_std",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 8.7.1, Table 8.7-1 [V2 8051], pp. 151-152",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "General horizontal ambient lighting at least 350 lx. The 07:00 to 23:00 hours are a team convention; the standard sets no hours. The BH1750 cannot judge the 0.02 lx sleep level.",
+    "hours": {
+      "start": "07:00",
+      "end": "23:00"
+    }
+  },
+  {
+    "id": "radiation_career",
+    "ind": "rad_dose_cum",
+    "window": "instant",
+    "ok": {
+      "max": 299.9
+    },
+    "watch": {
+      "max": 539.9
+    },
+    "act": {},
+    "source_kind": "team_convention",
+    "source_ref": "NASA-STD-3001 Vol 1 Rev C, 4.8.2 [V1 4030], p. 40; dose rate: NTRS 20250006168 (draft paper)",
+    "url": "https://standards.nasa.gov/sites/default/files/standards/NASA/C/nasa-std-3001-vol-1-rev-c-signature.pdf",
+    "note": "Career effective dose limit 600 mSv [V1 4030]. The 300 and 540 mSv bands are team-convention fractions (50 % and 90 %) of that limit. Value is an effective-dose estimate at 0.2-0.5 mSv/day (NTRS 20250006168, draft paper), never OSDR mGy."
+  },
+  {
+    "id": "radiation_spe",
+    "ind": "space_weather",
+    "window": "instant",
+    "ok": {
+      "max": 0
+    },
+    "watch": {
+      "min": 1,
+      "max": 1
+    },
+    "act": {},
+    "source_kind": "team_convention",
+    "source_ref": "NASA-STD-3001 Vol 2 Rev F, 6.8.1.6 and 6.8.1.7 [V2 6164] [V2 6165], p. 109",
+    "url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf",
+    "note": "The standard requires alerting the crew when exposure rates exceed predefined thresholds; the levels (0 quiet, 1 watch, 2 act) and the trigger logic are the team's. NOAA scales: R3 = X1 flare, G3 = Kp 7. [V1 4031] (250 mSv per event) is a shielding design limit, context only."
+  },
+  {
+    "id": "hr_rest_low",
+    "ind": "hr",
+    "window": "instant",
+    "ok": {
+      "min": 51
+    },
+    "watch": {
+      "min": 41
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "RCP, NEWS2 Chart 1 (2017), row Pulse (per minute)",
+    "url": "https://www.rcp.ac.uk/media/alxev00t/news2-chart-1_the-news-scoring-system_0_0.pdf",
+    "note": "Not NASA-published. Resting readings only. NEWS2 is for acutely ill adults in hospital; used here for single-parameter bands only."
+  },
+  {
+    "id": "hr_rest_high",
+    "ind": "hr",
+    "window": "instant",
+    "ok": {
+      "max": 90
+    },
+    "watch": {
+      "max": 130
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "RCP, NEWS2 Chart 1 (2017), row Pulse (per minute)",
+    "url": "https://www.rcp.ac.uk/media/alxev00t/news2-chart-1_the-news-scoring-system_0_0.pdf",
+    "note": "Not NASA-published. Resting readings only. NEWS2 is for acutely ill adults in hospital; used here for single-parameter bands only."
+  },
+  {
+    "id": "spo2_low",
+    "ind": "spo2",
+    "window": "instant",
+    "ok": {
+      "min": 96
+    },
+    "watch": {
+      "min": 92
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "RCP, NEWS2 Chart 1 (2017), row SpO2 Scale 1 (%)",
+    "url": "https://www.rcp.ac.uk/media/alxev00t/news2-chart-1_the-news-scoring-system_0_0.pdf",
+    "note": "Not NASA-published. The MAX30102 SpO2 is an uncalibrated estimate; re-measure with a certified device before escalating. NEWS2 is for acutely ill adults in hospital; used here for single-parameter bands only."
+  },
+  {
+    "id": "body_temp_low",
+    "ind": "body_temp",
+    "window": "instant",
+    "ok": {
+      "min": 36.1
+    },
+    "watch": {
+      "min": 35.1
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "RCP, NEWS2 Chart 1 (2017), row Temperature (C)",
+    "url": "https://www.rcp.ac.uk/media/alxev00t/news2-chart-1_the-news-scoring-system_0_0.pdf",
+    "note": "Not NASA-published. skin_temp has no rule and is never judged as body_temp. NEWS2 is for acutely ill adults in hospital; used here for single-parameter bands only."
+  },
+  {
+    "id": "body_temp_high",
+    "ind": "body_temp",
+    "window": "instant",
+    "ok": {
+      "max": 38.0
+    },
+    "watch": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "RCP, NEWS2 Chart 1 (2017), row Temperature (C)",
+    "url": "https://www.rcp.ac.uk/media/alxev00t/news2-chart-1_the-news-scoring-system_0_0.pdf",
+    "note": "Not NASA-published. The chart has no score 3 on the high side, so there is no act band. NEWS2 is for acutely ill adults in hospital; used here for single-parameter bands only."
+  },
+  {
+    "id": "bp_sys_low",
+    "ind": "bp_sys",
+    "window": "instant",
+    "ok": {
+      "min": 111
+    },
+    "watch": {
+      "min": 91
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "RCP, NEWS2 Chart 1 (2017), row Systolic blood pressure (mmHg)",
+    "url": "https://www.rcp.ac.uk/media/alxev00t/news2-chart-1_the-news-scoring-system_0_0.pdf",
+    "note": "Not NASA-published. The chart's act band for 220 or more is not used; see bp_sys_high. NEWS2 is for acutely ill adults in hospital; used here for single-parameter bands only."
+  },
+  {
+    "id": "bp_sys_high",
+    "ind": "bp_sys",
+    "window": "instant",
+    "ok": {
+      "max": 129
+    },
+    "watch": {
+      "max": 180
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "AHA/ACC 2025 adult high blood pressure guideline, Hypertension 2025;82(10):e212-e316 (categories as 2017, Hypertension 2018;71:e13-e115), BP classification table",
+    "url": "https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249",
+    "note": "Not NASA-published. Team choice: the AHA/ACC elevated range (120-129 systolic) is treated as ok. A single reading is a screening prompt only."
+  },
+  {
+    "id": "bp_dia_high",
+    "ind": "bp_dia",
+    "window": "instant",
+    "ok": {
+      "max": 79
+    },
+    "watch": {
+      "max": 120
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "AHA/ACC 2025 adult high blood pressure guideline, Hypertension 2025;82(10):e212-e316, BP classification table",
+    "url": "https://www.ahajournals.org/doi/10.1161/HYP.0000000000000249",
+    "note": "Not NASA-published. Team choice; a single reading is a screening prompt only. Normal below 80, stage 1 80-89, stage 2 90 or more, severe above 120."
+  },
+  {
+    "id": "glucose_low",
+    "ind": "glucose",
+    "window": "instant",
+    "ok": {
+      "min": 70
+    },
+    "watch": {
+      "min": 54
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "ADA Standards of Care in Diabetes 2026, Diabetes Care 2026;49(Suppl 1):S132-S149, Section 6 hypoglycaemia classification",
+    "url": "https://doi.org/10.2337/dc26-S006",
+    "note": "Not NASA-published. Level 1 below 70 and at least 54 mg/dL, level 2 below 54. Screening prompt, not a diagnosis."
+  },
+  {
+    "id": "glucose_high",
+    "ind": "glucose",
+    "window": "instant",
+    "ok": {
+      "max": 139
+    },
+    "watch": {
+      "max": 199
+    },
+    "act": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "ADA Standards of Care in Diabetes 2026, Section 2, 2-hour plasma glucose 140-199 and 200 or more",
+    "url": "https://doi.org/10.2337/dc26-S002",
+    "note": "Not NASA-published. Screening prompt, not a diagnosis; reading timing unknown."
+  },
+  {
+    "id": "sleep_night",
+    "ind": "sleep_h",
+    "window": "instant",
+    "ok": {
+      "min": 7
+    },
+    "watch": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "Watson et al., AASM/SRS joint consensus, Sleep 2015;38(6):843-844",
+    "url": "https://www.aasm.org/resources/pdf/adultsleepdurationconsensus.pdf",
+    "note": "Not NASA-published. Adults 18 to 60 should sleep 7 or more hours on a regular basis. No act band."
+  },
+  {
+    "id": "sleep_week",
+    "ind": "sleep_h",
+    "window": "mean_7d",
+    "ok": {
+      "min": 7
+    },
+    "watch": {},
+    "source_kind": "clinical_ref",
+    "source_ref": "Watson et al., AASM/SRS joint consensus, Sleep 2015;38(6):843-844",
+    "url": "https://www.aasm.org/resources/pdf/adultsleepdurationconsensus.pdf",
+    "note": "Not NASA-published. The consensus is about regular sleep; a 7-day mean is the team's way to apply it. No act band."
+  },
+  {
+    "id": "mood_self",
+    "ind": "mood",
+    "window": "instant",
+    "ok": {
+      "min": 3
+    },
+    "watch": {},
+    "source_kind": "team_convention",
+    "source_ref": "Team convention, no clinical cut-off exists for a single 1-5 item (docs/thresholds-review.md)",
+    "url": "https://github.com/alefnsc/habitat-health-monitor/blob/main/docs/thresholds-review.md",
+    "note": "Team convention, not clinical. No act band."
+  },
+  {
+    "id": "mood_7d",
+    "ind": "mood",
+    "window": "mean_7d",
+    "ok": {
+      "min": 2.5
+    },
+    "watch": {},
+    "source_kind": "team_convention",
+    "source_ref": "Team convention (docs/thresholds-review.md); context: NASA HRP Behavioral Medical Conditions risk",
+    "url": "https://github.com/alefnsc/habitat-health-monitor/blob/main/docs/thresholds-review.md",
+    "note": "Team convention, non-clinical. 7-day mean of the 1-5 report below 2.5 is a supporting signal for the isolation and confinement hazard. Needs 24 h of coverage."
+  }
+]
