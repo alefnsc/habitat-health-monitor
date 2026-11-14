@@ -1,6 +1,6 @@
 # Firmware toolchain
 
-Educational prototype, not a medical device. Three sketches, one shared library, exact versions below.
+Educational prototype, not a medical device. Four sketches, one shared library, exact versions below.
 
 ## Which hardware runs what (decisions D35 and D36) [confirm: hardware member to review before submission]
 
@@ -9,7 +9,8 @@ Educational prototype, not a medical device. Three sketches, one shared library,
 | Raspberry Pi 3 Model B | hub, Mosquitto, and the `cabin-1` node (`nodes/cabin_pi`, Python: BME280, SCD41, optional DHT22) | MQTT on localhost; see `docs/pi-setup.md` |
 | UNO+WiFi R3, ATmega328P side | `exercise-uno`: HX711 load cell, servo, buzzer, optional NTC `skin_temp` and KY-039 `hr` (hobby estimates) | USB serial to the Pi, 250000 baud |
 | UNO+WiFi R3, ESP8266 side | optional Wi-Fi bridge for the ATmega's lines; not built, may be cut | MQTT |
-| Battery-powered NodeMCU Amica (ESP8266; ESP32 also builds) | `vitals-esp32` sketch (the directory name is kept): MAX30102 0x57, MLX90614 GY-906 0x5A, MPU6050 0x68 on one 3.3 V I2C bus (decision D37; the DS18B20 is dropped) | Wi-Fi/MQTT |
+| Battery-powered Wemos D1 mini (ESP8266, `esp8266:esp8266:d1_mini`; ESP32 also builds) | `vitals-esp32` sketch (the directory name is kept): MAX30102 0x57, MLX90614 GY-906 0x5A, MPU6050 0x68 on one 3.3 V I2C bus (decision D37; the DS18B20 is dropped) | Wi-Fi/MQTT |
+| NodeMCU Amica (ESP8266), USB-powered | `tilt-esp8266` sketch (`tilt-1`, D39): KY-017 sealed tilt switch on D5, debounced 30 ms, readings to the hub over Wi-Fi/MQTT | Wi-Fi/MQTT |
 | Wokwi | two twins, because Wokwi has no ESP8266: the Uno rig (`firmware/wokwi/uno-rig/`) and the vitals node on an ESP32 with simulated MAX30102 and MLX90614 chips (`firmware/wokwi/vitals-esp32/`) | n/a |
 
 `firmware/cabin-esp8266` is still the empty skeleton. The Pi node replaces it, and it stays only as a fallback.
@@ -17,7 +18,7 @@ Educational prototype, not a medical device. Three sketches, one shared library,
 ### Vitals node (D37)
 
 One 3.3 V I2C bus at 100 kHz (the MLX90614's SMBus limit; the plan's 400 kHz would not work with it):
-- ESP8266 (NodeMCU Amica): SDA D2 (GPIO4), SCL D1 (GPIO5). Keep D3, D4 and D8 free (boot pins). ESP32: default Wire pins.
+- ESP8266 (Wemos D1 mini, same GPIO4/GPIO5): SDA D2 (GPIO4), SCL D1 (GPIO5). Keep D3, D4 and D8 free (boot pins). ESP32: default Wire pins.
 - Check the MAX30102 board: some pull SDA/SCL up to 1.8 V. Move the jumper to 3.3 V. Keep Wi-Fi on so the power bank does not switch off.
 - Readings (estimates from hobby sensors): `hr` every 1 s and `spo2` every 4 s from the SparkFun library and Maxim's algorithm over a 4 s window; `skin_temp` every 2 s from the MLX90614 object temperature (non-contact, not an axillary or core temperature); `motion` every 1 s from the MPU6050.
 - Flags (team values): `no_contact` for mean IR below 50,000 counts (`hr` then goes out as val 0 every 5 s) or `skin_temp` below 30 C; `settling` for the first 4 s after contact and while `skin_temp` moved more than 0.1 C in 30 s; `motion` on `hr` and `spo2` when a 1 s motion value above 0.05 g falls in the last 4 s (threshold not yet tuned on the bench).
@@ -107,6 +108,7 @@ export CABIN_FQBN=esp8266:esp8266:nodemcuv2
 arduino-cli compile --fqbn esp32:esp32:esp32 firmware/vitals-esp32
 arduino-cli compile --fqbn $CABIN_FQBN firmware/cabin-esp8266
 arduino-cli compile --fqbn arduino:avr:uno firmware/exercise-uno
+arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266   # needs secrets.h
 arduino-cli board list                                   # find $PORT
 arduino-cli upload -p $PORT --fqbn <fqbn> firmware/<sketch>
 arduino-cli monitor -p $PORT --config baudrate=115200
@@ -124,9 +126,10 @@ c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test
 
 Each prints `ok`.
 
-Exercise rig (Uno) host tests and the optional analog channels:
+Host tests for the tilt node (no board needed) and, below, the exercise rig (Uno) with its optional analog channels:
 
 ```
+firmware/tilt-esp8266/test/run_host_tests.sh            # pure logic: tilt debounce, heartbeat, serial line
 firmware/exercise-uno/test/run_host_tests.sh          # pure logic: line format, commands, cal maths, NTC, pulse
 arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_NTC=0 -DENABLE_KY039=0" firmware/exercise-uno
 firmware/wokwi/uno-rig/check_sync.sh                  # the Wokwi copy must equal exercise-uno.ino

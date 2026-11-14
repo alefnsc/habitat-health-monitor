@@ -25,9 +25,18 @@ with the camera's turnaround (`GET /api/reps`, field `tilt`). It measures no ang
 
 ## Set-up check
 
-1. Mount the pod so the switch **reads 0** with the weight at rest. Watch the live `tilt` value on the console.
+1. Mount the pod so the switch **reads 0** with the weight at rest. Check the live `tilt` value with `curl -s 'http://<hub>:8000/api/readings?ind=tilt&limit=5'` (newest 5 rows, oldest first; `val` is the state), or read the node's serial monitor, which prints a `# pub tilt <val> ...` line for each reading it publishes.
 2. If it reads 1 at rest, turn the pod around on the weight (or rebuild with `-DTILT_ACTIVE_LOW=0`).
 3. Tilt the weight slowly past the trip angle: the value must go to 1, and back to 0 when it returns.
+
+## What the offset includes
+
+The `offset_ms` that `GET /api/reps` reports (midpoint of the switch interval minus the camera turnaround) carries some known biases:
+
+- The debounce stamps the accept time, so both edges read about +30 ms late.
+- The camera turnaround is the first sample at the top level, so the offset leans positive.
+- A pause at the top shifts the switch midpoint by about half the pause.
+- A rise then fall shorter than a Wi-Fi or broker reconnect stall can be missed entirely. That reads as `seen: false`, which is honest, not an error.
 
 ## Build
 

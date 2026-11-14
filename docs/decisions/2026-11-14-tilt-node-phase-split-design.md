@@ -27,7 +27,7 @@ Each exercise rep reports its concentric work, its eccentric work and the time s
 ## 4. Firmware: `firmware/tilt-esp8266`
 
 - Reads D5 with a 30 ms software debounce. The debounce is a pure function with host tests, following the `exercise-uno` pattern.
-- Publishes contract-v1 readings over MQTT to the hub's broker: `{node: "tilt-1", ind: "tilt", unit: "state", val: 0 | 1, dev: "KY017", src: "hobby", age_ms, seq, boot}`. Value 1 means the switch is tripped. The firmware reports the raw state; the pod is mounted so that it reads 0 with the weight at rest, and the bench check confirms this on the console before a set.
+- Publishes contract-v1 readings over MQTT to the hub's broker: `{node: "tilt-1", ind: "tilt", unit: "state", val: 0 | 1, dev: "KY017", src: "hobby", age_ms, seq, boot}`. Value 1 means the switch is tripped. The firmware reports the raw state; the pod is mounted so that it reads 0 with the weight at rest, and the bench check confirms this before a set with `GET /api/readings?ind=tilt&limit=5` (or the node's serial `# pub tilt` lines).
 - Sends one reading on every debounced change, plus a heartbeat with the current state every 10 s.
 
 ## 5. Data flow
@@ -89,7 +89,7 @@ The vitals node runs on a **Wemos D1 mini** (ESP8266, `esp8266:esp8266:d1_mini`)
 - **Hub witness:** synthetic changes cover a rise and fall around the turnaround, a pair late by 300 ms (still seen, offset positive), a pair outside the window (not seen), a rise with no fall (not seen), heartbeats (ignored), and two pairs in one window (the one nearest the turnaround wins).
 - **Store:** the four new rep columns round-trip, and an old database without them is migrated in place.
 - **Firmware:** host tests for the debounce (bounce bursts under 30 ms collapse into one change).
-- **Bench smoke:** five slow reps with the sealed pod on the desk weight. The console shows the split and the offsets, and the validation summary lists the five reps.
+- **Bench smoke:** five slow reps with the sealed pod on the desk weight. The camera result table shows the split, `GET /api/reps` and `python -m hub.validation reps` show the offsets, and the validation summary lists the five reps. The tilt state check is the same one as in the tilt node README.
 
 ## 9. Out of scope
 
