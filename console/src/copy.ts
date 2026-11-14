@@ -8,6 +8,7 @@ export const COPY: Record<string, string> = {
   "app.banner": "Educational prototype, not a medical device.",
   "app.disclaimer": DISCLAIMER,
   "app.hubLost": "Hub connection lost — showing last values",
+  "screen.pending": "This screen is built in a later task.",
   "app.licences": "Licences",
 
   "nav.status": "Status board",

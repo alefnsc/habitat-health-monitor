@@ -3,7 +3,8 @@ import { COPY } from "../copy";
 import { el } from "../dom";
 import { BOARD_LAYOUT, applySnapshot, buildTiles, type Tile } from "../model/status";
 import { board } from "../state";
-import { currentCrew } from "../crew";
+import { CREW, WEARER_NODES, currentCrew, setWearer } from "../crew";
+import type { CrewId } from "../contract";
 
 function chip(text: string, cls = ""): HTMLElement {
   return el("span", { class: `chip ${cls}`.trim(), text });
@@ -35,9 +36,36 @@ export function tileElement(t: Tile, showCrewChip: boolean, onClick?: (t: Tile) 
   return n;
 }
 
+const lastWearer = new Map<string, CrewId>();
+
+function wearerPanel(): HTMLElement {
+  const wrap = el("section", { class: "wearer" }, el("h2", { text: COPY["crew.wearerTitle"] }));
+  for (const node of WEARER_NODES) {
+    const id = `wearer-${node}`;
+    const sel = el("select", { id });
+    sel.append(el("option", { value: "", text: "\u2014" }));
+    for (const c of CREW) sel.append(el("option", { value: c.id, text: c.label }));
+    sel.value = lastWearer.get(node) ?? "";
+    const note = el("span", { class: "footnote", "aria-live": "polite" });
+    if (lastWearer.has(node)) note.textContent = ` (${COPY["crew.wearerNote"]})`;
+    sel.addEventListener("change", async () => {
+      if (!sel.value) return;
+      const r = await setWearer(node, sel.value as CrewId);
+      if (r.ok) {
+        lastWearer.set(node, sel.value as CrewId);
+        note.textContent = ` (${COPY["crew.wearerNote"]})`;
+      } else {
+        note.textContent = ` ${r.error}`;
+      }
+    });
+    wrap.append(el("div", { class: "row" }, el("label", { for: id, text: node }), el("div", {}, sel, note)));
+  }
+  return wrap;
+}
+
 export function renderStatus(root: HTMLElement, onTile?: (t: Tile) => void): () => void {
   const host = el("div");
-  root.replaceChildren(host);
+  root.replaceChildren(host, wearerPanel());
   const draw = () => {
     const tiles = buildTiles(board.entries, Date.now());
     const byId = new Map(tiles.map((t) => [t.id, t]));
