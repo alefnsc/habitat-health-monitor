@@ -20,9 +20,10 @@ from starlette.concurrency import run_in_threadpool
 from hub.assess import Assessor, load_escalation, status_body
 from hub.config import Settings, load_settings
 from hub.contract import CREWS, DERIVED, INDICATORS, ContractError
-from hub.crew import CrewRegistry, validate_crew_post
+from hub.crew import CrewRegistry, parse_badge, validate_crew_post
 from hub.derive import derive_ppco2
 from hub.events import EventBus
+from hub.features import HubContext, load_features, wire_features
 from hub.ingest import Ingestor, IngestResult
 from hub.mqtt import MqttPublisher, NodeRegistry, run_subscriber
 from hub.staticmount import BuildMount
@@ -89,15 +90,31 @@ def create_app(
         crew_for=crew_registry.get,
     )
     publisher = MqttPublisher()
+    features = load_features(settings)
 
     def snapshot_frame() -> None:
         bus.publish("snapshot", status_body(store, app.state.node_states(), None, clock()))
 
     nodes.on_change(snapshot_frame)
 
+    def on_badge_message(node: str, payload: bytes) -> None:
+        """habitat/v1/badge/<node>: set the crew, then tell each badge handler (D11)."""
+        try:
+            badge = parse_badge(payload, expected_node=node)
+        except ContractError as e:
+            log.info("reject channel=badge reason=%s", e.reason)
+            return
+        crew_registry.on_badge(badge)
+        for handler in app.state.runtime.badge_handlers:
+            try:
+                handler(node, badge.crew, clock())
+            except Exception:
+                log.exception("badge handler failed")
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         stop = asyncio.Event()
+        await runtime.start(stop)
         tasks: list[asyncio.Task] = []
         bus.loop = asyncio.get_running_loop()
         if settings.mqtt_host:
@@ -117,6 +134,7 @@ def create_app(
         try:
             yield
         finally:
+            await runtime.stop()
             stop.set()
             for t in tasks:
                 t.cancel()
@@ -137,8 +155,13 @@ def create_app(
     app.state.crew = crew_registry
     app.state.publisher = publisher
     app.state.node_states = lambda: [n.to_dict() for n in nodes.snapshot()]
-    app.state.extra_subscriptions = ()
-    app.state.mqtt_handlers = {}
+    app.state.features = features
+    app.state.extra_subscriptions = ("habitat/v1/badge/+",)
+    app.state.mqtt_handlers = {"badge": on_badge_message}
+    ctx = HubContext(settings, store, ingestor, assessor, bus, nodes, crew_registry, None, clock)
+    runtime = wire_features(app, features, ctx)
+    app.state.runtime = runtime
+    app.mount("/camera", BuildMount(settings.camera_dist, "npm --prefix camera run build"))
 
     app.add_middleware(
         CORSMiddleware,
