@@ -2,6 +2,35 @@
 
 Educational prototype, not a medical device. Three sketches, one shared library, exact versions below.
 
+## Which hardware runs what (decisions D35 and D36) [confirm: hardware member to review before submission]
+
+| Board | Runs | Link |
+|---|---|---|
+| Raspberry Pi 3 Model B | hub, Mosquitto, and the `cabin-1` node (`nodes/cabin_pi`, Python: BME280, SCD41, optional DHT22) | MQTT on localhost; see `docs/pi-setup.md` |
+| UNO+WiFi R3, ATmega328P side | `exercise-uno`: HX711 load cell, servo, buzzer, optional NTC `skin_temp` and KY-039 `hr` (hobby estimates) | USB serial to the Pi, 250000 baud |
+| UNO+WiFi R3, ESP8266 side | optional Wi-Fi bridge for the ATmega's lines; not built, may be cut | MQTT |
+| Battery-powered board (ESP32 or ESP8266) | `vitals` node | Wi-Fi/MQTT |
+| Wokwi | the Uno rig only (`firmware/wokwi/uno-rig/`); Wokwi has no ESP8266 | n/a |
+
+`firmware/cabin-esp8266` is still the empty skeleton. The Pi node replaces it, and it stays only as a fallback.
+
+### UNO+WiFi DIP switch modes (vendor table, unverified on this board)
+
+From the RobotDyn product page for the UNO+WiFi R3 ATmega328P+ESP8266 (robotdyn.com, listing "UNO+WiFi R3
+ATmega328P+ESP8266, 32Mb flash, USB-TTL CH340G, Micro-USB"), 8-position switch, DIP 8 reserved. Re-check against
+the silkscreen on the board in hand: clones differ.
+
+| Mode | 1 | 2 | 3 | 4 | 5 | 6 | 7 |
+|---|---|---|---|---|---|---|---|
+| USB to ATmega328 (upload `exercise-uno`; also the run mode for the rig over USB) | OFF | OFF | ON | ON | OFF | OFF | OFF |
+| USB to ESP8266, upload firmware | OFF | OFF | OFF | OFF | ON | ON | ON |
+| USB to ESP8266, serial monitor | OFF | OFF | OFF | OFF | ON | ON | OFF |
+| ATmega328 and ESP8266 linked (bridge mode) | ON | ON | OFF | OFF | OFF | OFF | OFF |
+| All independent | OFF | OFF | OFF | OFF | OFF | OFF | OFF |
+
+In linked mode the ATmega's serial pins 0/1 go to the ESP8266, so the ATmega's USB stream is not available at the
+same time. For the rig the Pi needs the "USB to ATmega328" row.
+
 ## Setup (macOS or Linux, about 10 minutes plus downloads)
 
 1. Install the CLI: `brew install arduino-cli` (macOS), or the official install script from the arduino-cli repository on the Pi. Tested with arduino-cli 1.5.1.
@@ -88,3 +117,14 @@ c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test
 ```
 
 Each prints `ok`.
+
+Exercise rig (Uno) host tests and the optional analog channels:
+
+```
+firmware/exercise-uno/test/run_host_tests.sh          # pure logic: line format, commands, cal maths, NTC, pulse
+arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_NTC=0 -DENABLE_KY039=0" firmware/exercise-uno
+firmware/wokwi/uno-rig/check_sync.sh                  # the Wokwi copy must equal exercise-uno.ino
+```
+
+`ENABLE_NTC` and `ENABLE_KY039` default to 1; turn a channel off when its module is not wired, so a floating analog pin never publishes numbers.
+`seq` is one counter shared by all channels, so `load_raw` has gaps when NTC or KY-039 lines are interleaved.

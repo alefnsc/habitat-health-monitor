@@ -1,0 +1,17 @@
+[Unit]
+Description=Habitat Health Monitor hub (educational prototype)
+After=network-online.target mosquitto.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@REPO@
+EnvironmentFile=@REPO@/.env
+ExecStart=@REPO@/.venv/bin/python -m hub
+Restart=on-failure
+RestartSec=5
+SupplementaryGroups=dialout
+
+[Install]
+WantedBy=multi-user.target

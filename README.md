@@ -44,6 +44,11 @@ still serves and the MQTT subscriber keeps retrying.
 
 Circuit diagrams and the bill of materials are in `docs/` (DRAFT [confirm: hardware member to review before submission]).
 
+Layout (decision D36, [confirm: hardware member to review before submission]):
+- **Raspberry Pi 3 Model B** is the hub host (Mosquitto, hub, console) and runs the `cabin-1` node: a BME280 and an SCD41 on its I2C bus, plus an optional DHT22. Setup: `docs/pi-setup.md` (not yet run on hardware).
+- **UNO+WiFi board, Uno side** is the exercise rig (HX711 load cell, servo, buzzer) and talks to the Pi over USB serial. A Wokwi simulation of it is in `firmware/wokwi/uno-rig/`. The board's ESP8266 side is an optional Wi-Fi bridge and may stay unused.
+- **Vitals node** runs on a battery-powered board. Nothing body-worn is ever cabled to the Pi.
+
 ## Safety
 
 Everything that touches a person runs on battery only. See `docs/safety-checklist.md`.
