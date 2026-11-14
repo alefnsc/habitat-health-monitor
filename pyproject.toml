@@ -22,13 +22,14 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "ruff", "respx", "pytest-asyncio"]
 analysis = ["matplotlib", "numpy"]
+pi = ["smbus2"]  # cabin node on a Raspberry Pi (MIT)
 
 [tool.setuptools.packages.find]
 where = [".", "ground"]
-include = ["hub*", "linksim*", "receiver*"]
+include = ["hub*", "linksim*", "receiver*", "nodes*"]
 
 [tool.pytest.ini_options]
-testpaths = ["hub/tests", "linksim/tests", "tools/food/tests", "ground/receiver/tests"]
+testpaths = ["hub/tests", "nodes/cabin_pi/tests", "linksim/tests", "tools/food/tests", "ground/receiver/tests"]
 pythonpath = ["ground"]
 markers = ["broker: needs a live Mosquitto on 127.0.0.1:1883"]
 asyncio_default_fixture_loop_scope = "function"
