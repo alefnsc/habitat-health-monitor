@@ -1,0 +1,9 @@
+esp8266:esp8266	3.1.2	LGPL-2.1-or-later
+ArduinoJson	7.4.3	MIT
+MQTT	2.5.3	MIT
+Adafruit BME280 Library	2.3.0	BSD-3-Clause
+Adafruit Unified Sensor	1.1.15	Apache-2.0
+Adafruit BusIO	1.17.4	MIT
+Sensirion I2C SCD4x	1.1.0	BSD-3-Clause
+Sensirion Core	0.7.3	BSD-3-Clause
+DHT sensor library	1.4.7	MIT
