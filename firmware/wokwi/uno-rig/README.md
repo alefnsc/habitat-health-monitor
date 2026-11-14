@@ -17,6 +17,23 @@ a headless run (see "Headless run").
 
 **Saved project (share link):** https://wokwi.com/projects/480675272836723713. It matches commit c0d2b38 file for file.
 
+## What runs where (also written on the Wokwi canvas)
+
+- **Code:** the same sketch as the real Arduino Uno, `firmware/exercise-uno/exercise-uno.ino` (checked byte for byte by `hub/tests/test_firmware_exercise.py`).
+- **Role:** measures the force on the handle (load cell) and drives the habitat alarm (servo dial + buzzer) when the hub sends a command.
+- **Link:** USB serial at 250000 baud, one contract-v1 JSON reading per line. Commands come in on the same port and each gets one ack line.
+- **Config:** `ENABLE_NTC=1` and `ENABLE_KY039=1` by default (build with `=0` when a module is not wired), `CELL_CAPACITY_KG=50`.
+
+| Part | Pins | Produces / does | On the bench |
+|---|---|---|---|
+| Load cell + HX711 (simulated) | DOUT D3, SCK D4 | `load_raw` (N) | 80 SPS with the RATE pin tied to DVDD |
+| Alarm dial (servo) | D6 | moves on a hub command | same |
+| Alarm buzzer | D8 | sounds on a hub command | same |
+| Skin probe stand-in (simulated NTC) | A0 | `skin_temp`, estimate | 10 k NTC module |
+| Pulse stand-in (simulated potentiometer) | A1 | `hr`, estimate (turn it back and forth) | KY-039 module |
+
+Simulated parts are labelled. Readings are estimates. Not a medical device.
+
 ## Open it on wokwi.com
 
 1. Start a new **Arduino Uno** project.

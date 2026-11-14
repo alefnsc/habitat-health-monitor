@@ -65,7 +65,7 @@ def test_twin_wiring_matches_sketch_pins() -> None:
 
 def test_twin_simulated_parts_are_labelled() -> None:
     d = json.loads((TWIN / "diagram.json").read_text())
-    texts = " ".join(p["attrs"]["text"] for p in d["parts"] if p["type"] == "wokwi-text")
+    texts = " ".join(p["attrs"]["text"] for p in d["parts"] if p["type"] == "wokwi-text").lower()
     assert "pulse stand-in (simulated)" in texts
     assert "skin probe stand-in (simulated)" in texts
     assert "load cell (simulated)" in texts

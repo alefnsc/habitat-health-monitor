@@ -3,56 +3,270 @@
   "author": "Habitat Health Monitor team",
   "editor": "wokwi",
   "parts": [
-    { "type": "wokwi-arduino-uno", "id": "uno", "top": 0, "left": 0, "attrs": {} },
-    { "type": "wokwi-hx711", "id": "hx711", "top": -150, "left": 250, "attrs": { "type": "50kg" } },
-    { "type": "wokwi-servo", "id": "servo", "top": -160, "left": 480, "attrs": { "horn": "single" } },
-    { "type": "wokwi-buzzer", "id": "buzzer", "top": -60, "left": 650, "attrs": { "volume": "0.1" } },
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-hx711",
+      "id": "hx711",
+      "top": -150,
+      "left": 250,
+      "attrs": {
+        "type": "50kg"
+      }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo",
+      "top": -160,
+      "left": 480,
+      "attrs": {
+        "horn": "single"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": -60,
+      "left": 650,
+      "attrs": {
+        "volume": "0.1"
+      }
+    },
     {
       "type": "wokwi-ntc-temperature-sensor",
       "id": "ntc",
       "top": 220,
       "left": 330,
-      "attrs": { "temperature": "34" }
+      "attrs": {
+        "temperature": "34"
+      }
     },
-    { "type": "wokwi-potentiometer", "id": "pulse_pot", "top": 220, "left": 520, "attrs": { "value": "512" } },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "pulse_pot",
+      "top": 220,
+      "left": 520,
+      "attrs": {
+        "value": "512"
+      }
+    },
     {
       "type": "wokwi-text",
-      "id": "label_pot",
-      "top": 340,
-      "left": 500,
-      "attrs": { "text": "pulse stand-in (simulated)" }
+      "id": "label_cell",
+      "top": -205,
+      "left": 150,
+      "attrs": {
+        "text": "Load cell (simulated) + HX711: DOUT D3, SCK D4 → load_raw (N); 80 SPS on the bench"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_servo",
+      "top": -185,
+      "left": 420,
+      "attrs": {
+        "text": "Alarm dial (servo): D6 ← hub command"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_buzzer",
+      "top": -95,
+      "left": 620,
+      "attrs": {
+        "text": "Alarm buzzer: D8 ← hub command"
+      }
     },
     {
       "type": "wokwi-text",
       "id": "label_ntc",
       "top": 310,
-      "left": 330,
-      "attrs": { "text": "skin probe stand-in (simulated)" }
+      "left": 260,
+      "attrs": {
+        "text": "Skin probe stand-in (simulated) NTC: A0 → skin_temp, estimate"
+      }
     },
     {
       "type": "wokwi-text",
-      "id": "label_cell",
-      "top": -175,
-      "left": 250,
-      "attrs": { "text": "load cell (simulated)" }
+      "id": "label_pot",
+      "top": 340,
+      "left": 470,
+      "attrs": {
+        "text": "Pulse stand-in (simulated): turn back and forth; A1 → hr; KY-039 on the bench, estimate"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_1",
+      "top": 390,
+      "left": -60,
+      "attrs": {
+        "text": "Exercise rig twin: the same code as the real Arduino Uno (firmware/exercise-uno)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_2",
+      "top": 412,
+      "left": -60,
+      "attrs": {
+        "text": "Role: measures handle force (load cell) and drives the habitat alarm (servo dial + buzzer) on hub commands"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_3",
+      "top": 434,
+      "left": -60,
+      "attrs": {
+        "text": "Link: USB serial 250000 baud, one contract-v1 JSON reading per line; commands in, one ack per command"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_4",
+      "top": 456,
+      "left": -60,
+      "attrs": {
+        "text": "Config: ENABLE_NTC=1, ENABLE_KY039=1 (build with =0 if a module is not wired), CELL_CAPACITY_KG=50"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_5",
+      "top": 478,
+      "left": -60,
+      "attrs": {
+        "text": "Simulated parts are labelled. Readings are estimates. Not a medical device."
+      }
     }
   ],
   "connections": [
-    [ "hx711:VCC", "uno:5V", "red", [ "v0" ] ],
-    [ "hx711:GND", "uno:GND.2", "black", [ "v0" ] ],
-    [ "hx711:DT", "uno:3", "green", [ "v0" ] ],
-    [ "hx711:SCK", "uno:4", "orange", [ "v0" ] ],
-    [ "servo:PWM", "uno:6", "orange", [ "v0" ] ],
-    [ "servo:V+", "uno:5V", "red", [ "v0" ] ],
-    [ "servo:GND", "uno:GND.2", "black", [ "v0" ] ],
-    [ "buzzer:2", "uno:8", "purple", [ "v0" ] ],
-    [ "buzzer:1", "uno:GND.1", "black", [ "v0" ] ],
-    [ "ntc:VCC", "uno:5V", "red", [ "v0" ] ],
-    [ "ntc:GND", "uno:GND.2", "black", [ "v0" ] ],
-    [ "ntc:OUT", "uno:A0", "blue", [ "v0" ] ],
-    [ "pulse_pot:VCC", "uno:5V", "red", [ "v0" ] ],
-    [ "pulse_pot:GND", "uno:GND.2", "black", [ "v0" ] ],
-    [ "pulse_pot:SIG", "uno:A1", "blue", [ "v0" ] ]
+    [
+      "hx711:VCC",
+      "uno:5V",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "hx711:GND",
+      "uno:GND.2",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "hx711:DT",
+      "uno:3",
+      "green",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "hx711:SCK",
+      "uno:4",
+      "orange",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "servo:PWM",
+      "uno:6",
+      "orange",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "servo:V+",
+      "uno:5V",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "servo:GND",
+      "uno:GND.2",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "buzzer:2",
+      "uno:8",
+      "purple",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "buzzer:1",
+      "uno:GND.1",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ntc:VCC",
+      "uno:5V",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ntc:GND",
+      "uno:GND.2",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "ntc:OUT",
+      "uno:A0",
+      "blue",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pulse_pot:VCC",
+      "uno:5V",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pulse_pot:GND",
+      "uno:GND.2",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pulse_pot:SIG",
+      "uno:A1",
+      "blue",
+      [
+        "v0"
+      ]
+    ]
   ],
   "dependencies": {}
 }
