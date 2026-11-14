@@ -1,5 +1,9 @@
 # Wokwi twin of the vitals node (ESP32 stands in for the NodeMCU Amica)
 
+> **Archived (D40).** Wearable vitals now come from a ring import, so there is no vitals board. The Wokwi project
+> that this folder used (https://wokwi.com/projects/480680478751478785) now holds the tilt-1 twin: see
+> `../tilt-esp32`. The files here are kept as design history and still pass their own checks.
+
 Educational prototype, not a medical device. Everything in this simulation is simulated and labelled so
 in the diagram. Wokwi has no ESP8266, so an ESP32 DevKit runs the real `firmware/vitals-esp32` sketch.
 The sketch is the same file; only the board and the sensors differ.

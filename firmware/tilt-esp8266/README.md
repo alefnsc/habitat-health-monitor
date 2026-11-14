@@ -15,7 +15,18 @@ with the camera's turnaround (`GET /api/reps`, field `tilt`). It measures no ang
 
 - Module batches differ in pin order: read the silkscreen and confirm the switch with a meter before power.
 - Keep D1/D2 free (I2C for a later MPU6050) and D3, D4, D8 free (boot pins).
-- Power over USB from the hub. This node is never worn on the body.
+- This node is never worn on the body.
+
+## Power (D40): two cells, no cable
+
+The pod rides on the weight, so the node runs on its own cells and nothing on the held weight is cabled to the hub.
+
+- **Cells.** Use 2 × AA or AAA in series (3.0 to 3.2 V fresh), wired to the NodeMCU's **3V3** and **GND** pins. Solder
+  them, or use a holder with jumpers. At about 80 mA with Wi-Fi on, AA cells last roughly 15 hours.
+- **Never VIN.** Its regulator needs more than about 4.5 V. Never put more than 3.6 V on 3V3, so never use three cells.
+- **No CR2032.** A coin cell cannot supply the Wi-Fi bursts (170 to 300 mA): the voltage collapses and the board resets.
+- **Flashing.** Unplug the cells before you plug USB in to flash, and plug them back after.
+- **Twin.** The Wokwi twin of this node is in `firmware/wokwi/tilt-esp32`.
 
 ## Safety: the capsule holds mercury
 

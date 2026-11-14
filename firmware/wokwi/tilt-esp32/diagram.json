@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "author": "Habitat Health Monitor team",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "tilt_sw",
+      "top": 40,
+      "left": 200,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_board",
+      "top": -60,
+      "left": -10,
+      "attrs": {
+        "text": "ESP32 stands in for the NodeMCU (simulated): Wokwi has no ESP8266. Same tilt-1 sketch, serial-only mode (no secrets.h)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_switch",
+      "top": 0,
+      "left": 180,
+      "attrs": {
+        "text": "KY-017 stand-in (simulated): slide right = tilted (tilt 1), left = at rest (tilt 0). GPIO14 = D5 on the NodeMCU"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_1",
+      "top": 260,
+      "left": -10,
+      "attrs": {
+        "text": "tilt-1 node twin (decisions D39, D40): one tilt reading on every debounced change, plus a heartbeat every 10 s"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_2",
+      "top": 282,
+      "left": -10,
+      "attrs": {
+        "text": "Real node: NodeMCU on 2 x AA/AAA cells, on the weight, Wi-Fi/MQTT to the hub. The mercury pod is sealed; adults only"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "panel_3",
+      "top": 304,
+      "left": -10,
+      "attrs": {
+        "text": "Simulated parts are labelled. Not a medical device."
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:D14",
+      "tilt_sw:2",
+      "green",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "tilt_sw:3",
+      "esp:GND.1",
+      "black",
+      [
+        "v0"
+      ]
+    ]
+  ],
+  "dependencies": {}
+}
