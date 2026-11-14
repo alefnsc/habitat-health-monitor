@@ -3,7 +3,7 @@ import type { RepResult, SessionResult } from "@ground-truth/capture";
 import type { CaptureOutcome } from "../../vendor/ground-truth/demo/src/model/captureFlow";
 import { COPY } from "../src/copy";
 import { createSequencer } from "../src/seq";
-import { resultView, toRepMessages } from "../src/reps";
+import { ENVIRONMENT_MENU, gNoteText, resultView, toRepMessages } from "../src/reps";
 
 const rep = (o: Partial<RepResult>): RepResult => ({
   startS: 0, durationS: 2, liftDurationS: 1, filterLimited: false, rangeOfMotionM: 0.5, pathLengthM: 1,
@@ -51,6 +51,15 @@ describe("phase split (D39)", () => {
     expect(COPY["result.work"]).toBe("Concentric work (J)");
     expect(COPY["result.workEcc"]).toBe("Eccentric work (J)");
     expect(COPY["result.tCon"]).toBe("Lift time (s)");
-    expect(COPY["result.tEcc"]).toBe("Lowering time (s)");
+    expect(COPY["result.tEcc"]).toBe("Lowering time incl. top pause (s)");
+  });
+
+  test("test_configured_g_line_comes_from_the_menu", () => {
+    for (const e of ENVIRONMENT_MENU) {
+      expect(gNoteText(e.g)).toBe(`Work uses the configured g: ${e.g.toFixed(2)} m/s\u00b2 (${e.label})`);
+    }
+    expect(gNoteText(ENVIRONMENT_MENU[0].g)).toContain("Earth");
+    expect(gNoteText(ENVIRONMENT_MENU[1].g)).toContain("Moon");
+    expect(gNoteText(7)).toContain("(custom)");
   });
 });

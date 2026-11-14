@@ -82,6 +82,12 @@ export const ENVIRONMENT_MENU = (["EARTH", "MOON", "MARS", "ISS"] as const).map(
   g: G_ENV_MS2[id],
 }));
 
+// The line under the result table: work uses the configured g, taken from the selected menu entry.
+export const gNoteText = (g: number): string =>
+  COPY["result.gNote"]
+    .replace("{g}", g.toFixed(2))
+    .replace("{env}", ENVIRONMENT_MENU.find((e) => e.g === g)?.label ?? "custom");
+
 export interface ResultRow {
   rep: number;
   peakN: number;

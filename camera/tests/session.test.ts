@@ -53,6 +53,23 @@ describe("session", () => {
     expect(seen).toEqual([1, 1, 1]);
   });
 
+  test("test_age_is_recomputed_per_attempt", async () => {
+    const t0 = performance.now() - 1000; // the rep ended (t1_ms = 1000) as the test starts
+    const age = (m: RepMessage) => Math.max(0, Math.round(performance.now() - (t0 + m.t1_ms)));
+    const sentAges: { seq: number; age: number }[] = [];
+    let n = 0;
+    const post = async (m: RepMessage) => {
+      sentAges.push({ seq: m.seq, age: m.age_ms });
+      if (++n === 1) throw new ApiError(0, "timeout");
+      return res();
+    };
+    const p = postRepsWithRetry([msg(1), msg(2)], post, { intervalMs: 2000, maxTries: 15, age });
+    await vi.advanceTimersByTimeAsync(4000);
+    expect(await p).toEqual({ sent: 2, pending: 0, rejected: [] });
+    // First attempt at +0 ms, retry after the 2 s sleep, second rep sent right after that.
+    expect(sentAges).toEqual([{ seq: 1, age: 0 }, { seq: 1, age: 2000 }, { seq: 2, age: 2000 }]);
+  });
+
   test("test_duplicate_is_sent", async () => {
     const post = vi.fn().mockResolvedValue(res(true));
     const r = await postRepsWithRetry([msg(1)], post, { intervalMs: 2000, maxTries: 15 });

@@ -1,6 +1,6 @@
 # Firmware toolchain
 
-Educational prototype, not a medical device. Three sketches, one shared library, exact versions below.
+Educational prototype, not a medical device. Four sketches, one shared library, exact versions below.
 
 ## Which hardware runs what (decision D40, amends D35-D37 and D39) [confirm: hardware member to review before submission]
 
@@ -34,7 +34,7 @@ CR2032 coin cell, because it cannot supply the Wi-Fi bursts. See `firmware/tilt-
 ### Vitals node (D37, archived in D40)
 
 One 3.3 V I2C bus at 100 kHz (the MLX90614's SMBus limit; the plan's 400 kHz would not work with it):
-- ESP8266 (NodeMCU Amica): SDA D2 (GPIO4), SCL D1 (GPIO5). Keep D3, D4 and D8 free (boot pins). ESP32: default Wire pins.
+- ESP8266 (Wemos D1 mini, same GPIO4/GPIO5): SDA D2 (GPIO4), SCL D1 (GPIO5). Keep D3, D4 and D8 free (boot pins). ESP32: default Wire pins.
 - Check the MAX30102 board: some pull SDA/SCL up to 1.8 V. Move the jumper to 3.3 V. Keep Wi-Fi on so the power bank does not switch off.
 - Readings (estimates from hobby sensors): `hr` every 1 s and `spo2` every 4 s from the SparkFun library and Maxim's algorithm over a 4 s window; `skin_temp` every 2 s from the MLX90614 object temperature (non-contact, not an axillary or core temperature); `motion` every 1 s from the MPU6050.
 - Flags (team values): `no_contact` for mean IR below 50,000 counts (`hr` then goes out as val 0 every 5 s) or `skin_temp` below 30 C; `settling` for the first 4 s after contact and while `skin_temp` moved more than 0.1 C in 30 s; `motion` on `hr` and `spo2` when a 1 s motion value above 0.05 g falls in the last 4 s (threshold not yet tuned on the bench).
@@ -124,6 +124,7 @@ export CABIN_FQBN=esp8266:esp8266:nodemcuv2
 arduino-cli compile --fqbn esp32:esp32:esp32 firmware/vitals-esp32
 arduino-cli compile --fqbn $CABIN_FQBN firmware/cabin-esp8266
 arduino-cli compile --fqbn arduino:avr:uno firmware/exercise-uno
+arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266   # needs secrets.h
 arduino-cli board list                                   # find $PORT
 arduino-cli upload -p $PORT --fqbn <fqbn> firmware/<sketch>
 arduino-cli monitor -p $PORT --config baudrate=115200
@@ -157,13 +158,13 @@ Every optional channel defaults to 0 except the DHT11 (D40); turn one on only wh
 tilt-1 node and its Wokwi twin:
 
 ```
-firmware/tilt-esp8266/test/run_host_tests.sh
+firmware/tilt-esp8266/test/run_host_tests.sh            # pure logic: tilt debounce, heartbeat, serial line
 arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
 arduino-cli compile --fqbn esp32:esp32:esp32 --library firmware/libraries/HabitatNode firmware/tilt-esp8266   # the Wokwi stand-in
 firmware/wokwi/tilt-esp32/check_sync.sh
 ```
 
-Vitals node:
+Vitals node (archived in D40, kept as design history):
 
 ```
 cp firmware/vitals-esp32/secrets.example.h firmware/vitals-esp32/secrets.h   # fill in; git-ignored
