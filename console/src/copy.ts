@@ -1,0 +1,100 @@
+// All user-facing text lives here, keyed by a short id. Views take their text only from COPY.
+// English only. Food-energy wording is allowed only in keys starting "food." (see tests/copy.test.ts).
+
+export const DISCLAIMER = "This is not a diagnosis.";
+
+export const COPY: Record<string, string> = {
+  "app.title": "Habitat Health Monitor",
+  "app.banner": "Educational prototype, not a medical device.",
+  "app.disclaimer": DISCLAIMER,
+  "app.hubLost": "Hub connection lost — showing last values",
+  "app.licences": "Licences",
+
+  "nav.status": "Status board",
+  "nav.entry": "Manual entry",
+  "nav.history": "History",
+  "nav.exercise": "Exercise",
+  "nav.nasa": "NASA panel",
+  "nav.prompts": "Prompts",
+  "nav.body": "Body figure",
+
+  "crew.all": "All crew",
+  "crew.a": "Crew A",
+  "crew.b": "Crew B",
+  "crew.c": "Crew C",
+  "crew.viewing": "Viewing",
+  "crew.wearerTitle": "Sensors worn by",
+  "crew.wearerNote": "set from this console",
+  "crew.wearerError": "Could not set the wearer: ",
+  "crew.choose": "Choose who this reading is for.",
+
+  "status.none": "—",
+  "status.noReading": "No reading yet",
+  "status.vitals": "Vitals",
+  "status.supporting": "Supporting sensors",
+  "status.cabin": "Cabin",
+  "status.ok": "OK",
+  "status.watch": "Watch",
+  "status.act": "Act now",
+  "status.unknown": "No rule",
+  "status.notAssessed": "Not assessed",
+
+  "src.certified": "Certified device",
+  "src.hobby": "Hobby sensor",
+  "src.self": "Self-report",
+  "src.nasa": "NASA data",
+  "src.replay": "Replay (recorded)",
+
+  "kind.nasa_std": "NASA-STD-3001",
+  "kind.clinical_ref": "Clinical reference (not NASA-published)",
+  "kind.personal_baseline": "Your 30-day baseline",
+  "kind.team_convention": "Team convention, not clinical",
+  "kind.none": "No rule",
+
+  "badge.spo2Hobby": "Uncalibrated estimate",
+  "badge.skinForehead": "Forehead skin temperature, not core",
+  "badge.skinProbe": "Skin temperature, not core",
+  "badge.dht11": "DHT11 reads ±2 °C",
+  "badge.camera": "Estimate",
+  "badge.hobbyGeneric": "Estimate",
+
+  "flag.motion": "Moved during reading",
+  "flag.no_contact": "No finger or probe contact",
+  "flag.settling": "Sensor warming up",
+  "flag.leads_off": "ECG leads off",
+  "flag.out_of_range": "Outside the sensor's range",
+  "flag.assumed_pressure": "Pressure assumed 1013.25 hPa",
+  "flag.stale": "NASA data older than its limit",
+
+  "dev.H10": "Chest strap",
+  "dev.manual": "Typed in",
+  "dev.camera": "Camera",
+
+  "age.justNow": "just now",
+
+  "entry.measuredWith": "Measured with",
+  "entry.certified": "Certified device",
+  "entry.self": "Self-estimate",
+  "entry.send": "Send",
+  "entry.retry": "Retry",
+  "entry.sent": "Sent",
+  "entry.moodHelp": "1 = very low, 5 = very good (non-clinical scale)",
+  "entry.symptomNone": "None",
+  "entry.noRows": "Fill in at least one row.",
+  "entry.bodyMassNote": "Body mass is stored but has no tile on the status board.",
+
+  "history.pick": "Indicator",
+  "history.moodSleep": "Mood and sleep",
+  "history.moodNote": "Self-reported mood, non-clinical.",
+  "history.skipped": "shown on the board, not drawable as a line",
+  "history.greyedNote": "Hollow grey markers are readings that were not assessed.",
+
+  "camera.estimate": "Camera numbers are estimates.",
+  "work.note": "Work is mechanical work in joules, not food energy.",
+  "risk.note": "Programme-level risk rating, not your personal risk.",
+  "nasa.disclaimerFallback": "DONKI is research information; the official forecast source is NOAA SWPC.",
+
+  "food.energyTitle": "Food energy logged",
+};
+
+export type CopyKey = keyof typeof COPY;
