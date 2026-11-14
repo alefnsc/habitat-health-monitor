@@ -207,7 +207,8 @@ def _share(k: int, n: int) -> str:
 def tilt_rows(bodies: list[dict]) -> list[str]:
     """D39: how often the tilt switch witnessed a camera rep, and how far its midpoint sat
     from the camera turnaround."""
-    cams = [p for b in bodies for p in b.get("pairs", []) if p.get("camera")]
+    # A camera rep with no tilt result (no t_turn_ms) cannot be witnessed, so it is not counted.
+    cams = [p for b in bodies for p in b.get("pairs", []) if p.get("camera") and p.get("tilt") is not None]
     seen = [p["tilt"] for p in cams if p.get("tilt") and p["tilt"].get("seen")]
     inside = [t for t in seen if t.get("turn_inside")]
     offs = sorted(abs(t["offset_ms"]) for t in seen)

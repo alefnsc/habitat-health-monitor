@@ -19,7 +19,7 @@ NOT_SEEN = {"seen": False, "turn_inside": False, "offset_ms": None, "rise_at": N
 def test_tilt_rows_counts_and_percentiles():
     rows = v.tilt_rows([body([w(40), w(-60), w(100, inside=False), NOT_SEEN, None])])
     assert rows == [
-        "| Tilt witness seen | 3/5 = 60 % |",
+        "| Tilt witness seen | 3/4 = 75 % |",
         "| Turnaround inside tilt interval | 2/3 = 67 % |",
         "| Tilt offset, abs median / p95 | 60 ms / 100 ms |",
     ]
@@ -28,7 +28,7 @@ def test_tilt_rows_counts_and_percentiles():
 def test_tilt_rows_without_witnesses():
     rows = v.tilt_rows([body([None, NOT_SEEN])])
     assert rows == [
-        "| Tilt witness seen | 0/2 = 0 % |",
+        "| Tilt witness seen | 0/1 = 0 % |",
         "| Turnaround inside tilt interval | n/a |",
         "| Tilt offset, abs median / p95 | n/a |",
     ]
