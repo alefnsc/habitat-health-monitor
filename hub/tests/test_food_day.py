@@ -175,3 +175,39 @@ def test_no_conversion_constants():
             continue
         text = p.read_text()
         assert "4.184" not in text and "4184" not in text
+
+
+# real Assessor.preview (H7a) with the H agent's test food rules
+def _real(store):
+    from hub.assess import Assessor
+    from hub.thresholds import load_rules
+
+    rules = load_rules(Path(__file__).parent / "fixtures" / "thresholds_food_test.json")
+    return Assessor(store, rules, tz="UTC")
+
+
+def test_real_preview_status_and_floor(store):
+    ass = _real(store)
+    put(store, "intake_sodium_mg", 2400, 1)
+    d = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"]["intake_sodium_mg"]
+    assert d["status"] == "watch" and d["rule_id"] == "t_na_max"
+    assert d["floor_judged"] is False  # first reading only 1 h old
+    put(store, "intake_sodium_mg", 10, 21)
+    d = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"]["intake_sodium_mg"]
+    assert d["floor_judged"] is True
+    assert d["status"] == "watch"
+
+
+def test_real_preview_all_crew_and_after_roll(store):
+    ass = _real(store)
+    put(store, "intake_sodium_mg", 2400, 1, crew="crew-a")
+    put(store, "intake_sodium_mg", 210, 1, crew="crew-b")
+    t = food_day(store, ass, None, T, crews=CREWS, rules=ass.rules)["totals"]["intake_sodium_mg"]
+    assert t["val"] == 2610.0 and t["status"] == "watch"
+    only_b = food_day(store, ass, "crew-b", T, crews=CREWS, rules=ass.rules)
+    assert only_b["totals"]["intake_sodium_mg"]["status"] != "watch"
+    late = food_day(store, ass, "crew-a", T + timedelta(hours=25), crews=CREWS, rules=ass.rules)
+    n = late["totals"]["intake_sodium_mg"]
+    assert (n["val"], n["status"]) == (None, "unknown")
+    iron = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"]["intake_iron_mg"]
+    assert iron["status"] == "unknown" and iron["floor_judged"] is None
