@@ -16,7 +16,7 @@ Documents read:
 3. **Lux hours 07:00 to 23:00 are a team convention.** [V2 8051] sets minimum levels per Table 8.7-1 and sets no hours; the table's other row is "Crew Sleep <=0.02 lux". Also 8051 applies to architectures "that do not include the presence of orbital sunlight". Keep the hours field, label it team convention.
 4. **Radiation 50 %/90 % bands (300/540 mSv) and the space-weather levels are team conventions.** The only NASA number is 600 mSv ([V1 4030]). Confirmed: [V1 4031] (250 mSv per SPE) is a shielding design limit, so it is context only; the SPE alert source is [V2 6164]/[V2 6165] (open point c settled).
 5. **NTRS 20250006168 is a conference draft** ("ASCEND ... draft 1"). It is the only document with the 0.2 to 0.5 mSv/day range. Acceptable as the cited range; label it "draft paper".
-6. **OSDR mission is not signed yet.** The N probe table `docs/drafts/osdr-probe.md` is not on origin/main as of 10:17. See "OSDR mission".
+6. **OSDR mission: proposed RR-6** from the N probe table (all four series complete). Needs the operator's signature on the `Mission:` line. See "OSDR mission".
 
 No other disagreement between the PDFs and `research/*.md`.
 
@@ -55,7 +55,12 @@ Shape: polygon (quadrilateral) on a psychrometric chart, Vol 2 p. 55. Vertices i
 
 ## OSDR mission (open point e)
 
-Not signed. `docs/drafts/osdr-probe.md` (N agent) was not on origin/main at 10:17. What I verified independently, without committing a choice: the EDA API `https://visualization.osdr.nasa.gov/eda/api/missions/` lists 24 missions (RR-1, RR-3, RR-5, RR-6, RR-7, RR-9, RR-12, RR-18, RR-19, APEX-03-1, APEX-03-2, APEX-04, VEG-01A/B/C, RR-4, RR-8, RR-10, RR-17, RR-20, RR-22, RR-23, RR-25, RR-28). `/missions/{name}/telemetry_data/` returned 200 for RR-9 (records with temperature_iss, humidity_iss, co2_iss in ppm, e.g. 24.7 C, 63 %, 2915) and RR-28 (large, many nulls early); the flat paths `/temperature/iss/` and `/co2/iss/` returned 404. Radiation was not checked. Decision rule once N's table lands: pick the mission whose four series (temperature, humidity, CO2, radiation) are all populated; otherwise the one with most and list what is missing. Will be filled in the next pass.
+Proposed for signature: **Mission: RR-6** (SpaceX-13 rodent mission, Dec 2017 to Feb 2018). Source: N agent's probe table `docs/drafts/osdr-probe.md` (read from origin/main at 10:2x), which I cross-checked on the one point I could repeat: the EDA `missions` list and a `telemetry_data` call (RR-9, RR-28) returned the same structure and the bare `/temperature/iss/` paths return 404, as the table says.
+- Per the probe table, RR-6 returned all four series: temperature 21.7 to 25.6 C, humidity 25 to 61 %, CO2 500 to 4187 ppm, all complete, plus 49 daily radiation values (mean total 0.283 mGy/day, 2017-12-15 to 2018-02-01) on the same dates.
+- Other missions with all four: RR-1, RR-3, RR-7 (half empty for humidity and CO2), RR-9 (radiation dates do not overlap telemetry), RR-12, RR-19, RR-23 (small gaps). RR-6 is the best complete pairing.
+- Caveat for the page: units are not in the JSON; the probe took them from the EDA page scripts (degC, % RH, ppm, mGy/day). The CO2 comes in ppm, so it needs the 0.000750062 mmHg/ppm conversion (same factor as S4) before comparison with the 3 mmHg limit. Cabin RH of 25 % at the low edge is at the Rev F health limit.
+- OSDR absorbed dose (mGy) is shown separately and never converted.
+- Confidence: Medium-High (table not independently repeated for RR-6 radiation). If the operator approves, the `Mission:` line in the probe file is `Mission: RR-6`.
 
 ## Nutrition rules
 
