@@ -6,6 +6,8 @@ Blackouts in the config are seconds after `start_s`.
 
 from __future__ import annotations
 
+import functools
+import threading
 from collections import deque
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
@@ -78,6 +80,15 @@ class _BeaconSlot:
     beacon: Beacon
 
 
+def _locked(fn):
+    @functools.wraps(fn)
+    def wrapper(self, *args, **kwargs):
+        with self._lock:
+            return fn(self, *args, **kwargs)
+
+    return wrapper
+
+
 @dataclass
 class LinkEngine:
     cfg: LinkConfig
@@ -90,6 +101,16 @@ class LinkEngine:
     _failures: list[_Episode] = field(default_factory=list, init=False)
     _beacons: deque[_BeaconSlot] = field(default_factory=deque, init=False)
     _next_beacon_k: int = field(default=0, init=False)
+    _lock: threading.RLock = field(default_factory=threading.RLock, init=False, repr=False)
+
+    @property
+    def fetched_id(self) -> int:
+        """Highest outbox id accepted; the hub poll cursor."""
+        return self._fetched_id
+
+    @fetched_id.setter
+    def fetched_id(self, value: int) -> None:
+        self._fetched_id = value
 
     # ----- helpers -----
 
@@ -188,6 +209,7 @@ class LinkEngine:
 
     # ----- public API -----
 
+    @_locked
     def accept(self, items: list[OutboxItem], now_s: float) -> None:
         self._generate_beacons(now_s)
         for it in items:
@@ -197,11 +219,13 @@ class LinkEngine:
             self._pending[it.id] = _Rec(it, now_s, tx, tx + self._hold())
             self._fetched_id = max(self._fetched_id, it.id)
 
+    @_locked
     def due(self, now_s: float) -> list[OutboxItem]:
         self._generate_beacons(now_s)
         ready = sorted(r.item.id for r in self._pending.values() if r.arrive_at <= now_s)
         return [self._pending[i].item for i in ready[:MAX_DUE]]
 
+    @_locked
     def due_beacon(self, now_s: float) -> Beacon | None:
         self._generate_beacons(now_s)
         newest = None
@@ -209,6 +233,7 @@ class LinkEngine:
             newest = self._beacons.popleft()
         return None if newest is None else newest.beacon
 
+    @_locked
     def mark_delivered(self, ids: list[int], now_s: float) -> None:
         self._generate_beacons(now_s)
         for i in ids:
@@ -219,15 +244,18 @@ class LinkEngine:
             if ep.end is None:
                 ep.end = now_s
 
+    @_locked
     def mark_failed(self, now_s: float) -> None:
         self._generate_beacons(now_s)
         if not any(ep.end is None for ep in self._failures):
             self._failures.append(_Episode(now_s))
 
+    @_locked
     def snapshot(self, now_s: float) -> LinkState:
         self._generate_beacons(now_s)
         return self._link_state(now_s)
 
+    @_locked
     def detail(self, now_s: float) -> Beacon:
         self._generate_beacons(now_s)
         return self._detail(now_s)
