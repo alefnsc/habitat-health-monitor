@@ -12,6 +12,8 @@ from receiver.signing import HEADER, sign
 from .consent import is_public
 from .engine import OutboxItem
 
+MAX_BACKOFF = 6
+
 
 class PublicUplink:
     def __init__(
@@ -54,7 +56,7 @@ class PublicUplink:
     def _interval(self) -> float:
         if not self._backoff:
             return self.flush_s
-        return min(60.0, max(1.0, self.flush_s) * 2**self._backoff)
+        return min(60.0, max(1.0, self.flush_s) * 2 ** min(self._backoff, MAX_BACKOFF))
 
     def flush(self, now_s: float) -> bool:
         """Send one batch. Never raises: any error counts as a failure and backs off."""
@@ -62,7 +64,7 @@ class PublicUplink:
             return self._flush(now_s)
         except Exception as exc:  # noqa: BLE001 - public must never break the local link
             self.failures += 1
-            self._backoff += 1
+            self._backoff = min(self._backoff + 1, MAX_BACKOFF)
             print(f"public uplink flush failed: {type(exc).__name__}", flush=True)
             return False
 
@@ -86,7 +88,7 @@ class PublicUplink:
             res = self.client.post("/ground/ingest", content=body, headers=headers)
         except httpx.HTTPError:
             self.failures += 1
-            self._backoff += 1
+            self._backoff = min(self._backoff + 1, MAX_BACKOFF)
             return False
         code = res.status_code
         if 400 <= code < 500 and code not in (408, 429):
@@ -95,9 +97,9 @@ class PublicUplink:
             self.rejected += 1
             print(f"public uplink rejected {code}: dropped {len(chunk)} items", flush=True)
             return False
-        if code >= 400:
+        if not 200 <= code < 300:
             self.failures += 1
-            self._backoff += 1
+            self._backoff = min(self._backoff + 1, MAX_BACKOFF)
             return False
         del self.queue[: len(chunk)]
         self.beacon = None

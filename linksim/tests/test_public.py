@@ -184,3 +184,23 @@ def test_backoff_doubles_after_failure():
         assert route.call_count == 1
         assert up.flush(120.0) is False
         assert route.call_count == 2
+
+
+def test_backoff_exponent_is_capped_and_resets():
+    with respx.mock(base_url=URL) as mock:
+        mock.post("/ground/ingest").respond(200, json={})
+        up = uplink(httpx.Client(base_url=URL), flush_s=10.0)
+        up._backoff = 5000
+        assert up._interval() == 60.0
+        up.offer([oi(1, ind="cabin_temp")], None)
+        assert up.flush(1000.0) is True
+        assert up._backoff == 0
+
+
+def test_3xx_is_a_failure():
+    with respx.mock(base_url=URL) as mock:
+        mock.post("/ground/ingest").respond(302)
+        up = uplink(httpx.Client(base_url=URL), flush_s=0.0)
+        up.offer([oi(1, ind="cabin_temp")], None)
+        assert up.flush(1.0) is False
+        assert up.failures == 1 and len(up.queue) == 1
