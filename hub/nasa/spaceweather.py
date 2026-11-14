@@ -16,7 +16,9 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
 
-from hub.nasa.donki import parse_time
+from hub.nasa.config import NasaSettings
+from hub.nasa.donki import DONKI_KINDS, parse_time
+from hub.nasa.donki_cache import DonkiCache, is_stale
 
 RULE_ID = "radiation_spe"
 WINDOW = timedelta(hours=24)
@@ -125,6 +127,63 @@ def evaluate_space_weather(
     return SpaceWeatherAlert(
         "ok", 0, reason="No qualifying space-weather event in the last 24 hours."
     )
+
+
+# Fields kept per kind, and the field that orders events (most recent first, 10 kept).
+_TRIM: dict[str, tuple[str, tuple[str, ...]]] = {
+    "FLR": ("peakTime", ("flrID", "beginTime", "peakTime", "endTime", "classType", "link")),
+    "SEP": ("eventTime", ("sepID", "eventTime", "link")),
+    "GST": ("startTime", ("gstID", "startTime", "allKpIndex", "link")),
+    "notifications": (
+        "messageIssueTime",
+        ("messageType", "messageID", "messageIssueTime", "messageURL"),
+    ),
+}
+TRIM_KEEP = 10
+
+
+def _trim(kind: str, events: list[dict]) -> list[dict]:
+    order, keep = _TRIM[kind]
+    recent = sorted(events, key=lambda e: str(e.get(order) or ""), reverse=True)[:TRIM_KEEP]
+    return [{k: e.get(k) for k in keep} for e in recent]
+
+
+@dataclass(frozen=True)
+class SpaceWeatherState:
+    alert: SpaceWeatherAlert  # stale applied: unknown when the cache is too old
+    level: int | None  # evaluated on the cached events whatever their age
+    mode: Literal["live", "replay"]
+    cached_at: datetime | None
+    stale: bool
+    route: str | None
+    events: dict[str, list[dict]]
+
+
+def space_weather_state(
+    now: datetime, *, settings: NasaSettings, cache: DonkiCache
+) -> SpaceWeatherState:
+    """Read the cache (live) or the committed replay and evaluate it. No network call."""
+    if settings.donki_mode == "replay":
+        rp = load_replay(settings.replay_path)
+        alert = evaluate_space_weather(rp.events, rp.replay_now)
+        events = {k: _trim(k, rp.events.get(k, [])) for k in DONKI_KINDS}
+        return SpaceWeatherState(alert, alert.level, "replay", rp.recorded_at, False, None, events)
+
+    cached = {k: cache.read(k) for k in DONKI_KINDS}
+    alert = evaluate_space_weather(
+        {k: (c.events if c else None) for k, c in cached.items() if k != "notifications"}, now
+    )
+    present = [c for c in cached.values() if c and c.kind != "notifications"]
+    cached_at = min((c.cached_at for c in present), default=None)
+    stale = cached_at is not None and is_stale(cached_at, now)
+    route = next((c.route for c in present), None)
+    events = {k: _trim(k, c.events) if c else [] for k, c in cached.items()}
+    level = alert.level
+    if stale:
+        alert = SpaceWeatherAlert(
+            "unknown", None, reason="DONKI data is stale; the last poll is too old to trust."
+        )
+    return SpaceWeatherState(alert, level, "live", cached_at, stale, route, events)
 
 
 def main(argv: list[str] | None = None) -> int:
