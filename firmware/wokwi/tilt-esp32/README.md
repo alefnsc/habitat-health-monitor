@@ -28,8 +28,8 @@ Part and pin names follow docs.wokwi.com/parts/ (read 2026-11-14).
 
 **Saved project (share link):** https://wokwi.com/projects/480680478751478785. Until D40 this link held the vitals node
 twin (`../vitals-esp32`, now archived); the tilt-1 twin replaced it in place. Saved 2026-11-14 14:35 (UTC−03:00), and
-renamed "tilt-1 node twin". The custom-chip files were removed. Re-saved at 15:05 with the Ni-MH power label, and the three
-files match commit 13e1c39 byte for byte (SHA-256 checked after a reload). A run showed `tilt` 0 at rest, 1 after sliding right, 0 after sliding back, then a
+renamed "tilt-1 node twin". The custom-chip files were removed. Re-saved at 15:35 as the bench wiring map (3-wire switch, Ni-MH
+pack chip); the five files match commit b5060b7 byte for byte (SHA-256 checked after a reload). A run showed `tilt` 0 at rest, 1 after sliding right, 0 after sliding back, then a
 heartbeat 10 s later.
 
 ## What runs where (also written on the Wokwi canvas)

@@ -13,7 +13,8 @@ Part and pin names follow docs.wokwi.com/parts/ (read 2026-11-14).
 
 **Saved project (share link, unchanged since D35):** https://wokwi.com/projects/480675272836723713. The D40 contents
 replace the old exercise rig (HX711, servo, NTC, pulse potentiometer) in place. Saved 2026-11-14 14:30 (UTC−03:00), and
-renamed "UNO I/O board twin". The four files match commit 8a38e07 byte for byte (SHA-256 checked after a reload).
+renamed "UNO I/O board twin". Re-saved at 15:40 with the bench wiring block; the four files match commit b5060b7 byte for
+byte (SHA-256 checked after a reload).
 A run showed `cabin-1` lines every 5 s, `alarm` acked `ok:true`, and `servo` answered `not_built`.
 
 ## Real bench wiring (also written on the Wokwi canvas)
