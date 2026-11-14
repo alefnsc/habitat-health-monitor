@@ -17,3 +17,5 @@ firmware/build/
 
 ground/dist/
 ground/node_modules/
+ground/receiver/var/
+linksim/var/

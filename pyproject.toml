@@ -26,7 +26,8 @@ where = [".", "ground"]
 include = ["hub*", "linksim*", "receiver*"]
 
 [tool.pytest.ini_options]
-testpaths = ["hub/tests", "linksim/tests", "tools/food/tests"]
+testpaths = ["hub/tests", "linksim/tests", "tools/food/tests", "ground/receiver/tests"]
+pythonpath = ["ground"]
 markers = ["broker: needs a live Mosquitto on 127.0.0.1:1883"]
 asyncio_default_fixture_loop_scope = "function"
 
