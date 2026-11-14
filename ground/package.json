@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "build:pages": "VITE_GROUND_SOURCE=replay tsc && VITE_GROUND_SOURCE=replay vite build --base \"${GROUND_BASE:-/habitat-health-monitor/}\"",
+    "build:pages": "node scripts/prepare-pages.mjs && VITE_GROUND_SOURCE=replay tsc && VITE_GROUND_SOURCE=replay vite build --base \"${GROUND_BASE:-/habitat-health-monitor/}\"",
     "test": "vitest",
     "preview": "vite preview"
   },

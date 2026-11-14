@@ -1,6 +1,7 @@
 import {
   asOfLabel, blackoutLabel, indicatorLabel, orderedKeys, silenceLabel, sourceKindLabel,
 } from "./model";
+import type { GuidanceItem } from "./replay";
 import type { GroundView } from "./types";
 
 const ARROW = "→";
@@ -78,4 +79,28 @@ export function render(
       <tbody>${rows}</tbody></table>
     </section>
     <section aria-label="Alerts"><h2>Alerts</h2>${alerts ? `<ul>${alerts}</ul>` : "<p>No alerts received.</p>"}</section>`;
+}
+
+/** Read-only crew view for the public replay: guidance for every non-ok, unflagged reading. */
+export function renderCrewView(
+  root: HTMLElement,
+  view: GroundView,
+  guidance: GuidanceItem[] | null,
+): void {
+  const byId = new Map((guidance ?? []).map((g) => [g.id, g]));
+  const items = orderedKeys(view)
+    .map((k) => view.latest.get(k)!)
+    .filter((e) => !e.greyed && (e.status === "watch" || e.status === "act"))
+    .map((e) => {
+      const g = byId.get(`${e.rule_id}.${e.status}`) ?? byId.get(`default.${e.status}`);
+      const body = g
+        ? `<p>${esc(g.do_now ?? "")}</p><p>${esc(g.tell ?? "")}</p>`
+        : "<p>No guidance text published for this status.</p>";
+      return `<li><strong class="status status-${esc(e.status)}">${esc(e.status)}</strong>
+        ${esc(indicatorLabel(e.ind))} (${esc(fmtVal(e.val))} ${esc(e.unit)})${body}</li>`;
+    })
+    .join("");
+  root.innerHTML = `<section aria-label="Crew view (replay)"><h2>Crew view (replay)</h2>
+    ${items ? `<ul>${items}</ul>` : "<p>Nothing needs attention in this replay position.</p>"}
+    <p>Read-only. This is not a diagnosis. Educational prototype, not a medical device.</p></section>`;
 }

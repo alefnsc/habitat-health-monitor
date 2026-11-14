@@ -19,3 +19,5 @@ ground/dist/
 ground/node_modules/
 ground/receiver/var/
 linksim/var/
+ground/public/replay.json
+ground/public/guidance.json
