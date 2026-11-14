@@ -11,7 +11,7 @@ Two microcontrollers and a hub computer.
 | Raspberry Pi 3 Model B (or a laptop) | hub, Mosquitto, console | nothing on the header | see `docs/pi-setup.md` |
 | UNO+WiFi R3, ATmega328P side | `exercise-uno` | DHT11 on D2 (`cabin-1`: `cabin_temp`, `cabin_rh`, hobby estimates), buzzer on D8 (`alarm`) | USB serial to the hub, 250000 baud |
 | UNO+WiFi R3, ESP8266 side | nothing (DIP switch: "USB to ATmega328") | — | — |
-| NodeMCU (ESP8266) on 2 × AA/AAA cells | `tilt-esp8266` (D39) | sealed KY-017 tilt pod on D5 (`tilt-1`: `tilt`) | Wi-Fi/MQTT |
+| NodeMCU (ESP8266) on 4 × Ni-MH AA (VIN) | `tilt-esp8266` (D39) | sealed KY-017 tilt pod on D5 (`tilt-1`: `tilt`) | Wi-Fi/MQTT |
 | Wokwi | two twins, because Wokwi has no ESP8266: the UNO I/O board (`firmware/wokwi/uno-rig/`) and the tilt-1 node on an ESP32 stand-in (`firmware/wokwi/tilt-esp32/`) | — | — |
 
 **`exercise-uno` build flags** (D40 defaults: only what is wired):
@@ -24,8 +24,9 @@ Turn a channel on only when its module is wired. A floating HX711 DOUT reads as 
 
 **Commands:** `servo`, `cal` and `tare` answer `ok:false, err:"not_built"` while their part is compiled out. `alarm` always works.
 
-**Tilt node power:** 2 × AA/AAA cells in series on **3V3** and **GND**. Never VIN, never more than 3.6 V on 3V3, and no
-CR2032 coin cell, because it cannot supply the Wi-Fi bursts. See `firmware/tilt-esp8266/README.md`.
+**Tilt node power:** 4 × Ni-MH AA in series on **VIN** and **GND** (chosen), or 2 × alkaline AA/AAA on **3V3** and **GND**.
+Never 2 cells on VIN, never 3 or more cells on 3V3, never mix cells in one pack, and no CR2032 coin cell, because it
+cannot supply the Wi-Fi bursts. The KY-017 stays on 3V3. See `firmware/tilt-esp8266/README.md`.
 
 **Archived** (kept as design history, with their tests):
 - `firmware/vitals-esp32` and `firmware/wokwi/vitals-esp32`: wearable vitals now come from a ring import;

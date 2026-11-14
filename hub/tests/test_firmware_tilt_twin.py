@@ -56,7 +56,15 @@ def test_readme_paste_files_link_and_battery_rule() -> None:
         assert f in readme and (TWIN / f).is_file(), f
     assert "480680478751478785" in readme
     tilt = (FW / "tilt-esp8266" / "README.md").read_text().lower()
-    assert "3v3" in tilt and "never vin" in tilt and "cr2032" in tilt
+    for rule in (
+        "4 × ni-mh aa",
+        "vin",
+        "3v3",
+        "never 2 cells on vin",
+        "never 3 or more cells on 3v3",
+        "cr2032",
+    ):
+        assert rule in tilt, rule
     assert "power over usb from the hub" not in tilt  # D40: the pod rides on cells
     for f in TWIN.rglob("*"):
         if f.is_file():

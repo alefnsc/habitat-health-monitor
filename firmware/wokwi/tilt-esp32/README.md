@@ -26,7 +26,7 @@ heartbeat 10 s later.
 
 - **Code:** the same sketch as the real node. `hub/tests/test_firmware_tilt_twin.py` checks the copy byte for byte.
 - **Real node:**
-  - a NodeMCU on 2 × AA/AAA cells, on the weight;
+  - a NodeMCU on 4 × Ni-MH AA cells into VIN, on the weight;
   - Wi-Fi/MQTT to the hub's broker;
   - one reading on every debounced change (30 ms) and a heartbeat every 10 s.
 - **Twin:** the same lines, on the serial monitor.

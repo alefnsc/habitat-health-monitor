@@ -5,8 +5,9 @@
 //
 // Board: NodeMCU Amica (esp8266:esp8266:nodemcuv2). Pin: D5 (GPIO14), INPUT_PULLUP.
 // Keep D1/D2 free (I2C for a later MPU6050) and D3, D4, D8 free (boot pins).
-// Power (D40): 2 x AA or AAA cells in series on 3V3 and GND, so the pod on the weight has no cable.
-// Never VIN, never more than 3.6 V on 3V3, and no CR2032 (it cannot supply the Wi-Fi bursts).
+// Power (D40): a cell pack, so the pod on the weight has no cable. 4 x Ni-MH AA on VIN and GND (chosen),
+// or 2 x alkaline AA/AAA on 3V3 and GND. Never 2 cells on VIN, never 3+ cells on 3V3, no CR2032.
+// The KY-017 stays on 3V3. Rules and runtimes: firmware/tilt-esp8266/README.md.
 // The Wokwi twin (firmware/wokwi/tilt-esp32) runs this same file on an ESP32 stand-in, serial-only.
 // The capsule holds mercury: sealed pod, adult team members only (docs/safety-checklist.md).
 //
