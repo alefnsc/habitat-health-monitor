@@ -1,0 +1,38 @@
+{
+ "snapshot_date": "2025-06-01",
+ "mission": "fixture mission",
+ "source_urls": [],
+ "label": "OSDR snapshot (fixture)",
+ "cabin": {
+  "temperature_c": {
+   "n": 120,
+   "mean": 22.1,
+   "min": 21.0,
+   "max": 23.0
+  },
+  "rh_pct": {
+   "n": 120,
+   "mean": 45.0,
+   "min": 40.0,
+   "max": 50.0
+  },
+  "co2_mmhg": {
+   "n": 120,
+   "mean": 2.6,
+   "min": 1.9,
+   "max": 3.4
+  },
+  "co2_raw_unit": "mmHg"
+ },
+ "dose": {
+  "absorbed_mgy": 41.7,
+  "absorbed_mgy_per_day": 0.3,
+  "effective_msv": 320,
+  "effective_msv_method": "0.2\u20130.5 mSv/day ISS rate (NTRS 20250006168)",
+  "career_limit_msv": 600,
+  "career_fraction": 0.533,
+  "status": "watch",
+  "profile": "ISS-like LEO",
+  "mission_day": 45
+ }
+}

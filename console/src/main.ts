@@ -11,6 +11,7 @@ import { renderEntry } from "./views/entry";
 import { renderFood } from "./views/food";
 import { renderExercise } from "./views/exercise";
 import { renderHistory } from "./views/history";
+import { refreshBanner, renderNasa, startBanner } from "./views/nasa";
 import { loadBoard, renderStatus } from "./views/status";
 import { connectWs, wsUrl } from "./ws";
 
@@ -32,11 +33,13 @@ export function mountApp(root: HTMLElement): void {
   for (const c of CREW) crewSel.append(el("option", { value: c.id, text: c.label }));
   crewSel.value = currentCrew() ?? "";
   crewSel.addEventListener("change", () => setCurrentCrew((crewSel.value || null) as ReturnType<typeof currentCrew>));
+  const bannerBox = el("div", { id: "sw-banner" });
   const title = el("h1", { class: "screen-title" });
   const screen = el("section", { id: "screen" });
   root.replaceChildren(
     el("div", { class: "banner", text: COPY["app.banner"] }),
     lost,
+    bannerBox,
     el(
       "header",
       { class: "top" },
@@ -58,6 +61,8 @@ export function mountApp(root: HTMLElement): void {
     nav.append(b);
   }
 
+  startBanner(bannerBox);
+  onCrewChange(() => void refreshBanner());
   let dispose: (() => void) | null = null;
   const render = () => {
     const cur = screenFromHash(location.hash);
@@ -72,6 +77,7 @@ export function mountApp(root: HTMLElement): void {
     else if (cur === "entry") renderEntry(screen);
     else if (cur === "history") dispose = renderHistory(screen);
     else if (cur === "exercise") dispose = renderExercise(screen);
+    else if (cur === "nasa") dispose = renderNasa(screen);
     else if (cur === "food") dispose = renderFood(screen);
     else screen.append(el("p", { text: COPY["screen.pending"] }));
   };
@@ -99,7 +105,10 @@ export function mountApp(root: HTMLElement): void {
       board.replace(applySnapshot(m.data).filter((e) => appliesToCrew(e, currentCrew())));
       void loadPrompts();
     } else if (m.type === "assessment") {
+      if (m.data.ind === "space_weather") void refreshBanner();
       if (appliesToCrew(m.data, currentCrew())) board.apply([m.data]);
+    } else if (m.type === "alert") {
+      if (m.data.rule_id === "radiation_spe") void refreshBanner();
     } else if (m.type === "prompt") {
       if (m.data.status === "open") openPrompts.set(m.data.id, m.data);
       else openPrompts.delete(m.data.id);

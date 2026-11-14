@@ -7,10 +7,9 @@ import { el } from "../dom";
 import { sourceKindLabel } from "../format";
 import { defaultWindow, moodSleepSeries, thresholdLines, toSeries, type ThresholdRule } from "../model/history";
 import { board } from "../state";
+import { RULES } from "../model/rules";
 
-// Bundled at build time. The glob is empty until data/thresholds.json exists, so the console builds before it does.
-const files = import.meta.glob("../../../data/thresholds.json", { eager: true, import: "default" }) as Record<string, ThresholdRule[]>;
-export const RULES: ThresholdRule[] = Object.values(files)[0] ?? [];
+export { RULES };
 
 export const HISTORY_INDS: Ind[] = [
   "hr", "spo2", "skin_temp", "body_temp", "bp_sys", "bp_dia", "glucose", "sleep_h", "mood",

@@ -1,0 +1,37 @@
+{
+ "mode": "live",
+ "recorded_at": null,
+ "unit_note": "Feed labels pressure PSI; values are mmHg by magnitude. (fixture)",
+ "items": [
+  {
+   "item": "USLAB000032",
+   "name": "cabin_pressure",
+   "val": 759.26,
+   "unit": "mmHg",
+   "val_hpa": 1012.26,
+   "measured_at": "2026-11-14T12:00:00Z",
+   "age_s": 20,
+   "stale": false
+  },
+  {
+   "item": "NODE3000001",
+   "name": "cabin_temperature",
+   "val": 22.4,
+   "unit": "C",
+   "val_hpa": null,
+   "measured_at": "2026-11-14T12:00:00Z",
+   "age_s": 20,
+   "stale": false
+  },
+  {
+   "item": "USLAB000059",
+   "name": "lab_ppco2",
+   "val": 2.44,
+   "unit": "mmHg",
+   "val_hpa": null,
+   "measured_at": "2026-11-03T12:00:00Z",
+   "age_s": 950400,
+   "stale": true
+  }
+ ]
+}

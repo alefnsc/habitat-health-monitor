@@ -1,0 +1,15 @@
+{
+ "status": "act",
+ "rule_id": "radiation_spe",
+ "reason": "SEP event",
+ "event_id": "E1",
+ "event_time": "2026-11-14T10:00:00Z",
+ "link": "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+ "mode": "live",
+ "cached_at": "2026-11-14T12:00:00Z",
+ "stale": false,
+ "route": null,
+ "events": {},
+ "ack": null,
+ "disclaimer": "DONKI is research-grade; NOAA SWPC is the official forecast source."
+}
