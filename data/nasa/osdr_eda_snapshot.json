@@ -1,0 +1,40 @@
+{
+  "fetched_at": "2026-11-14T13:19:58Z",
+  "mission": "RR-6",
+  "source_urls": [
+    "https://visualization.osdr.nasa.gov/eda/api/missions/",
+    "https://visualization.osdr.nasa.gov/eda/api/missions/RR-6/temperature/iss/",
+    "https://visualization.osdr.nasa.gov/eda/api/missions/RR-6/humidity/iss/",
+    "https://visualization.osdr.nasa.gov/eda/api/missions/RR-6/co2/iss/",
+    "https://visualization.osdr.nasa.gov/eda/api/missions/RR-6/radiation_data/"
+  ],
+  "cabin": {
+    "temperature_c": {
+      "n": 17572,
+      "mean": 22.82,
+      "min": 21.7,
+      "max": 25.6
+    },
+    "rh_pct": {
+      "n": 17572,
+      "mean": 42.01,
+      "min": 25.0,
+      "max": 61.0
+    },
+    "co2_mmhg": null,
+    "co2_raw": {
+      "n": 17572,
+      "mean": 2921.08,
+      "min": 500.0,
+      "max": 4187.0
+    },
+    "co2_raw_unit": "ppm"
+  },
+  "dose": {
+    "source": "eda",
+    "absorbed_mgy": 13.84472,
+    "absorbed_mgy_per_day": 0.28255,
+    "raw_sum": 13.84472,
+    "raw_unit": "mGy/day (one value per day, summed)"
+  }
+}
