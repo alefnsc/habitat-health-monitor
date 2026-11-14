@@ -1,8 +1,9 @@
-import { loadLandmarker, openCamera, openFile, detectOnce, track, type Tracker, type VideoSource } from "../../vendor/ground-truth/demo/src/pose/source";
+import { loadLandmarker, openCamera, openFile, detectOnce, track, type FrameSample, type Tracker, type VideoSource } from "../../vendor/ground-truth/demo/src/pose/source";
 import { LANDMARK, type Landmark } from "../../vendor/ground-truth/demo/src/pose/landmarks";
 import { calibrateKnownLength, calibrateStature, type CalResult } from "./calibrate";
 import { COPY } from "./copy";
 import { canUseCamera, recordingProblem } from "./pose";
+import { mountSet } from "./setview";
 
 type Node = HTMLElement;
 function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, string> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
@@ -14,6 +15,11 @@ function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, 
 
 export interface PageState {
   video: HTMLVideoElement;
+  /** Stops the preview tracker and starts a recording tracker. The stream stays open between sets. */
+  record(onSample: (s: FrameSample) => void, onError: (e: unknown) => void): Tracker | null;
+  resumePreview(): void;
+  setSetHost(n: HTMLElement): void;
+  onScale(cb: (m: number) => void): void;
   getSource(): VideoSource | null;
   getScale(): number | null;
   getLandmarker(): Awaited<ReturnType<typeof loadLandmarker>> | null;
@@ -31,6 +37,7 @@ export function mountCamera(root: HTMLElement): PageState {
   let frozen: Landmark[] | undefined;
   const taps: { x: number; y: number }[] = [];
 
+  const setHost = h("section", { id: "set" });
   const stage = h("div", { class: "stage" }, video, dot);
   const camBtn = h("button", { type: "button", text: COPY["source.camera"] });
   const fileIn = h("input", { type: "file", accept: "video/*", id: "file" });
@@ -64,8 +71,9 @@ export function mountCamera(root: HTMLElement): PageState {
   const lenIn = h("input", { id: "known-length", type: "number", step: "0.01", value: "0.30" });
   const heightIn = h("input", { id: "stature", type: "number", step: "0.01", value: "1.75" });
   const freeze = h("button", { type: "button", text: COPY["calib.freeze"] });
+  const scaleCbs: ((m: number) => void)[] = [];
   const showScale = (r: CalResult) => {
-    if (r.ok) { scale = r.metersPerUnit; scaleOut.textContent = `${COPY["calib.result"]}: ${r.metersPerUnit.toFixed(3)} ${COPY["calib.unit"]}${r.note ? ` (${r.note})` : ""}`; }
+    if (r.ok) { scale = r.metersPerUnit; scaleCbs.forEach((cb) => cb(r.metersPerUnit)); scaleOut.textContent = `${COPY["calib.result"]}: ${r.metersPerUnit.toFixed(3)} ${COPY["calib.unit"]}${r.note ? ` (${r.note})` : ""}`; }
     else { scaleOut.textContent = r.error; }
   };
   freeze.addEventListener("click", () => {
@@ -99,9 +107,24 @@ export function mountCamera(root: HTMLElement): PageState {
     h("div", {}, freeze, " ", h("label", { for: "known-length", text: `${COPY["calib.knownLength"]} ` }), lenIn, " ", useKnown),
     h("div", {}, h("label", { for: "stature", text: `${COPY["calib.stature"]} ` }), heightIn, " ", useStature),
     scaleOut,
+    setHost,
   );
-  return { video, getSource: () => source, getScale: () => scale, getLandmarker: () => landmarker };
+  return {
+    record: (onSample, onError) => {
+      if (!landmarker) return null;
+      preview?.stop();
+      preview = null;
+      void video.play();
+      return track(video, landmarker, onSample, onError);
+    },
+    resumePreview: () => void startPreview(),
+    setSetHost: () => {},
+    onScale: (cb) => scaleCbs.push(cb),
+    video, getSource: () => source, getScale: () => scale, getLandmarker: () => landmarker };
 }
 
 const appRoot = typeof document !== "undefined" ? document.getElementById("app") : null;
-if (appRoot) mountCamera(appRoot);
+if (appRoot) {
+  const page = mountCamera(appRoot);
+  mountSet(appRoot.querySelector("#set") as HTMLElement, page);
+}

@@ -1,4 +1,4 @@
-import type { RefusalReason, SessionResult } from "@ground-truth/capture";
+import type { RefusalReason, RepResult } from "@ground-truth/capture";
 import { G_ENV_MS2 } from "@ground-truth/physics";
 import { analyseRecording, captureInputProblem, refusalSentences, type CaptureInputs, type CaptureOutcome } from "../../vendor/ground-truth/demo/src/model/captureFlow";
 import { COPY } from "./copy";
@@ -36,7 +36,7 @@ export interface RepContext {
 }
 
 // No messages after a refusal. age_ms is anchored on the first recorded frame, not on any HTTP response.
-export function toRepMessages(result: SessionResult, ctx: RepContext): RepMessage[] {
+export function toRepMessages(result: { ok: true; reps: RepResult[] } | { ok: false }, ctx: RepContext): RepMessage[] {
   if (!result.ok) return [];
   return result.reps.map((r, i) => {
     const t0 = Math.round(r.startS * 1000);
