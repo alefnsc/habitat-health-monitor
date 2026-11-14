@@ -15,6 +15,7 @@ dependencies = [
   "paho-mqtt>=2",
   "pyserial",
   "httpx",
+  "beautifulsoup4",
 ]
 
 [project.optional-dependencies]

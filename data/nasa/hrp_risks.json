@@ -1,0 +1,1625 @@
+{
+  "scraped_at": "2026-11-14T13:22:04Z",
+  "source": "https://humanresearchroadmap.nasa.gov/Risks/",
+  "note": "Ratings are NASA Human System Risk Board programme-level likelihood x consequence (LxC) values for crew populations. They are not personal probabilities.",
+  "risks": [
+    {
+      "id": 99,
+      "title": "Risk of Adverse Cognitive or Behavioral Changes and Psychiatric Disorders Leading to In-mission Health and Performance and Long-term Health Effects",
+      "risk_statement": "Given that crews of future exploration missions will be exposed to extended duration of isolation and confinement, greater distances from Earth, as well as increased exposures to radiation and altered gravity, there is a possibility that these singular or combined hazards could lead to (a) adverse cognitive or behavioral changes affecting crew health and performance during the mission; (b) development of psychiatric disorders if adverse behavioral health changes are undetected or inadequately mitigated; and (c) long term health consequences, including late-emerging cognitive and behavioral changes.",
+      "last_published": "05/13/25",
+      "board_approved": "7/2024",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=99",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x1",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x5",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 95,
+      "title": "Risk of Adverse Health Outcomes and Decrements in Performance Due to Medical Conditions that occur in Mission, as well as Long Term Health Outcomes Due to Mission Exposures",
+      "risk_statement": "Given that medical conditions will occur during human spaceflight missions, there is a possibility of adverse health outcomes & decrements in performance during these missions and for long term health.",
+      "last_published": "05/13/25",
+      "board_approved": "5/2021",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=95",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x4",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x4",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x4",
+          "long_term_disposition": "Requires Characterization"
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "title": "Risk of Adverse In-Mission and Long-Term Health Effects and Performance Effects Due to Host-Microorganism Interactions",
+      "risk_statement": "Given that evidence collected during space flight indicates alterations in microbial virulence and astronaut immune function, there is a possibility that infectious disease will have increased prevalence and/or will be more severe during spaceflight missions.",
+      "last_published": "05/13/25",
+      "board_approved": "12/2024",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=80",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x3",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 82,
+      "title": "Risk of Adverse In-Mission Health and Performance Effects and Long-Term Health Effects Due to Celestial Dust Exposure",
+      "risk_statement": "Given the unique properties of lunar and other celestial bodies' dust, there is a possibility that exposure could lead to serious health effects (e.g., respiratory, cardiopulmonary, ocular or dermal harm) or to crew performance impacts during celestial body missions.",
+      "last_published": "05/13/25",
+      "board_approved": "3/2024",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=82",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "Not Applicable",
+          "operations_disposition": "Not Applicable",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "Not Applicable",
+          "operations_disposition": "Not Applicable",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x1",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "3x4",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "Not Applicable",
+          "operations_disposition": "Not Applicable",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "4x4",
+          "long_term_disposition": "Requires Characterization"
+        }
+      ]
+    },
+    {
+      "id": 175,
+      "title": "Risk of Adverse Mission Outcomes Due to Earth Independent Human-Systems Operations",
+      "risk_statement": "Given decreasing real-time ground support for execution of Earth independent critical, complex operations during future exploration missions, there is a possibility of adverse performance outcomes, most consequentially that crew are unable to adequately respond to unanticipated critical malfunctions or execute safety-critical procedures.",
+      "last_published": "05/13/25",
+      "board_approved": "2/2023",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=175",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation/Standard Refinement",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation/Standard Refinement",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x5",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        }
+      ]
+    },
+    {
+      "id": 88,
+      "title": "Risk of Altered Sensorimotor/Vestibular Function Impacting Critical Mission Tasks, Human Health, and Long-Term Health",
+      "risk_statement": "Given that altered gravity leads to changes in sensorimotor/vestibular function that manifest in motion sickness, spatial disorientation, decrements in postural control and locomotion, and manual and fine motor control deficits, there is a possibility that crew will experience performance decrements in manual/vehicle control, extravehicular activities, and egress during and following these transitions and long-term health effects.",
+      "last_published": "05/13/25",
+      "board_approved": "11/2024",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=88",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x5",
+          "operations_disposition": "Requires Mitigation/Standard Refinement",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x5",
+          "operations_disposition": "Requires Mitigation/Standard Refinement",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x5",
+          "operations_disposition": "Requires Mitigation/Standard Refinement",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "title": "Risk of Bone Fracture due to Spaceflight-induced Changes to Bone",
+      "risk_statement": "Given the skeletal changes that occur during spaceflight, there is a possibility that the bones of crewmembers during and after spaceflight are not as strong as they were before spaceflight and a fracture may occur postflight for activities otherwise unlikely to induce fracture prior to space flight.",
+      "last_published": "05/13/25",
+      "board_approved": "5/2022",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=77",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x3",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Requires Characterization"
+        }
+      ]
+    },
+    {
+      "id": 179,
+      "title": "Risk of Cardiovascular Adaptations Contributing to Adverse Mission Performance and Health Outcomes",
+      "risk_statement": "Given exposure to the spaceflight environment can contribute to cardiovascular deconditioning, dysfunction, and remodeling, there is a possibility that crews will experience impaired performance and adverse cardiovascular health outcomes that necessitate intervention during and after spaceflight and planetary operations.",
+      "last_published": "05/13/25",
+      "board_approved": "5/2024",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=179",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "1x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Mitigation/Standard Refinement",
+          "long_term_lxc": "2x4",
+          "long_term_disposition": "Requires Mitigation/Standard Refinement"
+        }
+      ]
+    },
+    {
+      "id": 85,
+      "title": "Risk of In Mission Impacts, Adverse Health Events or Long-Term Health Impacts due to Altered Immune Response",
+      "risk_statement": "Given that exposure to orbital spaceflight results in persistent dysregulation of the immune system, which leads to reactivation of latent herpesviruses and likely to an increased clinical incidence, including rashes and hypersensitivity reactions, there is a possibility that crewmembers will be susceptible to certain diseases during exploration class missions or long term health impacts.",
+      "last_published": "05/13/25",
+      "board_approved": "11/2023",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=85",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Characterization"
+        }
+      ]
+    },
+    {
+      "id": 167,
+      "title": "Risk of In-Mission Injury and Performance Decrements and Long-term Health Effects due to Dynamic Loads",
+      "risk_statement": "Given the exposure to the range of anticipated dynamic loads that might be applied to crew within the hostile closed environment of a spacecraft and/or surface vehicle (suited or unsuited) could result in injury to the crew, resulting in a possibility that mission task performance would be impaired, or tasks could not be performed.",
+      "last_published": "05/13/25",
+      "board_approved": "12/2023",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=167",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x4",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x4",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x4",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 101,
+      "title": "Risk of In-Mission Performance and Behavioral Health Decrements Due to Inadequate Cooperation, Coordination, Communication, and Psychosocial Adaptation within a Team",
+      "risk_statement": "Given that the conditions of space missions may lead to inadequate functioning within a team (inadequate cooperation, coordination, communication and/or psychosocial adaptation), which includes flight crew and ground support, there is a possibility that performance and behavioral health decrements will occur.",
+      "last_published": "05/13/25",
+      "board_approved": "4/2024",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=101",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x5",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "Not Applicable",
+          "long_term_disposition": "Not Applicable"
+        }
+      ]
+    },
+    {
+      "id": 177,
+      "title": "Risk of Ineffective or Toxic Medications During Long-Duration Exploration Spaceflight",
+      "risk_statement": "Given that there is no current method to sufficiently characterize medication use, drug quality and performance, clinical outcomes, and the impact of a hostile space environment on pharmaceutical stability and potency during long-duration exploration missions, there is a possibility that provision of a safe and effective drug treatment will be significantly limited, impacting crew health and performance.",
+      "last_published": "05/13/25",
+      "board_approved": "12/2021",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=177",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x1",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x3",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 84,
+      "title": "Risk of Mission Impacting Injury and Compromised Performance and Long-Term Health Effects due to EVA Operations",
+      "risk_statement": "Given the high-performance physiological and functional demands of operating in a self-contained EVA or training suit in various gravity fields and system environments, there is a possibility that crew injury and compromised physiological and functional performance may occur.",
+      "last_published": "05/13/25",
+      "board_approved": "12/2023",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=84",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        }
+      ]
+    },
+    {
+      "id": 168,
+      "title": "Risk of Mission Impacts and Long-Term Health Issues due to Decompression Sickness",
+      "risk_statement": "Given that decompression sickness (DCS) is a potential risk for every spaceflight/mission (e.g., EVA or cabin depressurization) and must be mitigated to acceptable risk levels; limitations in quantitative understanding of DCS will lead to conservative DCS risk mitigation countermeasures with significant operational, engineering, and/or secondary health/performance impacts.",
+      "last_published": "05/13/25",
+      "board_approved": "7/2023",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=168",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        }
+      ]
+    },
+    {
+      "id": 180,
+      "title": "Risk of Mission Performance Decrements and Adverse Health Outcomes Resulting from Reduced Cardiorespiratory and Musculoskeletal Fitness",
+      "risk_statement": "Given that exposure to a reduced gravity environment causes cardio-respiratory (e.g., maximal oxygen consumption and ventilatory threshold) and musculoskeletal fitness (e.g., strength, power, and endurance) to decline, there is a risk of impaired mission task performance and adverse health outcomes. Note: This risk is carried as two separate risks at the HSRB. The content in this field has been developed by HRP.",
+      "last_published": "05/13/25",
+      "board_approved": null,
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=180",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x1",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x1",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x1",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x1",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Optimization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x3",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 176,
+      "title": "Risk of Performance Decrement and Crew Illness Due to Inadequate Food and Nutrition",
+      "risk_statement": "Given that there is a constrained ability to supply adequate food in spaceflight missions, there is a possibility that inadequate nutrition will result in performance decrement, crew illness, and long-term health effects.",
+      "last_published": "05/13/25",
+      "board_approved": null,
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=176",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "2x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x3",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x5",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "5x3",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 100,
+      "title": "Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload",
+      "risk_statement": "Given that astronauts experience sleep loss, circadian desynchronization, and work overload, there is a possibility that performance decrements and adverse health outcomes will occur.",
+      "last_published": "05/13/25",
+      "board_approved": "3/2022",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=100",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Accepted with Optimization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Characterization",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "5x2",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x2",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "title": "Risk of Radiation Carcinogenesis",
+      "risk_statement": null,
+      "last_published": "08/17/26",
+      "board_approved": null,
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=96",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "1x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "3x3",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 173,
+      "title": "Risk of Reduced Crew Health and Performance Due to Hypoxia",
+      "risk_statement": "Given that future human exploration missions require robust, flexible Extravehicular Activity (EVA) architecture protocols that include the use of a reduced pressure cabin atmosphere enabling staged denitrogenation, there is a possibility that this atmosphere could result in compromised health and performance to the crewmember due to exposure to mild hypobaric hypoxia. Notes: - In addition to hypobaric hypoxia associated with staged denitrogenation, there are additional factors that can result in hypoxic exposure to the crewmember such as cabin depressurization, Environmental Control and Life Support System (ECLSS) failure, toxic exposure or crewmember illness/injury. - Planned research and countermeasures will focus on mild hypoxia associated with hypoxia related to staged denitrogenation.",
+      "last_published": "05/13/25",
+      "board_approved": "11/2022",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=173",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "3x2",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x1",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "3x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Requires Characterization"
+        }
+      ]
+    },
+    {
+      "id": 81,
+      "title": "Risk of Renal Stone Formation",
+      "risk_statement": "Given changes in urinary biochemistry during spaceflight, there is a possibility that symptomatic renal stones will occur, which could cause renal colic (pain), nausea, vomiting, hematuria, infection, and/or hydronephrosis.",
+      "last_published": "05/13/25",
+      "board_approved": "4/2022",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=81",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x4",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x4",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x4",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x4",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "1x4",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "1x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "3x4",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "2x3",
+          "long_term_disposition": "Accepted with Monitoring"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "3x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "3x4",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x4",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "title": "Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS)",
+      "risk_statement": "Given that ocular and brain structural changes develop during spaceflight, there is a possibility that these changes could lead to short-term or long-term vision alterations, cognitive effects, or other deleterious health effects.",
+      "last_published": "05/13/25",
+      "board_approved": "7/2022",
+      "source_url": "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105",
+      "ratings": [
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Low Earth Orbit",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Short (<30 days)",
+          "operations_lxc": "4x1",
+          "operations_disposition": "Accepted",
+          "long_term_lxc": "2x2",
+          "long_term_disposition": "Accepted"
+        },
+        {
+          "mission_category": "Lunar Orbital+ Surface",
+          "duration": "Long (30 days-1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Preparatory (<1 year)",
+          "operations_lxc": "4x3",
+          "operations_disposition": "Accepted with Monitoring",
+          "long_term_lxc": "4x3",
+          "long_term_disposition": "Requires Mitigation"
+        },
+        {
+          "mission_category": "Mars",
+          "duration": "Mars Planetary (730-1224 days)",
+          "operations_lxc": "4x4",
+          "operations_disposition": "Requires Mitigation",
+          "long_term_lxc": "4x5",
+          "long_term_disposition": "Requires Mitigation"
+        }
+      ]
+    }
+  ],
+  "indicator_map": {
+    "sleep_h": [
+      100,
+      99
+    ],
+    "mood": [
+      100,
+      99
+    ],
+    "hr": [
+      179
+    ],
+    "bp_sys": [
+      179
+    ],
+    "bp_dia": [
+      179
+    ],
+    "glucose": [
+      176
+    ],
+    "body_temp": [
+      95
+    ],
+    "space_weather": [
+      96
+    ],
+    "rad_dose_cum": [
+      96
+    ],
+    "intake_calcium_mg": [
+      176
+    ],
+    "intake_carb_g": [
+      176
+    ],
+    "intake_fat_g": [
+      176
+    ],
+    "intake_iron_mg": [
+      176
+    ],
+    "intake_kcal": [
+      176
+    ],
+    "intake_potassium_mg": [
+      176
+    ],
+    "intake_protein_g": [
+      176
+    ],
+    "intake_sodium_mg": [
+      176
+    ],
+    "intake_vitd_ug": [
+      176
+    ],
+    "intake_water_ml": [
+      176
+    ],
+    "body_mass": [
+      176
+    ]
+  }
+}
