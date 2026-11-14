@@ -41,7 +41,7 @@ def main() -> None:
         "--public-reps", action="store_true", default=os.environ.get("PUBLIC_REPS", "") == "1"
     )
     p.add_argument(
-        "--public-flush-s", type=float, default=float(os.environ.get("PUBLIC_FLUSH_S", "10"))
+        "--public-flush-s", type=float, default=float(os.environ.get("PUBLIC_FLUSH_S") or "10")
     )
     p.add_argument("--state", type=Path, default=Path("linksim/var/state.json"))
     p.add_argument("--status-host", default="127.0.0.1")
@@ -61,7 +61,7 @@ def main() -> None:
         if not secret:
             raise SystemExit("GROUND_INGEST_SECRET is required when --public-ground is set")
         public = PublicUplink(
-            httpx.Client(base_url=args.public_ground, timeout=5.0),
+            httpx.Client(base_url=args.public_ground, timeout=2.0),
             secret,
             parse_crews(args.public_crews),
             args.public_reps,

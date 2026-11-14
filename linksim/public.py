@@ -31,7 +31,8 @@ class PublicUplink:
         self.beacon: Any = None
         self.offered_id = 0
         self.delivered_id = 0
-        self.filtered = self.overflow = self.failures = 0
+        self.filtered = self.overflow = self.failures = self.rejected = 0
+        self._backoff = 0
         self._last_flush = -math.inf
 
     def offer(self, items: list[OutboxItem], beacon: Any) -> None:
@@ -50,8 +51,23 @@ class PublicUplink:
         if beacon is not None:
             self.beacon = beacon
 
+    def _interval(self) -> float:
+        if not self._backoff:
+            return self.flush_s
+        return min(60.0, max(1.0, self.flush_s) * 2**self._backoff)
+
     def flush(self, now_s: float) -> bool:
-        if now_s - self._last_flush < self.flush_s:
+        """Send one batch. Never raises: any error counts as a failure and backs off."""
+        try:
+            return self._flush(now_s)
+        except Exception as exc:  # noqa: BLE001 - public must never break the local link
+            self.failures += 1
+            self._backoff += 1
+            print(f"public uplink flush failed: {type(exc).__name__}", flush=True)
+            return False
+
+    def _flush(self, now_s: float) -> bool:
+        if now_s - self._last_flush < self._interval():
             return False
         if not self.queue and self.beacon is None:
             return False
@@ -68,12 +84,24 @@ class PublicUplink:
         headers = {"content-type": "application/json", HEADER: sign(body, self.secret)}
         try:
             res = self.client.post("/ground/ingest", content=body, headers=headers)
-            res.raise_for_status()
         except httpx.HTTPError:
             self.failures += 1
+            self._backoff += 1
+            return False
+        code = res.status_code
+        if 400 <= code < 500 and code not in (408, 429):
+            del self.queue[: len(chunk)]
+            self.beacon = None
+            self.rejected += 1
+            print(f"public uplink rejected {code}: dropped {len(chunk)} items", flush=True)
+            return False
+        if code >= 400:
+            self.failures += 1
+            self._backoff += 1
             return False
         del self.queue[: len(chunk)]
         self.beacon = None
+        self._backoff = 0
         if chunk:
             self.delivered_id = chunk[-1].id
         return True

@@ -117,3 +117,70 @@ def test_step_feeds_public_and_local_optional(monkeypatch):
     lio.step(eng, None, None, "cursor", 1.0, poll=False, public=up)
     assert up.offered == [7] and up.flushed == 1
     assert eng.delivered == [7] and saved == [7]
+
+
+def test_flush_never_raises_on_bad_beacon():
+    class Bad:
+        def to_dict(self):
+            raise RuntimeError("boom")
+
+    up = uplink(httpx.Client(base_url=URL), flush_s=0.0)
+    up.offer([oi(1, ind="cabin_temp")], Bad())
+    assert up.flush(1.0) is False
+    assert up.failures == 1
+
+
+def test_step_delivers_locally_when_public_flush_raises(monkeypatch):
+    from linksim import io as lio
+
+    class FakeEngine:
+        fetched_id = 0
+
+        def due(self, now_s):
+            return [oi(7, ind="cabin_temp")]
+
+        def due_beacon(self, now_s):
+            return None
+
+        def mark_delivered(self, ids, now_s):
+            self.delivered = ids
+
+    class BadUp:
+        def offer(self, items, beacon):
+            pass
+
+        def flush(self, now_s):
+            raise RuntimeError("boom")
+
+    monkeypatch.setattr(lio, "save_cursor", lambda p, i: None)
+    eng = FakeEngine()
+    try:
+        lio.step(eng, None, None, "cursor", 1.0, poll=False, public=BadUp())
+    except RuntimeError:
+        pass
+    assert eng.delivered == [7]
+
+
+def test_4xx_drops_chunk_and_counts_rejected():
+    with respx.mock(base_url=URL) as mock:
+        route = mock.post("/ground/ingest")
+        route.side_effect = [httpx.Response(401), httpx.Response(200, json={})]
+        up = uplink(httpx.Client(base_url=URL), flush_s=0.0, batch=1)
+        up.offer([oi(1, ind="cabin_temp"), oi(2, ind="cabin_temp")], None)
+        assert up.flush(1.0) is False
+        assert up.rejected == 1 and [i.id for i in up.queue] == [2] and up.delivered_id == 0
+        assert up.flush(2.0) is True
+        assert up.delivered_id == 2
+
+
+def test_backoff_doubles_after_failure():
+    with respx.mock(base_url=URL) as mock:
+        route = mock.post("/ground/ingest").respond(503)
+        up = uplink(httpx.Client(base_url=URL), flush_s=10.0)
+        up.offer([oi(1, ind="cabin_temp")], None)
+        assert up.flush(100.0) is False
+        assert route.call_count == 1
+        assert up.flush(110.0) is False
+        assert route.call_count == 1
+        assert up.flush(120.0) is False
+        assert route.call_count == 2

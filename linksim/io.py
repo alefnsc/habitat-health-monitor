@@ -90,7 +90,14 @@ def step(
     beacon = engine.due_beacon(now_s)
     if public is not None:
         public.offer(items, beacon)
-        public.flush(now_s)
+    try:
+        _deliver_local(engine, ground_client, cursor, now_s, items, beacon)
+    finally:
+        if public is not None:
+            public.flush(now_s)
+
+
+def _deliver_local(engine, ground_client, cursor, now_s, items, beacon) -> None:
     if not items and beacon is None:
         return
     if ground_client is not None:
