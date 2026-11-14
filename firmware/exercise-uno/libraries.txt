@@ -1,3 +1,4 @@
 arduino:avr	1.8.8	LGPL-2.1-or-later
+DHT sensor library	1.4.7	MIT
 HX711 Arduino Library	0.7.5	MIT
 Servo	1.3.0	LGPL-2.1-or-later

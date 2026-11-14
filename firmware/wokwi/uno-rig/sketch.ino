@@ -1,32 +1,64 @@
-// exercise-uno: exercise rig on an Arduino Uno (F14, F15, F16, plus the D35 analog channels).
+// exercise-uno: the UNO I/O board on the UNO+WiFi's ATmega328P side (decision D40; F14-F16, D35).
 //
 // Educational prototype, not a medical device. Readings from hobby sensors are estimates.
 //
-// Link: USB serial, 250000 baud 8N1. One contract-v1 reading per line (plain Serial output, no JSON
-// library on the Uno). Lines starting with "# " are diagnostics. Command lines (D7) come in on the
-// same port, one JSON object per line; every command is answered with one ack line.
+// Link: USB serial, 250000 baud 8N1, to the hub. One contract-v1 reading per line (plain Serial
+// output, no JSON library on the Uno). Lines starting with "# " are diagnostics. Command lines (D7)
+// come in on the same port, one JSON object per line; every command is answered with one ack line.
+// Two nodes share the link: cabin-1 (DHT11) and exercise-1 (acks, and the rig channels if built).
 //
-// Pins: HX711 DOUT D3, SCK D4 | servo signal D6 | buzzer D8 | NTC out A0 | pulse module out A1.
-// The HX711 RATE pin must be tied to DVDD for 80 SPS (see docs/wiring/exercise-uno.md).
+// Pins: DHT11 data D2 | buzzer D8 | HX711 DOUT D3, SCK D4 | servo signal D6 | NTC out A0 | pulse A1.
 //
-// Optional channels (compile-time flags, default on because the D35 rig has both modules; build
-// with -DENABLE_NTC=0 and/or -DENABLE_KY039=0 when a module is not wired, so a floating analog pin
-// never publishes numbers):
-//   arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_NTC=0" ...
+// Build flags (D40 defaults: only the DHT11 and the buzzer are wired). A module that is not wired is
+// compiled out, so a floating pin never publishes numbers (a floating HX711 DOUT reads as "ready"):
+//   ENABLE_DHT=1  ENABLE_HX711=0  ENABLE_SERVO=0  ENABLE_NTC=0  ENABLE_KY039=0
+//   BUZZER_PASSIVE=0 (1 for a passive buzzer, driven with tone())  DHT_TYPE=DHT11
+//   arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_HX711=1" ...
+// The HX711 RATE pin must be tied to DVDD for 80 SPS when the load cell is fitted.
+//
+// The Wokwi twin adds a wokwi_twin.h next to this file (DHT22 stand-in, passive buzzer). The real
+// sketch folder has no such file, so the defaults above apply on the bench.
 //
 // The block between BEGIN PURE and END PURE is plain C++ with no Arduino calls. It is extracted and
 // compiled on the host by firmware/exercise-uno/test/run_host_tests.sh.
 
-#include <EEPROM.h>
-#include <HX711.h>
-#include <Servo.h>
+#if __has_include("wokwi_twin.h")
+#include "wokwi_twin.h"
+#endif
 
+#ifndef ENABLE_DHT
+#define ENABLE_DHT 1
+#endif
+#ifndef ENABLE_HX711
+#define ENABLE_HX711 0
+#endif
+#ifndef ENABLE_SERVO
+#define ENABLE_SERVO 0
+#endif
 #ifndef ENABLE_NTC
-#define ENABLE_NTC 1
+#define ENABLE_NTC 0
 #endif
 #ifndef ENABLE_KY039
-#define ENABLE_KY039 1
+#define ENABLE_KY039 0
 #endif
+#ifndef BUZZER_PASSIVE
+#define BUZZER_PASSIVE 0
+#endif
+
+#include <EEPROM.h>
+#if ENABLE_HX711
+#include <HX711.h>
+#endif
+#if ENABLE_SERVO
+#include <Servo.h>
+#endif
+#if ENABLE_DHT
+#include <DHT.h>
+#ifndef DHT_TYPE
+#define DHT_TYPE DHT11
+#endif
+#endif
+
 #ifndef CELL_CAPACITY_KG
 #define CELL_CAPACITY_KG 50  // rated capacity of the load cell, kg
 #endif
@@ -106,12 +138,12 @@ static size_t fmtFlags(char* out, size_t cap, uint8_t q) {
 }
 
 // One reading line, no newline. Returns length, 0 if it does not fit in cap.
-static size_t buildReading(char* out, size_t cap, uint32_t boot, uint32_t seq, const char* ind,
-                           float val, const char* unit, const char* dev, uint8_t q) {
+static size_t buildReading(char* out, size_t cap, const char* node, uint32_t boot, uint32_t seq,
+                           const char* ind, float val, const char* unit, const char* dev, uint8_t q) {
   int n = snprintf(out, cap,
-                   "{\"v\":1,\"node\":\"exercise-1\",\"boot\":%lu,\"seq\":%lu,\"age_ms\":0,"
+                   "{\"v\":1,\"node\":\"%s\",\"boot\":%lu,\"seq\":%lu,\"age_ms\":0,"
                    "\"ind\":\"%s\",\"val\":",
-                   (unsigned long)boot, (unsigned long)seq, ind);
+                   node, (unsigned long)boot, (unsigned long)seq, ind);
   if (n < 0 || (size_t)n >= cap) return 0;
   size_t pos = (size_t)n;
   size_t m = fmtVal(out + pos, cap - pos, val);
@@ -212,6 +244,22 @@ static bool calSolve(long c1, float f1, long c2, float f2, float* k, long* c0) {
 }
 
 static float calValue(long counts, float k, long c0) { return (float)(counts - c0) / k; }
+
+// Range flag for the DHT11 (datasheet ranges 0..50 C and 20..90 %RH): outside [lo, hi], or NaN,
+// is out_of_range.
+static uint8_t rangeFlag(float v, float lo, float hi) {
+  return (v >= lo && v <= hi) ? 0 : QF_OUT_OF_RANGE;
+}
+
+// Consecutive failed sensor reads: true once three in a row have failed (as nodes/cabin_pi does).
+struct FailCount {
+  uint8_t n;
+  bool fail() {
+    if (n < 255) n++;
+    return n >= 3;
+  }
+  void ok() { n = 0; }
+};
 
 // Load-cell flags. Uncalibrated lines are always settling; so is the first 2 s after boot.
 static uint8_t loadFlags(bool calibrated, uint32_t msSinceBoot, long raw, float valN) {
@@ -333,32 +381,17 @@ struct HrEst {
 // ---------------------------------------------------------------------------------------------
 // Hardware part.
 
-static const uint8_t PIN_HX_DOUT = 3, PIN_HX_SCK = 4, PIN_SERVO = 6, PIN_BUZZER = 8;
+static const uint8_t PIN_DHT = 2, PIN_HX_DOUT = 3, PIN_HX_SCK = 4, PIN_SERVO = 6, PIN_BUZZER = 8;
 static const uint8_t PIN_NTC = A0, PIN_PULSE = A1;
 static const uint16_t EE_BOOT = 0, EE_K = 8, EE_C0 = 12, EE_MARK = 16;
 static const uint8_t CAL_MARK = 0xA5;
-
-static HX711 scale;
-static Servo servo;
+static const char NODE_RIG[] = "exercise-1";
+static const char NODE_CABIN[] = "cabin-1";
 
 static uint32_t bootNo = 0, seqNo = 0, bootMs = 0;
-static bool calibrated = false;
-static float calK = kPlaceholderK;
-static long calC0 = 0;
 
-// Calibration / tare capture: mean of 40 samples (0.5 s at 80 SPS), taken while the stream runs.
-static Capture capKind = CAP_NONE;
-static uint8_t capN = 0;
-static long capSum = 0;
-static float capMass = 0;
-static bool havePoint1 = false;
-static long point1Counts = 0;
-static float point1Mass = 0;
-
-static bool alarmOn = false;
+static bool alarmOn = false, buzzerOn = false;
 static uint32_t alarmStartMs = 0;
-
-static uint32_t rateWindowStart = 0, rateCount = 0;
 
 static char inBuf[64];
 static uint8_t inLen = 0;
@@ -374,9 +407,31 @@ static void emit(size_t n) {
 
 static void ack(const char* cmd, bool ok, const char* err) { emit(buildAck(outBuf, sizeof outBuf, cmd, ok, err)); }
 
-static void emitReading(const char* ind, float val, const char* unit, const char* dev, uint8_t q) {
-  emit(buildReading(outBuf, sizeof outBuf, bootNo, ++seqNo, ind, val, unit, dev, q));
+static void emitReading(const char* node, const char* ind, float val, const char* unit, const char* dev,
+                        uint8_t q) {
+  emit(buildReading(outBuf, sizeof outBuf, node, bootNo, ++seqNo, ind, val, unit, dev, q));
 }
+
+#if ENABLE_SERVO
+static Servo servo;
+#endif
+
+#if ENABLE_HX711
+static HX711 scale;
+static bool calibrated = false;
+static float calK = kPlaceholderK;
+static long calC0 = 0;
+
+// Calibration / tare capture: mean of 40 samples (0.5 s at 80 SPS), taken while the stream runs.
+static Capture capKind = CAP_NONE;
+static uint8_t capN = 0;
+static long capSum = 0;
+static float capMass = 0;
+static bool havePoint1 = false;
+static long point1Counts = 0;
+static float point1Mass = 0;
+
+static uint32_t rateWindowStart = 0, rateCount = 0;
 
 static void loadCalibration() {
   float k;
@@ -448,6 +503,7 @@ static void finishCapture() {
   Serial.println(F(" n=2"));
   ack("cal", true, NULL);
 }
+#endif
 
 static void handleLine(const char* line) {
   if (line[0] != '{') return;  // not a command; ignore quietly
@@ -457,6 +513,7 @@ static void handleLine(const char* line) {
     return;
   }
   if (strcmp(c.name, "servo") == 0) {
+#if ENABLE_SERVO
     if (!c.hasAngle) {
       ack("servo", false, "missing_angle");
       return;
@@ -469,6 +526,9 @@ static void handleLine(const char* line) {
     }
     servo.write((int)a);
     ack("servo", true, NULL);
+#else
+    ack("servo", false, "not_built");  // no servo on the D40 board
+#endif
   } else if (strcmp(c.name, "alarm") == 0) {
     if (!c.hasOn) {
       ack("alarm", false, "missing_on");
@@ -477,22 +537,28 @@ static void handleLine(const char* line) {
     if (c.on && !alarmOn) alarmStartMs = millis();
     alarmOn = c.on;
     ack("alarm", true, NULL);
-  } else if (strcmp(c.name, "tare") == 0) {
-    if (capKind != CAP_NONE)
-      ack("tare", false, "busy");
-    else if (!calibrated)
-      ack("tare", false, "uncalibrated");
-    else
-      startCapture(CAP_TARE, 0);
-  } else if (strcmp(c.name, "cal") == 0) {
-    if (capKind != CAP_NONE)
-      ack("cal", false, "busy");
-    else if (!c.hasMass || !(c.mass > 0.0f))
-      ack("cal", false, "bad_mass");
-    else if (havePoint1 && fabsf(c.mass - point1Mass) * kGravity < 0.1f)
-      ack("cal", false, "same_mass");
-    else
-      startCapture(CAP_CAL, c.mass);
+  } else if (strcmp(c.name, "tare") == 0 || strcmp(c.name, "cal") == 0) {
+#if ENABLE_HX711
+    if (strcmp(c.name, "tare") == 0) {
+      if (capKind != CAP_NONE)
+        ack("tare", false, "busy");
+      else if (!calibrated)
+        ack("tare", false, "uncalibrated");
+      else
+        startCapture(CAP_TARE, 0);
+    } else {
+      if (capKind != CAP_NONE)
+        ack("cal", false, "busy");
+      else if (!c.hasMass || !(c.mass > 0.0f))
+        ack("cal", false, "bad_mass");
+      else if (havePoint1 && fabsf(c.mass - point1Mass) * kGravity < 0.1f)
+        ack("cal", false, "same_mass");
+      else
+        startCapture(CAP_CAL, c.mass);
+    }
+#else
+    ack(c.name, false, "not_built");  // no load cell on the D40 board
+#endif
   } else {
     ack(c.name, false, "unknown");
   }
@@ -518,6 +584,7 @@ static void pollSerial() {
   }
 }
 
+#if ENABLE_HX711
 static void onLoadSample(long raw) {
   rateCount++;
   if (capKind != CAP_NONE) {
@@ -526,12 +593,7 @@ static void onLoadSample(long raw) {
   }
   float val = calibrated ? calValue(raw, calK, calC0) : (float)raw / kPlaceholderK;
   uint8_t q = loadFlags(calibrated, millis() - bootMs, raw, val);
-  emitReading("load_raw", val, "N", "HX711", q);
-}
-
-static void updateBuzzer(uint32_t now) {
-  bool on = alarmOn && (((now - alarmStartMs) / 500) % 2 == 0);
-  digitalWrite(PIN_BUZZER, on ? HIGH : LOW);
+  emitReading(NODE_RIG, "load_raw", val, "N", "HX711", q);
 }
 
 static void rateDiagnostic(uint32_t now) {
@@ -545,6 +607,48 @@ static void rateDiagnostic(uint32_t now) {
   rateWindowStart = now;
   rateCount = 0;
 }
+#endif
+
+// Alarm pattern: 500 ms on, 500 ms off. The pin is touched only when the state changes, so a
+// passive buzzer's tone() is not restarted on every loop.
+static void updateBuzzer(uint32_t now) {
+  bool on = alarmOn && (((now - alarmStartMs) / 500) % 2 == 0);
+  if (on == buzzerOn) return;
+  buzzerOn = on;
+#if BUZZER_PASSIVE
+  if (on)
+    tone(PIN_BUZZER, 2000);
+  else
+    noTone(PIN_BUZZER);
+#else
+  digitalWrite(PIN_BUZZER, on ? HIGH : LOW);
+#endif
+}
+
+#if ENABLE_DHT
+// DHT11 on D2, cabin-1, every 5 s (the sensor allows one read per second). The read blocks for
+// about 25 ms with interrupts off; command lines are short and rare, so the serial buffer copes.
+static DHT dht(PIN_DHT, DHT_TYPE);
+static FailCount dhtFails;
+static uint32_t dhtLastMs = (uint32_t)-3000;  // first read 2 s after boot
+
+static void dhtPoll(uint32_t now) {
+  if ((uint32_t)(now - dhtLastMs) < 5000) return;
+  dhtLastMs = now;
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();  // same frame as the temperature (the library caches it for 2 s)
+  if (isnan(t) || isnan(h)) {
+    if (dhtFails.fail()) {  // val 0 with no_contact after three failed reads, as nodes/cabin_pi does
+      emitReading(NODE_CABIN, "cabin_temp", 0, "C", "DHT11", QF_NO_CONTACT);
+      emitReading(NODE_CABIN, "cabin_rh", 0, "%", "DHT11", QF_NO_CONTACT);
+    }
+    return;
+  }
+  dhtFails.ok();
+  emitReading(NODE_CABIN, "cabin_temp", t, "C", "DHT11", rangeFlag(t, 0, 50));
+  emitReading(NODE_CABIN, "cabin_rh", h, "%", "DHT11", rangeFlag(h, 20, 90));
+}
+#endif
 
 #if ENABLE_NTC
 static Settle30 ntcSettle;
@@ -559,12 +663,12 @@ static void ntcPoll(uint32_t now) {
   float adc = (float)sum / 16.0f, t = 0;
   uint8_t q = 0;
   if (!ntcCelsius(adc, &t)) {
-    emitReading("skin_temp", 0, "C", "NTC", QF_OUT_OF_RANGE);
+    emitReading(NODE_RIG, "skin_temp", 0, "C", "NTC", QF_OUT_OF_RANGE);
     return;
   }
   if (ntcSettle.update(t)) q |= QF_SETTLING;
   if (t < 30.0f) q |= QF_NO_CONTACT;  // team value, as for the other skin probes
-  emitReading("skin_temp", t, "C", "NTC", q);
+  emitReading(NODE_RIG, "skin_temp", t, "C", "NTC", q);
 }
 #endif
 
@@ -580,19 +684,21 @@ static void hrPoll(uint32_t now) {
   if ((uint32_t)(now - hrLastMs) < 5000) return;
   hrLastMs = now;
   if (!hr.hasContact()) {
-    emitReading("hr", 0, "bpm", "KY039", QF_NO_CONTACT);  // val 0 with no_contact, per the contract notes
+    emitReading(NODE_RIG, "hr", 0, "bpm", "KY039", QF_NO_CONTACT);  // val 0 with no_contact, per the contract notes
     return;
   }
-  emitReading("hr", hr.bpm(), "bpm", "KY039", hr.settling() ? QF_SETTLING : 0);
+  emitReading(NODE_RIG, "hr", hr.bpm(), "bpm", "KY039", hr.settling() ? QF_SETTLING : 0);
 }
 #endif
 
 void setup() {
   Serial.begin(250000);
   pinMode(PIN_BUZZER, OUTPUT);
-  digitalWrite(PIN_BUZZER, LOW);
+  digitalWrite(PIN_BUZZER, LOW);  // after every reset the alarm is off
+#if ENABLE_SERVO
   servo.attach(PIN_SERVO);
-  servo.write(0);  // after every reset the dial is at 0 and the alarm is off
+  servo.write(0);  // and the dial is at 0
+#endif
 
   EEPROM.get(EE_BOOT, bootNo);
   if (bootNo == 0xFFFFFFFFUL) bootNo = 0;  // fresh EEPROM
@@ -602,26 +708,50 @@ void setup() {
   Serial.println();  // ends any partial line left on the wire
   Serial.print(F("# exercise-1 boot="));
   Serial.println(bootNo);
+#if ENABLE_HX711
   loadCalibration();
-  Serial.print(F("# channels ntc="));
+#endif
+  Serial.print(F("# channels dht="));
+  Serial.print(ENABLE_DHT ? F("on") : F("off"));
+  Serial.print(F(" hx711="));
+  Serial.print(ENABLE_HX711 ? F("on") : F("off"));
+  Serial.print(F(" servo="));
+  Serial.print(ENABLE_SERVO ? F("on") : F("off"));
+  Serial.print(F(" ntc="));
   Serial.print(ENABLE_NTC ? F("on") : F("off"));
   Serial.print(F(" ky039="));
-  Serial.println(ENABLE_KY039 ? F("on") : F("off"));
+  Serial.print(ENABLE_KY039 ? F("on") : F("off"));
+  Serial.print(F(" buzzer="));
+  Serial.println(BUZZER_PASSIVE ? F("passive") : F("active"));
 
+#if ENABLE_HX711
   scale.begin(PIN_HX_DOUT, PIN_HX_SCK);
+#endif
+#if ENABLE_DHT
+  dht.begin();
+#endif
 #if ENABLE_KY039
   hr.reset();
 #endif
   bootMs = millis();
+#if ENABLE_HX711
   rateWindowStart = bootMs;
+#endif
 }
 
 void loop() {
   uint32_t now = millis();
+#if ENABLE_HX711
   if (scale.is_ready()) onLoadSample(scale.read());  // the HX711 read has priority
+#endif
   pollSerial();
   updateBuzzer(now);
+#if ENABLE_HX711
   rateDiagnostic(now);
+#endif
+#if ENABLE_DHT
+  dhtPoll(now);
+#endif
 #if ENABLE_NTC
   ntcPoll(now);
 #endif
