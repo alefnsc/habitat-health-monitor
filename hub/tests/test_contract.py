@@ -210,6 +210,12 @@ def test_catalog_dev():
     assert parse_reading(m).dev == "catalog"
 
 
+def test_w_agent_devices():
+    ntc = mod(BASE, ind="skin_temp", unit="C", dev="NTC", node="vitals-1")
+    ky = mod(BASE, ind="hr", unit="bpm", dev="KY039", node="vitals-1")
+    assert parse_reading(ntc).dev == "NTC" and parse_reading(ky).dev == "KY039"
+
+
 def test_extra_fields_dropped():
     r = parse_reading(mod(BASE, foo=1))
     assert "foo" not in reading_to_dict(r)

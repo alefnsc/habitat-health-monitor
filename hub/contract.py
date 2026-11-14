@@ -86,6 +86,7 @@ DEVICES: frozenset[str] = frozenset(
     {
         "MAX30102", "DS18B20", "MLX90614", "SCD41", "BME280", "DHT22", "DHT11", "BH1750",
         "HX711", "H10", "manual", "camera", "MPU6050", "MH-Z19", "DONKI", "OSDR", "catalog",
+        "NTC", "KY039",
     }
 )  # fmt: skip
 FLAGS: frozenset[str] = frozenset(
