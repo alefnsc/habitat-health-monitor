@@ -1,0 +1,2 @@
+# Libraries for the vitals node twin. Wire ships with the ESP32 core.
+SparkFun MAX3010x Pulse and Proximity Sensor Library@1.1.2

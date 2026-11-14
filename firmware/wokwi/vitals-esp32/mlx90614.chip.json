@@ -1,0 +1,9 @@
+{
+  "name": "MLX90614 GY-906 (simulated)",
+  "author": "Habitat Health Monitor team",
+  "pins": ["VCC", "GND", "SCL", "SDA"],
+  "controls": [
+    { "id": "objectTemp", "label": "Object temperature (simulated, C)", "type": "range", "min": 10, "max": 45, "step": 0.1 },
+    { "id": "ambientTemp", "label": "Ambient temperature (simulated, C)", "type": "range", "min": 10, "max": 40, "step": 0.1 }
+  ]
+}

@@ -9,10 +9,20 @@ Educational prototype, not a medical device. Three sketches, one shared library,
 | Raspberry Pi 3 Model B | hub, Mosquitto, and the `cabin-1` node (`nodes/cabin_pi`, Python: BME280, SCD41, optional DHT22) | MQTT on localhost; see `docs/pi-setup.md` |
 | UNO+WiFi R3, ATmega328P side | `exercise-uno`: HX711 load cell, servo, buzzer, optional NTC `skin_temp` and KY-039 `hr` (hobby estimates) | USB serial to the Pi, 250000 baud |
 | UNO+WiFi R3, ESP8266 side | optional Wi-Fi bridge for the ATmega's lines; not built, may be cut | MQTT |
-| Battery-powered board (ESP32 or ESP8266) | `vitals` node | Wi-Fi/MQTT |
-| Wokwi | the Uno rig only (`firmware/wokwi/uno-rig/`); Wokwi has no ESP8266 | n/a |
+| Battery-powered NodeMCU Amica (ESP8266; ESP32 also builds) | `vitals-esp32` sketch (the directory name is kept): MAX30102 0x57, MLX90614 GY-906 0x5A, MPU6050 0x68 on one 3.3 V I2C bus (decision D37; the DS18B20 is dropped) | Wi-Fi/MQTT |
+| Wokwi | two twins, because Wokwi has no ESP8266: the Uno rig (`firmware/wokwi/uno-rig/`) and the vitals node on an ESP32 with simulated MAX30102 and MLX90614 chips (`firmware/wokwi/vitals-esp32/`) | n/a |
 
 `firmware/cabin-esp8266` is still the empty skeleton. The Pi node replaces it, and it stays only as a fallback.
+
+### Vitals node (D37)
+
+One 3.3 V I2C bus at 100 kHz (the MLX90614's SMBus limit; the plan's 400 kHz would not work with it):
+- ESP8266 (NodeMCU Amica): SDA D2 (GPIO4), SCL D1 (GPIO5). Keep D3, D4 and D8 free (boot pins). ESP32: default Wire pins.
+- Check the MAX30102 board: some pull SDA/SCL up to 1.8 V. Move the jumper to 3.3 V. Keep Wi-Fi on so the power bank does not switch off.
+- Readings (estimates from hobby sensors): `hr` every 1 s and `spo2` every 4 s from the SparkFun library and Maxim's algorithm over a 4 s window; `skin_temp` every 2 s from the MLX90614 object temperature (non-contact, not an axillary or core temperature); `motion` every 1 s from the MPU6050.
+- Flags (team values): `no_contact` for mean IR below 50,000 counts (`hr` then goes out as val 0 every 5 s) or `skin_temp` below 30 C; `settling` for the first 4 s after contact and while `skin_temp` moved more than 0.1 C in 30 s; `motion` on `hr` and `spo2` when a 1 s motion value above 0.05 g falls in the last 4 s (threshold not yet tuned on the bench).
+- Single core: on the ESP8266, `HabitatNode::loop()` shares the loop with sensing, so a Wi-Fi or broker reconnect can pause it. If the pause exceeds 0.8 s the sketch prints `# fifo gap` and restarts the window instead of using a gap. On the ESP32 `HabitatNode::loop()` runs on core 0.
+- With no `secrets.h` the sketch runs serial-only and prints the same contract-v1 lines (this is what the Wokwi twin runs).
 
 ### UNO+WiFi DIP switch modes (vendor table, unverified on this board)
 
@@ -48,7 +58,6 @@ same time. For the rig the Pi needs the "USB to ATmega328" row.
    ```
    arduino-cli lib install "ArduinoJson@7.4.3" "MQTT@2.5.3" \
      "SparkFun MAX3010x Pulse and Proximity Sensor Library@1.1.2" \
-     "OneWire@2.3.8" "DallasTemperature@4.0.6" \
      "Adafruit BME280 Library@2.3.0" "Adafruit Unified Sensor@1.1.15" "Adafruit BusIO@1.17.4" \
      "Sensirion I2C SCD4x@1.1.0" "Sensirion Core@0.7.3" \
      "DHT sensor library@1.4.7" "HX711 Arduino Library@0.7.5" "Servo@1.3.0" \
@@ -73,8 +82,6 @@ The ESP cores are LGPL-2.1 but bundle Espressif's radio firmware blobs. These ar
 | ArduinoJson | 7.4.3 | MIT | vitals, cabin |
 | MQTT (256dpi, lwmqtt) | 2.5.3 | MIT | vitals, cabin |
 | SparkFun MAX3010x Pulse and Proximity Sensor Library | 1.1.2 | MIT (see note) | vitals |
-| OneWire | 2.3.8 | MIT (permissive notice in source) | vitals |
-| DallasTemperature | 4.0.6 | MIT | vitals |
 | Adafruit BME280 Library | 2.3.0 | BSD-3-Clause | cabin |
 | Adafruit Unified Sensor | 1.1.15 | Apache-2.0 | cabin |
 | Adafruit BusIO | 1.17.4 | MIT | cabin |
@@ -87,12 +94,11 @@ The ESP cores are LGPL-2.1 but bundle Espressif's radio firmware blobs. These ar
 | MFRC522 (optional F17) | 1.4.12 | Unlicense | cabin, only if built |
 | Adafruit MLX90614 Library (optional F18) | 2.1.7 | BSD-3-Clause | cabin, only if built |
 
-Every library is OSI-approved. Optional libraries are installed but are listed in a sketch's `libraries.txt` only when that task is built. There is no MPU6050 library: the vitals sketch reads its registers through `Wire`. `HabitatNode` is this repository's own code (Apache-2.0) and is not listed.
+Every library is OSI-approved. Optional libraries are installed but are listed in a sketch's `libraries.txt` only when that task is built. There is no MPU6050 or MLX90614 library: the vitals sketch reads their registers through `Wire` (the MLX90614 read-word with SMBus PEC is about 20 lines in the sketch). `HabitatNode` is this repository's own code (Apache-2.0) and is not listed.
 
 Notes for the References list (S14):
 - `spo2_algorithm.h` and `heartRate.h` (and their `.cpp` files) inside the SparkFun library carry Maxim Integrated notices: "Copyright (C) 2015/2016 Maxim Integrated Products, Inc., All Rights Reserved", an MIT-style permission grant, and the clause "Except as contained in this notice, the name of Maxim Integrated Products, Inc. shall not be used except as stated in the Maxim Integrated Products, Inc. Branding Policy." OSI-compatible. Credit the algorithm as "Maxim Integrated reference algorithm, via the SparkFun MAX3010x library".
 - `heartRate.h` is Nathan Seidle's (SparkFun) implementation of Maxim's PBA beat detector.
-- The OneWire notice is the MIT text, with Dallas Semiconductor copyright lines in places.
 
 ## Commands
 
@@ -128,3 +134,14 @@ firmware/wokwi/uno-rig/check_sync.sh                  # the Wokwi copy must equa
 
 `ENABLE_NTC` and `ENABLE_KY039` default to 1; turn a channel off when its module is not wired, so a floating analog pin never publishes numbers.
 `seq` is one counter shared by all channels, so `load_raw` has gaps when NTC or KY-039 lines are interleaved.
+
+Vitals node:
+
+```
+cp firmware/vitals-esp32/secrets.example.h firmware/vitals-esp32/secrets.h   # fill in; git-ignored
+arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/vitals-esp32
+arduino-cli compile --fqbn esp32:esp32:esp32 --library firmware/libraries/HabitatNode firmware/vitals-esp32
+firmware/vitals-esp32/test/run_host_tests.sh              # pure logic: lines, contact, MLX90614 PEC, skin flags, motion
+firmware/wokwi/vitals-esp32/test/run_chip_tests.sh        # native tests of the two simulated Wokwi chips
+firmware/wokwi/vitals-esp32/check_sync.sh                 # the Wokwi copy must equal vitals-esp32.ino
+```

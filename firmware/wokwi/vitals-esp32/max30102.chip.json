@@ -1,0 +1,10 @@
+{
+  "name": "MAX30102 (simulated)",
+  "author": "Habitat Health Monitor team",
+  "pins": ["VCC", "GND", "SCL", "SDA", "INT"],
+  "controls": [
+    { "id": "finger", "label": "Finger on sensor (simulated)", "type": "range", "min": 0, "max": 1, "step": 1 },
+    { "id": "heartRate", "label": "Pulse rate (simulated, bpm)", "type": "range", "min": 40, "max": 160, "step": 1 },
+    { "id": "spo2", "label": "SpO2 (simulated, %)", "type": "range", "min": 85, "max": 100, "step": 1 }
+  ]
+}

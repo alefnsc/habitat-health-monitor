@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "author": "Habitat Health Monitor team",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "chip-max30102", "id": "max", "top": -140, "left": 260, "attrs": {} },
+    { "type": "chip-mlx90614", "id": "mlx", "top": -10, "left": 260, "attrs": {} },
+    { "type": "wokwi-mpu6050", "id": "mpu", "top": 120, "left": 260, "attrs": {} },
+    {
+      "type": "wokwi-text",
+      "id": "label_board",
+      "top": -40,
+      "left": -10,
+      "attrs": { "text": "ESP32 stands in for the NodeMCU Amica (simulated)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_max",
+      "top": -160,
+      "left": 250,
+      "attrs": { "text": "MAX30102 pulse sensor (simulated)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_mlx",
+      "top": -30,
+      "left": 250,
+      "attrs": { "text": "MLX90614 GY-906 (simulated)" }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_mpu",
+      "top": 100,
+      "left": 250,
+      "attrs": { "text": "MPU6050 (simulated)" }
+    }
+  ],
+  "connections": [
+    [ "esp:3V3", "max:VCC", "red", [ "v0" ] ],
+    [ "esp:3V3", "mlx:VCC", "red", [ "v0" ] ],
+    [ "esp:3V3", "mpu:VCC", "red", [ "v0" ] ],
+    [ "esp:GND.1", "max:GND", "black", [ "v0" ] ],
+    [ "esp:GND.1", "mlx:GND", "black", [ "v0" ] ],
+    [ "esp:GND.1", "mpu:GND", "black", [ "v0" ] ],
+    [ "esp:D21", "max:SDA", "green", [ "v0" ] ],
+    [ "esp:D21", "mlx:SDA", "green", [ "v0" ] ],
+    [ "esp:D21", "mpu:SDA", "green", [ "v0" ] ],
+    [ "esp:D22", "max:SCL", "orange", [ "v0" ] ],
+    [ "esp:D22", "mlx:SCL", "orange", [ "v0" ] ],
+    [ "esp:D22", "mpu:SCL", "orange", [ "v0" ] ]
+  ],
+  "dependencies": {}
+}
