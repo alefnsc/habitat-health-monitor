@@ -31,3 +31,13 @@ See `docs/decisions/links.md`.
 ## AI use
 
 AI coding assistants were used to write parts of this project. Full disclosure: `docs/AI_DISCLOSURE.md` (added during the event).
+
+## Run the hub (development)
+
+1. `mosquitto -c hub/mosquitto/habitat.conf` (create `hub/mosquitto/passwd` first; it is git-ignored)
+2. `python -m hub`
+3. `python -m hub.sim --file data/replay/l0-synthetic.jsonl --speed 10` (synthetic demo input, not measurements)
+4. open `http://<hub-ip>:8000/`
+
+Settings come from `HUB_*` environment variables (see `.env.example`). Without a broker the HTTP API
+still serves and the MQTT subscriber keeps retrying.

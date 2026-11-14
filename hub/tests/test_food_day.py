@@ -189,11 +189,15 @@ def _real(store):
 def test_real_preview_status_and_floor(store):
     ass = _real(store)
     put(store, "intake_sodium_mg", 2400, 1)
-    d = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"]["intake_sodium_mg"]
+    d = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"][
+        "intake_sodium_mg"
+    ]
     assert d["status"] == "watch" and d["rule_id"] == "t_na_max"
     assert d["floor_judged"] is False  # first reading only 1 h old
     put(store, "intake_sodium_mg", 10, 21)
-    d = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"]["intake_sodium_mg"]
+    d = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"][
+        "intake_sodium_mg"
+    ]
     assert d["floor_judged"] is True
     assert d["status"] == "watch"
 
@@ -209,5 +213,7 @@ def test_real_preview_all_crew_and_after_roll(store):
     late = food_day(store, ass, "crew-a", T + timedelta(hours=25), crews=CREWS, rules=ass.rules)
     n = late["totals"]["intake_sodium_mg"]
     assert (n["val"], n["status"]) == (None, "unknown")
-    iron = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"]["intake_iron_mg"]
+    iron = food_day(store, ass, "crew-a", T, crews=CREWS, rules=ass.rules)["totals"][
+        "intake_iron_mg"
+    ]
     assert iron["status"] == "unknown" and iron["floor_judged"] is None

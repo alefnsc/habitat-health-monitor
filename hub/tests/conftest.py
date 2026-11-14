@@ -35,6 +35,9 @@ def settings(tmp_path) -> Settings:
     return replace(
         load_settings({}),
         db_path=tmp_path / "hub.db",
+        mqtt_host="",  # no subscriber unless a test sets a host
+        console_dist=missing / "console",
+        camera_dist=missing / "camera",
         thresholds_path=missing / "thresholds.json",
         guidance_path=missing / "guidance.json",
         food_catalog_path=missing / "food" / "catalog.json",
