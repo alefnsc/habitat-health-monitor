@@ -7,6 +7,8 @@ CLI:
   python -m hub.food.seed --flags --out data/food/seed_flags.json \
       --replay data/replay/food-flags.jsonl --seed 20261114
   python -m hub.food.seed --load-meals data/food/seed_crew_days.json   (hub stopped)
+  python -m hub.food.seed --exercise data/replay/exercise-day.jsonl
+  python -m hub.food.seed --load-session   (inserts the session row for that replay)
 """
 
 from __future__ import annotations
@@ -142,6 +144,34 @@ def seed_to_replay(doc: dict, catalog: Catalog) -> list[ReplayLine]:
     return out
 
 
+EXERCISE_SESSION = "demo-ex-1"
+EXERCISE_MASS_KG = 10.0
+
+
+def exercise_replay(seed: int) -> list[ReplayLine]:
+    """One synthetic session of 8 camera reps (Earth gravity), replayed as node sim-1."""
+    r = random.Random(seed)
+    out = []
+    for n in range(1, 9):
+        t_ms = n * 4000
+        msg = {
+            "v": 1, "node": "sim-1", "boot": 1, "seq": 1, "age_ms": 0, "type": "rep",
+            "session": EXERCISE_SESSION, "rep": n, "src": "camera",
+            "peak_n": round(110 + 20 * r.random(), 1), "work_j": round(38 + 4 * r.random(), 1),
+            "rom_m": round(0.38 + 0.02 * r.random(), 3), "g": 9.81, "mass_kg": EXERCISE_MASS_KG,
+            "t0_ms": t_ms, "t1_ms": t_ms + 1800,
+        }  # fmt: skip
+        out.append(ReplayLine(t_ms, "rep", msg))
+    return out
+
+
+def load_exercise_session(store, now: datetime) -> bool:
+    """The session row for the exercise replay (replay carries reps only)."""
+    return store.insert_session(
+        EXERCISE_SESSION, EXERCISE_MASS_KG, 9.81, "crew-a", now - timedelta(hours=1)
+    )
+
+
 def load_seed_meals(store, doc: dict, catalog: Catalog, now: datetime) -> int:
     """One food_log row per seed meal, dated now - t_minus_h. Writes no readings."""
     written = 0
@@ -173,9 +203,21 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--flags", action="store_true")
     ap.add_argument("--catalog", type=Path)
     ap.add_argument("--load-meals", type=Path)
+    ap.add_argument("--exercise", type=Path, help="write the exercise replay file here")
+    ap.add_argument("--load-session", action="store_true", help="insert the exercise session row")
     a = ap.parse_args(argv)
     settings = load_settings(os.environ)
     catalog = load_catalog(a.catalog or settings.food_catalog_path)
+    if a.exercise:
+        _write_replay(a.exercise, exercise_replay(a.seed))
+        return 0
+    if a.load_session:
+        from hub.store import Store
+
+        store = Store(settings.db_path)
+        print("inserted" if load_exercise_session(store, datetime.now(UTC)) else "already there")
+        store.close()
+        return 0
     if a.load_meals:
         from hub.store import Store
 

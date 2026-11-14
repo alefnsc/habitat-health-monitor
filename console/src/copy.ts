@@ -194,6 +194,15 @@ export const COPY: Record<string, string> = {
   "food.colNutrient": "Nutrient",
   "food.colTotal": "Total",
   "food.colStatus": "Status",
+  "food.trainTitle": "Training work, last 24 hours",
+  "food.trainNote": "Training work is mechanical work done on the load. It is shown beside food intake, not converted to it and not compared with it.",
+  "food.trainSessions": "Sessions",
+  "food.trainReps": "Camera reps",
+  "food.trainCameraWork": "Camera work (estimate)",
+  "food.trainCellWork": "Load-cell work (approximation)",
+  "food.trainReplay": "Replay data",
+  "food.trainExcluded": "Reps at a simulated gravity are left out: ",
+  "food.trainNone": "No training reps in this window.",
 };
 
 export type CopyKey = keyof typeof COPY;

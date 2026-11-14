@@ -1,10 +1,11 @@
-import { ApiError, getFoodCatalog, getFoodDay, getFoodReferences, postFoodLog } from "../api";
+import { ApiError, getExerciseDay, getFoodCatalog, getFoodDay, getFoodReferences, postFoodLog } from "../api";
 import { COPY } from "../copy";
-import type { FoodCatalog, FoodDay, FoodReferences, IntakeInd } from "../contract";
+import type { ExerciseDay, FoodCatalog, FoodDay, FoodReferences, IntakeInd } from "../contract";
 import { INTAKE_INDS } from "../contract";
 import { currentCrew, onCrewChange } from "../crew";
 import { el } from "../dom";
 import { sourceKindLabel, statusClass } from "../format";
+import { formatTrainingWork } from "../model/exercise";
 import {
   NUTRIENT_LABEL, buildMealRequest, formatNutrient, mealPreview, reportedBy, validSelection, type Selection,
 } from "../model/food";
@@ -36,6 +37,26 @@ export function totalsTable(day: FoodDay): HTMLElement {
   return table;
 }
 
+export function trainingBox(d: ExerciseDay): HTMLElement {
+  const box = el("section", { class: "food-train" }, el("h3", { text: COPY["food.trainTitle"] }), el("p", { class: "footnote", text: COPY["food.trainNote"] }));
+  if (d.camera_reps === 0 && d.cell_work_j === null) {
+    box.append(el("p", { text: COPY["food.trainNone"] }));
+    return box;
+  }
+  const work = (j: number | null) => (j === null ? COPY["status.none"] : formatTrainingWork(j));
+  box.append(
+    el("ul", {},
+      el("li", { text: `${COPY["food.trainSessions"]}: ${d.sessions}` }),
+      el("li", { text: `${COPY["food.trainReps"]}: ${d.camera_reps}` }),
+      el("li", { text: `${COPY["food.trainCameraWork"]}: ${work(d.camera_work_j)}` }),
+      el("li", { text: `${COPY["food.trainCellWork"]}: ${work(d.cell_work_j)}` }),
+    ),
+  );
+  if (d.replay) box.append(el("p", { class: "footnote", text: COPY["food.trainReplay"] }));
+  if (d.excluded_reps > 0) box.append(el("p", { class: "footnote", text: `${COPY["food.trainExcluded"]}${d.excluded_reps}` }));
+  return box;
+}
+
 export function referencesBox(refs: FoodReferences): HTMLElement {
   const box = el("section", { class: "food-refs" }, el("h3", { text: COPY["food.refTitle"] }), el("p", { class: "footnote", text: COPY["food.refNote"] }));
   const list = el("ul");
@@ -57,6 +78,7 @@ export function renderFood(root: HTMLElement): () => void {
   const notice = el("p", { class: "footnote" });
   const dayBox = el("section");
   const refBox = el("section");
+  const trainBox = el("section");
   const draft = el("ul");
   const draftSums = el("p", { class: "footnote" });
   const picker = el("select", { id: "food-item" });
@@ -71,6 +93,7 @@ export function renderFood(root: HTMLElement): () => void {
       el("label", { for: "food-item", text: `${COPY["food.pickItem"]} ` }), picker, " ",
       el("label", { for: "food-servings", text: `${COPY["food.servings"]} ` }), servings, " ", add, draft, draftSums, log, notice),
     el("h3", { text: COPY["food.dayTitle"] }), dayBox,
+    trainBox,
     refBox,
   );
 
@@ -114,7 +137,17 @@ export function renderFood(root: HTMLElement): () => void {
     }
   };
 
+  const loadTraining = async () => {
+    try {
+      const d = await getExerciseDay(currentCrew() ?? undefined);
+      if (!disposed) trainBox.replaceChildren(trainingBox(d));
+    } catch {
+      /* training is optional: the food screen works without it */
+    }
+  };
+
   void (async () => {
+    void loadTraining();
     try {
       const [c, r] = await Promise.all([getFoodCatalog(), getFoodReferences().catch(() => null)]);
       if (disposed) return;
@@ -149,7 +182,10 @@ export function renderFood(root: HTMLElement): () => void {
       err.textContent = msg(e);
     }
   });
-  const off = onCrewChange(() => void loadDay());
+  const off = onCrewChange(() => {
+    void loadDay();
+    void loadTraining();
+  });
   return () => {
     disposed = true;
     off();

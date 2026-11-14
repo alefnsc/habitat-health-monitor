@@ -128,3 +128,25 @@ def test_day_after_seed(settings, clock):
     assert c["totals"]["intake_water_ml"]["status"] in {"watch", "act"}
     assert c["totals"]["intake_water_ml"]["floor_judged"] is True
     store.close()
+
+
+def test_exercise_replay_and_day(settings, clock):
+    from hub.food.day import exercise_day
+    from hub.food.seed import load_exercise_session
+    from hub.ingest import Ingestor
+    from hub.store import Store
+
+    lines = load_replay(ROOT / "data/replay/exercise-day.jsonl")
+    assert len(lines) == 8 and all(x.kind == "rep" and x.msg["g"] == 9.81 for x in lines)
+    clock.set(T)
+    store = Store(settings.db_path)
+    ing = Ingestor(store, clock)
+    end = lines[-1].t_ms
+    for i, ln in enumerate(lines, 1):
+        _, payload = rewrite(ln, boot=1, seq=i, age_ms=end - ln.t_ms)
+        assert ing.ingest_rep(payload, channel="http").reason is None
+    assert load_exercise_session(store, T) is True
+    d = exercise_day(store, None, T)
+    assert d["replay"] is True and d["camera_reps"] == 8 and d["sessions"] == 1
+    assert d["camera_work_j"] is not None
+    store.close()

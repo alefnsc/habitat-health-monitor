@@ -11,7 +11,7 @@ from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import JSONResponse
 
 from hub.food.catalog import Catalog
-from hub.food.day import food_day
+from hub.food.day import exercise_day, food_day
 from hub.food.log import FoodError, FoodWriter, MealItem, MealRequest
 from hub.food.references import load_references
 from hub.timeutil import parse_iso
@@ -136,3 +136,19 @@ def get_day(request: Request) -> JSONResponse:
         rules=getattr(ctx.assessor, "rules", []),
     )  # fmt: skip
     return JSONResponse(body)
+
+
+@router.get("/api/exercise/day")
+def get_exercise_day(request: Request) -> JSONResponse:
+    ctx = _ctx(request)
+    if ctx is None:
+        return JSONResponse({"reason": "food_unavailable"}, status_code=503)
+    q = request.query_params
+    crew = q.get("crew") or None
+    if crew is not None and crew not in ctx.settings.crews:
+        return _reject("bad_crew")
+    try:
+        at = parse_iso(q["at"]) if q.get("at") else request.app.state.clock()
+    except ValueError:
+        return _reject("bad_time")
+    return JSONResponse(exercise_day(ctx.store, crew, at))

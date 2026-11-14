@@ -15,9 +15,10 @@ from typing import Any
 
 from hub.contract import INTAKE_ORDER
 from hub.results import SEVERITY
-from hub.timeutil import to_iso
+from hub.timeutil import parse_iso, to_iso
 
 WINDOW = timedelta(hours=24)
+EARTH_G = 9.81
 
 
 def _worst(results: list) -> Any | None:
@@ -84,4 +85,61 @@ def food_day(
         "totals": totals,
         "meals": [_meal_dict(m) for m in meals],
         "body_mass": mass.val if mass else None,
+    }
+
+
+# Training work for the same window (NU10). Mechanical work on the load, never converted to or
+# compared with food energy: this module holds no energy constant.
+
+
+def exercise_day(store, crew: str | None, at: datetime) -> dict:
+    from hub.exercise import Session, align, latest_reps, work_cell_j
+
+    start = at - WINDOW
+    in_window = store.reps_between(start, at)
+    rows = {r[0]: r for r in store.session_rows()}
+
+    def crew_of(session: str) -> str | None:
+        row = rows.get(session)
+        return row[3] if row else None
+
+    def wanted(session: str) -> bool:
+        return crew is None or crew_of(session) == crew
+
+    by_session: dict[str, list] = {}
+    for r in in_window:
+        if wanted(r.session):
+            by_session.setdefault(r.session, []).append(r)
+    sessions = sum(
+        1 for row in rows.values() if start < parse_iso(row[4]) <= at and wanted(row[0])
+    )  # fmt: skip
+    camera_reps = 0
+    excluded = 0
+    camera_work: list[float] = []
+    cell_work: list[float] = []
+    replay = False
+    for sid, reps in by_session.items():
+        cam = latest_reps([r for r in reps if r.src == "camera"])
+        cel = [r for r in reps if r.src == "load_cell"]
+        earth = [r for r in cam if r.g == EARTH_G]
+        excluded += len(cam) - len(earth)
+        camera_reps += len(earth)
+        camera_work += [r.work_j for r in earth if r.work_j is not None]
+        replay = replay or any(r.node == "sim-1" for r in earth)
+        row = rows.get(sid)
+        if row is not None:
+            sess = Session(row[0], row[1], row[2], row[3], row[4], row[5], 0, 0)
+            for _n, c, lc in align(earth, cel):
+                w = work_cell_j(store, sess, lc, c)
+                if w is not None:
+                    cell_work.append(w)
+    return {
+        "window_start": to_iso(start),
+        "window_end": to_iso(at),
+        "sessions": sessions,
+        "camera_reps": camera_reps,
+        "camera_work_j": sum(camera_work) if camera_reps and camera_work else None,
+        "cell_work_j": sum(cell_work) if cell_work else None,
+        "replay": replay,
+        "excluded_reps": excluded,
     }
