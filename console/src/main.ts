@@ -11,6 +11,7 @@ import { renderEntry } from "./views/entry";
 import { renderFood } from "./views/food";
 import { renderExercise } from "./views/exercise";
 import { renderHistory } from "./views/history";
+import { entryForTile, openGuidance, setLinkState } from "./views/guidance";
 import { refreshBanner, renderNasa, startBanner } from "./views/nasa";
 import { loadBoard, renderStatus } from "./views/status";
 import { connectWs, wsUrl } from "./ws";
@@ -72,7 +73,12 @@ export function mountApp(root: HTMLElement): void {
     dispose = null;
     screen.replaceChildren();
     if (cur === "status") dispose = renderStatus(screen, (t) => {
-      location.hash = `#/history/${t.id === "bp" ? "bp_sys" : t.id}`;
+      const toHistory = () => {
+        location.hash = `#/history/${t.id === "bp" ? "bp_sys" : t.id}`;
+      };
+      const e = entryForTile(t.id);
+      if (e) void openGuidance(e, toHistory);
+      else toHistory();
     });
     else if (cur === "entry") renderEntry(screen);
     else if (cur === "history") dispose = renderHistory(screen);
@@ -107,7 +113,13 @@ export function mountApp(root: HTMLElement): void {
     } else if (m.type === "assessment") {
       if (m.data.ind === "space_weather") void refreshBanner();
       if (appliesToCrew(m.data, currentCrew())) board.apply([m.data]);
+    } else if (m.type === "link") {
+      setLinkState(m.data);
     } else if (m.type === "alert") {
+      if (m.data.status === "watch" || m.data.status === "act") {
+        const e = board.entries.find((x) => x.ind === m.data.ind);
+        if (e) void openGuidance(e);
+      }
       if (m.data.rule_id === "radiation_spe") void refreshBanner();
     } else if (m.type === "prompt") {
       if (m.data.status === "open") openPrompts.set(m.data.id, m.data);
