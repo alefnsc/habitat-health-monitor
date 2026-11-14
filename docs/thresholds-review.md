@@ -15,8 +15,9 @@ Honesty rules: vital-sign bands are **not NASA-published**; cabin and radiation 
 - The OCHMO sleep claim ("about 6 h in flight") appears on no card.
 - Cabin shape detail: Figure 6.2-2 vertices are (18 C, 75 %), (25.7 C, 75 %), (27 C, 25 %), (19.1 C, 25 %) (Vol 2 p. 55).
 
-## Not yet approved
-- OSDR mission (proposed RR-6) and the nutrition rules (M1). They are not part of this file until the operator approves them.
+## Also approved (operator, about 10:35: D33/D34)
+- **M1 nutrition rules approved as drafted** (`docs/drafts/m1-nutrition-values.md`). New `source_kind` `nasa_doc`, label "NASA program document, not NASA-STD-3001", for the JSC-67378 food rules (sodium, iron, fluid, calcium). Vitamin D stays `nasa_std` (Vol 2 Rev F Table 7.1-2). Sodium 2300 to 3500 is read as watch ("historical operating band"); iron has no act band; vitamin D and calcium floors have no extra bands.
+- **OSDR mission: RR-6 signed.** All four series (temperature, humidity, CO2, radiation) are complete for RR-6 in the EDA API.
 
 ## Documents
 

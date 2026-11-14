@@ -1,6 +1,6 @@
 # M1 draft: NASA nutrition values for the 7 food rules (rules part)
 
-Status: DRAFT for operator approval. Rules part only (NU8, open point g); `references.json` (NU9) comes later. M7 encodes NU8 first; any difference found here is a one-line fix in `data/food/thresholds_food.json`.
+Status: **APPROVED by the operator about 10:35 (D33/D34)**, as drafted. New `source_kind` `nasa_doc` ("NASA program document, not NASA-STD-3001") for the JSC-67378 food rules; vitamin D stays `nasa_std`. Rules part only (NU8, open point g); `references.json` (NU9) comes later. M7 encodes NU8 first; any difference found here is a one-line fix in `data/food/thresholds_food.json`.
 Drafted by the S agent, 2026-11-14. Every number was re-read in the primary PDF downloaded 2026-11-14. Checked by: S agent, 2026-11-14.
 
 Documents:

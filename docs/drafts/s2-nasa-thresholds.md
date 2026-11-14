@@ -5,7 +5,7 @@ Status: **APPROVED by the operator 2026-11-14 ~10:22** (relayed by the orchestra
 - `co2_7d`: cited to OCHMO-TB-004 Rev D, max 2.5 inclusive.
 - Lux hours 07:00 to 23:00, radiation 50 %/90 % bands (300/540 mSv) and the space-weather levels: `team_convention` (the 600 mSv limit stays NASA [V1 4030]).
 - NTRS 20250006168: labelled "draft paper".
-- **Not yet approved:** the OSDR mission RR-6 (waits for the operator) and the nutrition rules (M1).
+- OSDR mission RR-6 and the nutrition rules (M1): approved about 10:35 (D33/D34).
 Drafted by the S agent, 2026-11-14, 10:2x local. Every NASA number below was re-read in the primary PDF (downloaded 2026-11-14) and compared with `research/*.md`. "Page" is the PDF page, which equals the printed "Page N of 389" (Vol 2), "N of 87" (Vol 1).
 
 Documents read:
