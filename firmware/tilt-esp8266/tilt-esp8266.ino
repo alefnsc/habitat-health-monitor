@@ -33,7 +33,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static const uint32_t kDebounceMs = 30;
+static const uint32_t kDebounceMs = 200;  // mercury bounces up to ~150 ms (bench 14/11)
 static const uint32_t kHeartbeatMs = 10000;
 
 // A new level is accepted only after it has held for kDebounceMs.

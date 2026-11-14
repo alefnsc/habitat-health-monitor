@@ -10,22 +10,25 @@ int main() {
     Debouncer d;
     assert(!d.feed(0, 1000) && d.stable == 0);
   }
-  {  // a bounce burst shorter than 30 ms collapses into one change
+  {  // a mercury bounce burst (flips up to 150 ms apart, bench 14/11) collapses into one change
     Debouncer d;
     d.feed(0, 0);
-    assert(!d.feed(1, 100));
-    assert(!d.feed(0, 105));
-    assert(!d.feed(1, 110));
-    assert(!d.feed(1, 125));                  // held 15 ms
-    assert(d.feed(1, 140) && d.stable == 1);  // held 30 ms
-    assert(!d.feed(1, 200));
+    assert(!d.feed(1, 1000));
+    assert(!d.feed(0, 1060));
+    assert(!d.feed(1, 1150));
+    assert(!d.feed(0, 1230));
+    assert(!d.feed(1, 1350));
+    assert(!d.feed(1, 1500));                  // held 150 ms
+    assert(d.feed(1, 1550) && d.stable == 1);  // held 200 ms
+    assert(!d.feed(1, 1700));
   }
-  {  // a glitch that returns before 30 ms is ignored
+  {  // a glitch that returns before 200 ms is ignored
     Debouncer d;
     d.feed(0, 0);
     assert(!d.feed(1, 50));
-    assert(!d.feed(0, 60));
-    assert(!d.feed(0, 200) && d.stable == 0);
+    assert(!d.feed(1, 190));  // held 140 ms
+    assert(!d.feed(0, 200));
+    assert(!d.feed(0, 600) && d.stable == 0);
   }
   {  // heartbeat every 10 s, also across the millis() wrap
     assert(!heartbeatDue(0, 9999) && heartbeatDue(0, 10000));
