@@ -29,6 +29,16 @@ Last updated by the Science lane (N11a). The BLE, wearable-baseline, OAuth, grou
 - Use: ISS reference panel for the cabin and a mission absorbed-dose figure.
 - Without it: the reference panel is empty; the committed snapshot keeps it working.
 
+## ISS Live cabin telemetry
+
+- Name: ISS Live public telemetry (cabin pressure, cabin temperature, Lab and Node 3 CO2 partial pressure), streamed by a public Lightstreamer server.
+- Endpoint: `https://push.lightstreamer.com`, adapter set `ISSLIVE`, MERGE mode. Items: `USLAB000058`, `USLAB000059`, `USLAB000055`, `NODE3000003` (`docs/nasa/isslive-probe.md`). The item list comes from the ISS Mimic community telemetry sheet; the sheet is not copied here.
+- Access date: 2026-11-14. Auth: none. Terms: public NASA data via a third-party relay; no data licence text was found. Client library: `lightstreamer-client-lib` 2.2.3, Apache-2.0.
+- Units: the feed labels cabin pressure PSI, but the values are mmHg by magnitude (about 760). Temperature is in degrees Celsius.
+- Committed file: `data/nasa/isslive_capture.jsonl`, a 13-minute capture (13:56 to 14:10 UTC) recorded on 2026-11-14, all four items present, always shown as "recorded".
+- Use: "ISS cabin now" beside the habitat cabin, with a data-age badge.
+- Without it: the page serves the recorded capture, labelled recorded.
+
 ## Mission dose estimate (effective dose)
 
 - Method (Science lane, S2): `mission_day × 0.5 mSv/day (upper ISS effective-dose rate, NTRS 20250006168); estimate, not measured`.
