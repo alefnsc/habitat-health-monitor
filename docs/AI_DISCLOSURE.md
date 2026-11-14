@@ -46,8 +46,8 @@ Two presentation images are AI-generated illustrations.
 The images:
 
 - `docs/img/habitat-illustration.png`
-  - Generated: the art, a flat cartoon cutaway of a surface habitat module with bunks, galley, exercise and medical corners, glowing sensor nodes and a hub box, with no people and no text.
-  - Added by the team: the callouts, footnotes and watermark.
+  - Generated: the art, a flat cartoon cutaway of a surface habitat module with bunks, a galley, an exercise room (with a rig, a camera and a sensor box on the weights) and a medical corner (with a wristband and a finger clip), wall sensor nodes and a hub board on a shelf. It has no people and no text.
+  - Added by the team: the callouts, footnotes and watermark. The team also painted over a logo-like mark that the model drew on the hub board.
 - `docs/img/same-sensors-three-places.png`
   - Generated: three pieces of art (an invented space station in orbit, a Moon base and a Mars base, each a flat cartoon with no people and no text).
   - Added by the team: the composite layout, the comparison text and numbers from cited NASA sources, and the watermark.

@@ -71,9 +71,9 @@ Three images: one real screenshot and two AI-generated illustrations, each marke
      - Values shown: heart rate 61 bpm, skin temperature 33.5 °C, cabin CO2 1.01 mmHg (1,324 ppm), temperature 22.2 °C, humidity 45 %, pressure 1013.0 hPa and light 400 lx.
      - Blood pressure, glucose, body temperature, sleep, mood and SpO2 read "No reading yet".
 2. `docs/img/habitat-illustration.png`
-   - Caption: One habitat, three kinds of sensor node and one offline hub that compares readings with NASA-STD-3001 where a rule exists. AI-generated illustration; hobby-sensor values are estimates.
-   - Alt text: Flat cartoon cutaway of a cylindrical surface habitat with bunks, a galley, a treadmill and a medical corner, with glowing sensor nodes and no people.
-     - Callouts read "Cabin node: CO2, temperature, humidity, pressure", "Hub: works offline", "Vitals node" and "Exercise rig: load cell".
+   - Caption: One habitat, its sensors and one offline hub: cabin nodes, a camera that measures exercise work, a sealed tilt witness and a battery-powered vitals node. AI-generated illustration; hobby-sensor values are estimates.
+   - Alt text: Flat cartoon cutaway of a cylindrical surface habitat with bunks, a galley, an exercise room and a medical corner, with glowing sensor nodes and no people.
+     - Callouts read "Hub: logs and judges every reading, works offline", "Cabin nodes: CO2, temperature, humidity, pressure", "Camera (computer vision): reps and work in joules", "Tilt witness (sealed mercury switch): checks rep timing", "Vitals node (battery only): skin temperature, motion" and "Finger sensor: heart rate, SpO2 estimate".
      - A label reads "AI-generated illustration".
 3. `docs/img/same-sensors-three-places.png`
    - Caption: Same sensors, three places: the cabin limits stay the same while gravity, distance to Earth and radiation change. AI-generated concept art; the console has no ISS, Moon or Mars mode.
