@@ -9,11 +9,13 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import json
 import logging
 import sys
 from collections.abc import Awaitable, Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
+from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 import httpx
@@ -167,6 +169,36 @@ async def run_poller(
             pass
 
 
+async def record_replay(start: date, end: date, out: Path, base: str, api_key: str | None) -> int:
+    """Record FLR, SEP and GST for a window into a committed replay file (N3)."""
+    async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
+        got = {
+            k: (await donki_fetch(k, start, end, client=client, base=base, api_key=api_key)).events
+            for k in ("FLR", "SEP", "GST")
+        }
+    if not got["SEP"]:
+        print("no SEP events in the window", file=sys.stderr)
+        return 2
+    first = min(parse_time(e["eventTime"]) for e in got["SEP"])
+    doc = {
+        "recorded_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "source_url": f"{base.rstrip('/')}/{{FLR,SEP,GST}}?startDate={start}&endDate={end}",
+        "replay_now": (first + timedelta(minutes=30)).strftime("%Y-%m-%dT%H:%MZ"),
+        "label": "Recorded NASA DONKI payload, replayed; not live data.",
+        "events": got,
+    }
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_text(json.dumps(doc, indent=1) + "\n")
+    print(f"wrote {out}: replay_now {doc['replay_now']}")
+    return 0
+
+
+def parse_time(s: str) -> datetime:
+    """Parse DONKI times, with or without seconds, e.g. 2025-11-10T22:30Z."""
+    s = s.strip().replace("Z", "+00:00")
+    return datetime.fromisoformat(s).astimezone(UTC)
+
+
 async def _cli(kind: str, start: date, end: date, api_key: str | None, base: str) -> int:
     async with httpx.AsyncClient(timeout=TIMEOUT_S) as client:
         res = await donki_fetch(kind, start, end, client=client, base=base, api_key=api_key)
@@ -181,6 +213,20 @@ def main(argv: list[str] | None = None) -> int:
 
     from hub.nasa.config import load_nasa_settings
 
+    argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "--record-replay":
+        rp = argparse.ArgumentParser(prog="donki --record-replay")
+        rp.add_argument("start", type=date.fromisoformat)
+        rp.add_argument("end", type=date.fromisoformat)
+        rp.add_argument("out", type=Path)
+        ra = rp.parse_args(argv[1:])
+        s = load_nasa_settings(os.environ)
+        try:
+            _check("SEP", ra.start, ra.end)
+            return asyncio.run(record_replay(ra.start, ra.end, ra.out, s.donki_base, s.api_key))
+        except (ValueError, DonkiUnavailable) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
     ap = argparse.ArgumentParser(description="Fetch DONKI events once.")
     ap.add_argument("kind")
     ap.add_argument("start", type=date.fromisoformat)

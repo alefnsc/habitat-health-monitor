@@ -1,0 +1,2053 @@
+{
+ "recorded_at": "2026-11-14T13:25:28Z",
+ "source_url": "https://ccmc.gsfc.nasa.gov/DONKI-API/get/{FLR,SEP,GST}?startDate=2025-11-01&endDate=2025-11-30",
+ "replay_now": "2025-11-10T10:54Z",
+ "label": "Recorded NASA DONKI payload, replayed; not live data.",
+ "events": {
+  "FLR": [
+   {
+    "flrID": "2025-11-02T00:13:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-02T00:13Z",
+    "peakTime": "2025-11-02T00:26Z",
+    "endTime": "2025-11-02T00:37Z",
+    "classType": "M1.0",
+    "sourceLocation": "N22E76",
+    "activeRegionNum": 14272,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42301/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-02T00:44Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-02T12:33:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-02T12:33Z",
+    "peakTime": "2025-11-02T12:46Z",
+    "endTime": "2025-11-02T12:56Z",
+    "classType": "C8.2",
+    "sourceLocation": "N02W59",
+    "activeRegionNum": 14267,
+    "note": "This is a short duration flare. There is a concurrent longer duration flare from/behind the NE limb, associated with post-eruptive arcade along the NE limb, which is likely associated with the 2025-11-02T12:23Z CME.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42310/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-03T02:06Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-03T03:56:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T03:56Z",
+    "peakTime": "2025-11-03T04:30Z",
+    "endTime": "2025-11-03T05:06Z",
+    "classType": "C7.1",
+    "sourceLocation": "N25E85",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42349/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-03T04:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-03T17:33Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-03T08:41:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T08:41Z",
+    "peakTime": "2025-11-03T09:25Z",
+    "endTime": "2025-11-03T09:38Z",
+    "classType": "M1.6",
+    "sourceLocation": "N25E90",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42332/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-03T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-03T12:51Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-03T09:38:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T09:38Z",
+    "peakTime": "2025-11-03T10:11Z",
+    "endTime": "2025-11-03T10:37Z",
+    "classType": "M5.0",
+    "sourceLocation": "N25E85",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42329/-1",
+    "linkedEvents": null,
+    "sentNotifications": [
+     {
+      "messageID": "20251103-AL-001",
+      "messageIssueTime": "2025-11-03T10:16Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42330/1"
+     },
+     {
+      "messageID": "20251103-AL-002",
+      "messageIssueTime": "2025-11-03T12:23Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42331/1"
+     }
+    ],
+    "submissionTime": "2025-11-03T15:47Z",
+    "versionId": 4
+   },
+   {
+    "flrID": "2025-11-03T12:19:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T12:19Z",
+    "peakTime": "2025-11-03T12:35Z",
+    "endTime": "2025-11-03T12:37Z",
+    "classType": "M2.9",
+    "sourceLocation": "N22E85",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42335/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-03T12:48:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-03T14:02Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-03T12:37:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T12:37Z",
+    "peakTime": "2025-11-03T12:47Z",
+    "endTime": "2025-11-03T12:52Z",
+    "classType": "M3.2",
+    "sourceLocation": "N21E85",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42336/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-03T12:48:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-03T14:04Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-03T17:04:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T17:04Z",
+    "peakTime": "2025-11-03T17:08Z",
+    "endTime": "2025-11-03T17:10Z",
+    "classType": "M1.5",
+    "sourceLocation": "N26E70",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42350/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-03T17:37Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-03T23:37:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-03T23:37Z",
+    "peakTime": "2025-11-04T00:08Z",
+    "endTime": "2025-11-04T00:33Z",
+    "classType": "C8.7",
+    "sourceLocation": "N24E59",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42367/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-04T00:24:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-04T18:28Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-04T01:31:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-04T01:31Z",
+    "peakTime": "2025-11-04T01:48Z",
+    "endTime": "2025-11-04T02:04Z",
+    "classType": "M3.5",
+    "sourceLocation": "N24E70",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42366/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-04T04:12Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-04T10:02:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-04T10:02Z",
+    "peakTime": "2025-11-04T10:13Z",
+    "endTime": "2025-11-04T10:17Z",
+    "classType": "C4.6",
+    "sourceLocation": "N01W85",
+    "activeRegionNum": 14267,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42388/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-04T11:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-04T18:53Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-04T17:15:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-04T17:15Z",
+    "peakTime": "2025-11-04T17:34Z",
+    "endTime": "2025-11-04T17:51Z",
+    "classType": "X1.8",
+    "sourceLocation": "N24E63",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42382/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-04T17:53:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251104-AL-004",
+      "messageIssueTime": "2025-11-04T17:31Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42383/1"
+     },
+     {
+      "messageID": "20251104-AL-005",
+      "messageIssueTime": "2025-11-04T17:55Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42391/1"
+     }
+    ],
+    "submissionTime": "2025-11-04T18:05Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-04T21:45:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-04T21:45Z",
+    "peakTime": "2025-11-04T22:01Z",
+    "endTime": "2025-11-04T22:11Z",
+    "classType": "X1.1",
+    "sourceLocation": "S15E90",
+    "activeRegionNum": 14276,
+    "note": "This flare was located on or beyond the SE limb in available GOES SUVI 131 imagery. AR 14276 was numbered on 2025-11-06.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42409/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-04T22:38:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251104-AL-008",
+      "messageIssueTime": "2025-11-04T22:01Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42410/1"
+     },
+     {
+      "messageID": "20251104-AL-009",
+      "messageIssueTime": "2025-11-04T22:12Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42411/1"
+     }
+    ],
+    "submissionTime": "2025-11-08T16:17Z",
+    "versionId": 5
+   },
+   {
+    "flrID": "2025-11-04T22:31:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-04T22:31Z",
+    "peakTime": "2025-11-04T22:44Z",
+    "endTime": "2025-11-04T22:56Z",
+    "classType": "M1.7",
+    "sourceLocation": "N25E36",
+    "activeRegionNum": 14272,
+    "note": "Separate brightening in GOES SUVI 131 observed at AR 14272 (N25E36) during the declining phase of the X1.1 flare from S15E90 on or beyond the SE limb which had its end time at 2025-11-04T22:11Z. Manually calculated end time.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42412/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-04T22:53:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-04T23:13Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-05T10:36:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-05T10:36Z",
+    "peakTime": "2025-11-05T11:19Z",
+    "endTime": "2025-11-05T11:43Z",
+    "classType": "M7.4",
+    "sourceLocation": "N24E47",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42422/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-05T10:53:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251105-AL-003",
+      "messageIssueTime": "2025-11-05T11:11Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42423/1"
+     },
+     {
+      "messageID": "20251105-AL-004",
+      "messageIssueTime": "2025-11-05T12:00Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42424/1"
+     }
+    ],
+    "submissionTime": "2025-11-05T11:57Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-05T12:19:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-05T12:19Z",
+    "peakTime": "2025-11-05T12:26Z",
+    "endTime": "2025-11-05T12:31Z",
+    "classType": "M1.3",
+    "sourceLocation": "S15E90",
+    "activeRegionNum": 14276,
+    "note": "This flare was located on or beyond the SE limb in available GOES SUVI 131 imagery and is likely partially occulted. AR 14276 was numbered on 2025-11-06.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42433/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-06T14:11Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-05T21:52:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-05T21:52Z",
+    "peakTime": "2025-11-05T22:07Z",
+    "endTime": "2025-11-05T22:16Z",
+    "classType": "M8.6",
+    "sourceLocation": "N30E41",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42446/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-05T22:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251105-AL-007",
+      "messageIssueTime": "2025-11-05T22:11Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42447/1"
+     },
+     {
+      "messageID": "20251105-AL-008",
+      "messageIssueTime": "2025-11-05T22:26Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42448/1"
+     }
+    ],
+    "submissionTime": "2025-11-05T22:25Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-06T04:17:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-06T04:17Z",
+    "peakTime": "2025-11-06T04:31Z",
+    "endTime": "2025-11-06T04:39Z",
+    "classType": "M1.1",
+    "sourceLocation": "S18E80",
+    "activeRegionNum": 14276,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42484/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-06T13:16Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-07T06:31:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-07T06:31Z",
+    "peakTime": "2025-11-07T07:16Z",
+    "endTime": "2025-11-07T07:53Z",
+    "classType": "M1.7",
+    "sourceLocation": "N27E27",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42513/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-07T07:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-07T12:12Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-09T07:01:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-09T07:01Z",
+    "peakTime": "2025-11-09T07:35Z",
+    "endTime": "2025-11-09T07:55Z",
+    "classType": "X1.7",
+    "sourceLocation": "N27E03",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42543/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-09T07:24:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251109-AL-001",
+      "messageIssueTime": "2025-11-09T07:25Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42544/1"
+     },
+     {
+      "messageID": "20251109-AL-002",
+      "messageIssueTime": "2025-11-09T13:09Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42545/1"
+     }
+    ],
+    "submissionTime": "2025-11-09T13:09Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-10T08:55:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-10T08:55Z",
+    "peakTime": "2025-11-10T09:19Z",
+    "endTime": "2025-11-10T10:19Z",
+    "classType": "X1.2",
+    "sourceLocation": "N25W16",
+    "activeRegionNum": 14274,
+    "note": "Associated with full halo CME observed in GOES CCOR-1 and rise in GOES >10 MeV protons.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42570/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-10T10:24:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-10T10:24:00-SEP-002"
+     },
+     {
+      "activityID": "2025-11-10T10:28:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-10T10:45:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-10T10:45:00-SEP-002"
+     },
+     {
+      "activityID": "2025-11-10T11:25:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-10T15:04:00-SEP-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251110-AL-002",
+      "messageIssueTime": "2025-11-10T09:15Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42569/1"
+     },
+     {
+      "messageID": "20251110-AL-003",
+      "messageIssueTime": "2025-11-10T09:21Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42571/1"
+     },
+     {
+      "messageID": "20251110-AL-005",
+      "messageIssueTime": "2025-11-10T12:07Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42574/1"
+     }
+    ],
+    "submissionTime": "2025-11-10T12:06Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-10T19:46:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-10T19:46Z",
+    "peakTime": "2025-11-10T19:57Z",
+    "endTime": "2025-11-10T20:03Z",
+    "classType": "M1.5",
+    "sourceLocation": "N27W20",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42599/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-10T20:17Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-11T08:02:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-11T08:02Z",
+    "peakTime": "2025-11-11T08:09Z",
+    "endTime": "2025-11-11T08:13Z",
+    "classType": "M1.4",
+    "sourceLocation": "N24W32",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42620/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-11T13:41Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-11T09:49:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-11T09:49Z",
+    "peakTime": "2025-11-11T10:04Z",
+    "endTime": "2025-11-11T10:17Z",
+    "classType": "X5.1",
+    "sourceLocation": "N27W27",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42610/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:45:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-11T10:20:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-11T11:09:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-11T11:23:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-11T11:23:00-SEP-002"
+     },
+     {
+      "activityID": "2025-11-11T11:24:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-11T11:24:00-SEP-002"
+     },
+     {
+      "activityID": "2025-11-11T11:35:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-12T01:48:00-SEP-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251111-AL-004",
+      "messageIssueTime": "2025-11-11T10:06Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42611/1"
+     },
+     {
+      "messageID": "20251111-AL-006",
+      "messageIssueTime": "2025-11-11T12:59Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42614/1"
+     }
+    ],
+    "submissionTime": "2025-11-11T12:59Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-12T16:11:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-12T16:11Z",
+    "peakTime": "2025-11-12T16:39Z",
+    "endTime": "2025-11-12T17:06Z",
+    "classType": "C4.5",
+    "sourceLocation": "N24W46",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42668/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-12T17:45:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-13T01:08Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-13T02:43:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-13T02:43Z",
+    "peakTime": "2025-11-13T03:34Z",
+    "endTime": "2025-11-13T04:07Z",
+    "classType": "C6.1",
+    "sourceLocation": "N24W51",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42679/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-13T03:24:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-13T18:28Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-14T07:44:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-14T07:44Z",
+    "peakTime": "2025-11-14T08:30Z",
+    "endTime": "2025-11-14T08:40Z",
+    "classType": "X4.0",
+    "sourceLocation": "N24W71",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42702/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-14T09:20:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-14T09:44:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-14T12:32:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-14T12:33:00-SEP-001"
+     },
+     {
+      "activityID": "2025-11-14T16:10:00-SEP-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251114-AL-002",
+      "messageIssueTime": "2025-11-14T08:28Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42703/1"
+     },
+     {
+      "messageID": "20251114-AL-004",
+      "messageIssueTime": "2025-11-14T12:30Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42706/1"
+     }
+    ],
+    "submissionTime": "2025-11-14T12:28Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-14T20:04:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-14T20:04Z",
+    "peakTime": "2025-11-14T20:12Z",
+    "endTime": "2025-11-14T20:16Z",
+    "classType": "M1.3",
+    "sourceLocation": "N22W90",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42730/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-14T20:34Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-14T21:22:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-14T21:22Z",
+    "peakTime": "2025-11-14T21:31Z",
+    "endTime": "2025-11-14T21:34Z",
+    "classType": "M1.3",
+    "sourceLocation": "N22W90",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42737/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-14T22:20Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-16T07:49:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-16T07:49Z",
+    "peakTime": "2025-11-16T08:17Z",
+    "endTime": "2025-11-16T08:32Z",
+    "classType": "M3.1",
+    "sourceLocation": "N24W93",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42762/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-16T08:24:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-16T16:41Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-17T14:31:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-17T14:31Z",
+    "peakTime": "2025-11-17T16:06Z",
+    "endTime": "2025-11-17T16:49Z",
+    "classType": "C6.1",
+    "sourceLocation": "N07W105",
+    "activeRegionNum": 14274,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42831/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-17T15:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-17T18:27Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-19T09:29:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-19T09:29Z",
+    "peakTime": "2025-11-19T09:53Z",
+    "endTime": "2025-11-19T10:12Z",
+    "classType": "C9.9",
+    "sourceLocation": "N15E90",
+    "activeRegionNum": 14288,
+    "note": "Active Region 14288 was numbered on 2025-11-21.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42884/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-19T11:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-23T13:26Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-22T18:49:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-22T18:49Z",
+    "peakTime": "2025-11-22T19:00Z",
+    "endTime": "2025-11-22T19:08Z",
+    "classType": "C6.3",
+    "sourceLocation": "S13E65",
+    "activeRegionNum": 14291,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/42951/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-22T19:24:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-23T01:28Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-28T05:43:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-28T05:43Z",
+    "peakTime": "2025-11-28T05:54Z",
+    "endTime": "2025-11-28T06:00Z",
+    "classType": "C5.1",
+    "sourceLocation": "S18E90",
+    "activeRegionNum": 14294,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43071/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-28T06:24:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-29T01:05Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-28T22:11:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-28T22:11Z",
+    "peakTime": "2025-11-28T22:22Z",
+    "endTime": "2025-11-28T22:24Z",
+    "classType": "M5.9",
+    "sourceLocation": "S17E89",
+    "activeRegionNum": 14294,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43086/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-28T23:45:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251128-AL-004",
+      "messageIssueTime": "2025-11-28T22:26Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/43087/1"
+     },
+     {
+      "messageID": "20251128-AL-005",
+      "messageIssueTime": "2025-11-28T22:37Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/43088/1"
+     }
+    ],
+    "submissionTime": "2025-11-29T01:06Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-28T23:52:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-28T23:52Z",
+    "peakTime": "2025-11-29T00:02Z",
+    "endTime": "2025-11-29T00:07Z",
+    "classType": "M1.6",
+    "sourceLocation": "S15E89",
+    "activeRegionNum": 14294,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43089/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-29T01:06Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-29T04:14:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T04:14Z",
+    "peakTime": "2025-11-29T04:20Z",
+    "endTime": "2025-11-29T04:22Z",
+    "classType": "M1.5",
+    "sourceLocation": "S16E89",
+    "activeRegionNum": 14294,
+    "note": "Impulsive occluded flare from behind the SE limb.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43095/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-29T04:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-29T13:18Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-29T08:40:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T08:40Z",
+    "peakTime": "2025-11-29T09:08Z",
+    "endTime": "2025-11-29T09:22Z",
+    "classType": "C7.0",
+    "sourceLocation": "N20E89",
+    "activeRegionNum": 14299,
+    "note": "Concurrent brightening around S15E80 with AR 14294. Active Region 14299 was numbered on 2025-12-01 and this entry was updated.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43122/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-29T09:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-12-01T20:56Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-29T13:02:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T13:02Z",
+    "peakTime": "2025-11-29T13:16Z",
+    "endTime": "2025-11-29T13:25Z",
+    "classType": "M1.1",
+    "sourceLocation": "S14E71",
+    "activeRegionNum": 14294,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43096/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-29T13:53Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-29T15:36:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T15:36Z",
+    "peakTime": "2025-11-29T16:07Z",
+    "endTime": "2025-11-29T16:32Z",
+    "classType": "M2.8",
+    "sourceLocation": "N20E89",
+    "activeRegionNum": 14299,
+    "note": "This flare originated from a region near the northeast limb which has since been numbered as Active Region 14299, but was unnumbered at the time of the event. Updating this entry to include the correct Active Region association.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43099/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-29T16:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-12-01T18:30Z",
+    "versionId": 3
+   },
+   {
+    "flrID": "2025-11-29T16:57:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T16:57Z",
+    "peakTime": "2025-11-29T17:16Z",
+    "endTime": "2025-11-29T17:31Z",
+    "classType": "M1.0",
+    "sourceLocation": "N20E89",
+    "activeRegionNum": 14299,
+    "note": "Secondary long-duration brightening following the M2.9 class flare from this same region, as a separate eruption with a separate CME signature. Active Region 14299 was numbered on 2025-12-01 and this entry was updated.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43124/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-29T17:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-12-01T20:55Z",
+    "versionId": 2
+   },
+   {
+    "flrID": "2025-11-29T20:04:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T20:04Z",
+    "peakTime": "2025-11-29T20:14Z",
+    "endTime": "2025-11-29T20:17Z",
+    "classType": "M1.4",
+    "sourceLocation": "S18E80",
+    "activeRegionNum": 14294,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43102/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-29T20:24Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-29T21:34:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-29T21:34Z",
+    "peakTime": "2025-11-29T21:48Z",
+    "endTime": "2025-11-29T21:54Z",
+    "classType": "M1.4",
+    "sourceLocation": "S17E70",
+    "activeRegionNum": 14294,
+    "note": "",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43107/-1",
+    "linkedEvents": null,
+    "sentNotifications": null,
+    "submissionTime": "2025-11-29T22:01Z",
+    "versionId": 1
+   },
+   {
+    "flrID": "2025-11-30T00:16:00-FLR-001",
+    "catalog": "M2M_CATALOG",
+    "instruments": [
+     {
+      "displayName": "GOES-P: EXIS 1.0-8.0"
+     }
+    ],
+    "beginTime": "2025-11-30T00:16Z",
+    "peakTime": "2025-11-30T00:40Z",
+    "endTime": "2025-11-30T00:56Z",
+    "classType": "C8.0",
+    "sourceLocation": "N19E89",
+    "activeRegionNum": 14299,
+    "note": "Active Region 14299 was numbered on 2025-12-01 and this entry was updated.",
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/FLR/43133/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-30T00:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-12-01T20:54Z",
+    "versionId": 2
+   }
+  ],
+  "SEP": [
+   {
+    "sepID": "2025-11-10T10:24:00-SEP-001",
+    "eventTime": "2025-11-10T10:24Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:ACE/EPAM 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42581/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-10T12:44Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-10T10:24:00-SEP-002",
+    "eventTime": "2025-11-10T10:24Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:ACE/EPAM 28.2-50.1 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42582/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251110-AL-008",
+      "messageIssueTime": "2025-11-10T12:50Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42583/1"
+     }
+    ],
+    "submissionTime": "2025-11-10T12:44Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-10T10:28:00-SEP-001",
+    "eventTime": "2025-11-10T10:28Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:SOHO/EPHIN 28.2-50.1 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42579/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251110-AL-009",
+      "messageIssueTime": "2025-11-10T12:54Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42584/1"
+     }
+    ],
+    "submissionTime": "2025-11-10T12:43Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-10T10:45:00-SEP-001",
+    "eventTime": "2025-11-10T10:45Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:SOHO/EPHIN 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42580/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-10T12:43Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-10T10:45:00-SEP-002",
+    "eventTime": "2025-11-10T10:45Z",
+    "instruments": [
+     {
+      "displayName": "SOHO: COSTEP 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42585/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251110-AL-010",
+      "messageIssueTime": "2025-11-10T13:14Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42586/1"
+     }
+    ],
+    "submissionTime": "2025-11-10T13:08Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-10T11:25:00-SEP-001",
+    "eventTime": "2025-11-10T11:25Z",
+    "instruments": [
+     {
+      "displayName": "GOES-P: SEISS >10 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42572/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251110-AL-004",
+      "messageIssueTime": "2025-11-10T11:35Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42573/1"
+     },
+     {
+      "messageID": "20251110-AL-007",
+      "messageIssueTime": "2025-11-10T12:39Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42578/1"
+     }
+    ],
+    "submissionTime": "2025-11-10T11:35Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-10T15:04:00-SEP-001",
+    "eventTime": "2025-11-10T15:04Z",
+    "instruments": [
+     {
+      "displayName": "SOHO: COSTEP 28.2-50.1 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42591/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T08:55:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251110-AL-012",
+      "messageIssueTime": "2025-11-10T16:04Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42592/1"
+     }
+    ],
+    "submissionTime": "2025-11-10T16:01Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T09:45:00-SEP-001",
+    "eventTime": "2025-11-11T09:45Z",
+    "instruments": [
+     {
+      "displayName": "GOES-P: SEISS >10 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42608/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251111-AL-003",
+      "messageIssueTime": "2025-11-11T09:53Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42609/1"
+     },
+     {
+      "messageID": "20251111-AL-008",
+      "messageIssueTime": "2025-11-11T13:23Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42616/1"
+     }
+    ],
+    "submissionTime": "2025-11-11T09:53Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T10:20:00-SEP-001",
+    "eventTime": "2025-11-11T10:20Z",
+    "instruments": [
+     {
+      "displayName": "GOES-P: SEISS >100 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42612/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251111-AL-005",
+      "messageIssueTime": "2025-11-11T10:29Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42613/1"
+     },
+     {
+      "messageID": "20251111-AL-007",
+      "messageIssueTime": "2025-11-11T13:17Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42615/1"
+     },
+     {
+      "messageID": "20251112-AL-008",
+      "messageIssueTime": "2025-11-12T20:14Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42660/1"
+     }
+    ],
+    "submissionTime": "2025-11-11T10:29Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T11:09:00-SEP-001",
+    "eventTime": "2025-11-11T11:09Z",
+    "instruments": [
+     {
+      "displayName": "SOHO: COSTEP 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42617/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-11T13:26Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T11:23:00-SEP-002",
+    "eventTime": "2025-11-11T11:23Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:SOHO/EPHIN 28.2-50.1 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42629/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-11T15:26Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T11:23:00-SEP-001",
+    "eventTime": "2025-11-11T11:23Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:SOHO/EPHIN 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42628/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-11T15:25Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T11:24:00-SEP-001",
+    "eventTime": "2025-11-11T11:24Z",
+    "instruments": [
+     {
+      "displayName": "SOHO: COSTEP 28.2-50.1 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42618/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251111-AL-009",
+      "messageIssueTime": "2025-11-11T13:37Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42619/1"
+     }
+    ],
+    "submissionTime": "2025-11-11T13:26Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T11:24:00-SEP-002",
+    "eventTime": "2025-11-11T11:24Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:ACE/EPAM 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42631/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-11T15:28Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-11T11:35:00-SEP-001",
+    "eventTime": "2025-11-11T11:35Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:ACE/EPAM 28.2-50.1 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42630/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-11T15:26Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-12T01:48:00-SEP-001",
+    "eventTime": "2025-11-12T01:48Z",
+    "instruments": [
+     {
+      "displayName": "STEREO A: IMPACT 13-100 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42639/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-11T09:49:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251112-AL-002",
+      "messageIssueTime": "2025-11-12T02:02Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42640/1"
+     },
+     {
+      "messageID": "20251112-AL-003",
+      "messageIssueTime": "2025-11-12T02:35Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42641/1"
+     }
+    ],
+    "submissionTime": "2025-11-12T02:02Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-14T09:20:00-SEP-001",
+    "eventTime": "2025-11-14T09:20Z",
+    "instruments": [
+     {
+      "displayName": "GOES-P: SEISS >10 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42704/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T07:44:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251114-AL-003",
+      "messageIssueTime": "2025-11-14T09:28Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42705/1"
+     },
+     {
+      "messageID": "20251114-AL-005",
+      "messageIssueTime": "2025-11-14T12:39Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42707/1"
+     }
+    ],
+    "submissionTime": "2025-11-14T09:28Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-14T09:44:00-SEP-001",
+    "eventTime": "2025-11-14T09:44Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:ACE/EPAM 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42712/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T07:44:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-14T13:33Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-14T12:32:00-SEP-001",
+    "eventTime": "2025-11-14T12:32Z",
+    "instruments": [
+     {
+      "displayName": "SOHO: COSTEP 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42711/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T07:44:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251114-AL-009",
+      "messageIssueTime": "2025-11-14T14:03Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42716/1"
+     }
+    ],
+    "submissionTime": "2025-11-14T13:25Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-14T12:33:00-SEP-001",
+    "eventTime": "2025-11-14T12:33Z",
+    "instruments": [
+     {
+      "displayName": "STEREO A: IMPACT 13-100 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42708/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T07:44:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251114-AL-006",
+      "messageIssueTime": "2025-11-14T12:46Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42709/1"
+     },
+     {
+      "messageID": "20251114-AL-007",
+      "messageIssueTime": "2025-11-14T13:00Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42710/1"
+     }
+    ],
+    "submissionTime": "2025-11-14T12:46Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-14T16:10:00-SEP-001",
+    "eventTime": "2025-11-14T16:10Z",
+    "instruments": [
+     {
+      "displayName": "MODEL: REleASE:SOHO/EPHIN 15.8-39.8 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42720/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T07:44:00-FLR-001"
+     },
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     }
+    ],
+    "sentNotifications": null,
+    "submissionTime": "2025-11-14T16:59Z",
+    "versionId": 2
+   },
+   {
+    "sepID": "2025-11-15T03:42:00-SEP-001",
+    "eventTime": "2025-11-15T03:42Z",
+    "instruments": [
+     {
+      "displayName": "STEREO A: IMPACT 13-100 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42742/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-13T03:24:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-15T07:08:00-IPS-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251115-AL-001",
+      "messageIssueTime": "2025-11-15T03:55Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42743/1"
+     },
+     {
+      "messageID": "20251115-AL-002",
+      "messageIssueTime": "2025-11-15T13:48Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42746/1"
+     }
+    ],
+    "submissionTime": "2025-11-15T03:55Z",
+    "versionId": 1
+   },
+   {
+    "sepID": "2025-11-15T09:34:00-SEP-001",
+    "eventTime": "2025-11-15T09:34Z",
+    "instruments": [
+     {
+      "displayName": "STEREO A: IMPACT 13-100 MeV"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/SEP/42755/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-14T08:00:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-15T15:56:00-IPS-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251115-AL-003",
+      "messageIssueTime": "2025-11-15T20:44Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42756/1"
+     }
+    ],
+    "submissionTime": "2025-11-15T20:41Z",
+    "versionId": 1
+   }
+  ],
+  "GST": [
+   {
+    "gstID": "2025-11-05T21:00:00-GST-001",
+    "startTime": "2025-11-05T21:00Z",
+    "allKpIndex": [
+     {
+      "kpIndex": 6.0,
+      "observedTime": "2025-11-06T00:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 6.67,
+      "observedTime": "2025-11-06T06:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 5.67,
+      "observedTime": "2025-11-06T09:00Z",
+      "source": "NOAA"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/GST/42455/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-03T09:36:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-05T16:50:00-IPS-001"
+     },
+     {
+      "activityID": "2025-11-06T03:51:00-MPC-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251106-AL-001",
+      "messageIssueTime": "2025-11-06T00:06Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42456/1"
+     },
+     {
+      "messageID": "20251106-AL-002",
+      "messageIssueTime": "2025-11-06T00:17Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42457/1"
+     },
+     {
+      "messageID": "20251106-AL-008",
+      "messageIssueTime": "2025-11-06T06:02Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42479/1"
+     },
+     {
+      "messageID": "20251106-AL-009",
+      "messageIssueTime": "2025-11-06T12:41Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42483/1"
+     }
+    ],
+    "submissionTime": "2025-11-06T00:06Z",
+    "versionId": 1
+   },
+   {
+    "gstID": "2025-11-08T00:00:00-GST-001",
+    "startTime": "2025-11-08T00:00Z",
+    "allKpIndex": [
+     {
+      "kpIndex": 6.33,
+      "observedTime": "2025-11-08T03:00Z",
+      "source": "NOAA"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/GST/42533/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-05T22:23:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-07T21:54:00-IPS-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251108-AL-001",
+      "messageIssueTime": "2025-11-08T03:00Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42534/1"
+     },
+     {
+      "messageID": "20251108-AL-002",
+      "messageIssueTime": "2025-11-08T03:20Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42536/1"
+     }
+    ],
+    "submissionTime": "2025-11-08T03:00Z",
+    "versionId": 1
+   },
+   {
+    "gstID": "2025-11-12T00:00:00-GST-001",
+    "startTime": "2025-11-12T00:00Z",
+    "allKpIndex": [
+     {
+      "kpIndex": 8.67,
+      "observedTime": "2025-11-12T03:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 8.33,
+      "observedTime": "2025-11-12T06:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 6.67,
+      "observedTime": "2025-11-12T09:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 7.0,
+      "observedTime": "2025-11-12T12:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 6.0,
+      "observedTime": "2025-11-12T21:00Z",
+      "source": "NOAA"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/GST/42642/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-07T12:53:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-09T07:24:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-10T09:36:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-11T22:11:00-IPS-001"
+     },
+     {
+      "activityID": "2025-11-12T00:59:00-MPC-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251112-AL-004",
+      "messageIssueTime": "2025-11-12T03:05Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42643/1"
+     },
+     {
+      "messageID": "20251112-AL-005",
+      "messageIssueTime": "2025-11-12T03:13Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42644/1"
+     }
+    ],
+    "submissionTime": "2025-11-12T03:05Z",
+    "versionId": 1
+   },
+   {
+    "gstID": "2025-11-12T18:00:00-GST-001",
+    "startTime": "2025-11-12T18:00Z",
+    "allKpIndex": [
+     {
+      "kpIndex": 6.0,
+      "observedTime": "2025-11-12T21:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 7.33,
+      "observedTime": "2025-11-13T03:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 6.67,
+      "observedTime": "2025-11-13T06:00Z",
+      "source": "NOAA"
+     },
+     {
+      "kpIndex": 6.0,
+      "observedTime": "2025-11-13T09:00Z",
+      "source": "NOAA"
+     }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/GST/42662/-1",
+    "linkedEvents": [
+     {
+      "activityID": "2025-11-10T13:08:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-11T10:23:00-CME-001"
+     },
+     {
+      "activityID": "2025-11-12T18:52:00-IPS-001"
+     },
+     {
+      "activityID": "2025-11-13T01:27:00-MPC-001"
+     }
+    ],
+    "sentNotifications": [
+     {
+      "messageID": "20251112-AL-009",
+      "messageIssueTime": "2025-11-12T21:47Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42663/1"
+     },
+     {
+      "messageID": "20251113-AL-002",
+      "messageIssueTime": "2025-11-13T03:05Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42671/1"
+     },
+     {
+      "messageID": "20251113-AL-003",
+      "messageIssueTime": "2025-11-13T03:13Z",
+      "messageURL": "https://ccmc.gsfc.nasa.gov/DONKI/view/Alert/42672/1"
+     }
+    ],
+    "submissionTime": "2025-11-12T21:44Z",
+    "versionId": 1
+   }
+  ]
+ }
+}
