@@ -87,6 +87,7 @@ def _twenty_pairs():
 
 
 def test_plot_writes_png(tmp_path):
+    pytest.importorskip("matplotlib")  # needs the [analysis] extra (D15)
     pairs, _ = v.pair_readings(_twenty_pairs(), "hr", "hr", "MAX30102", 10)
     assert len(pairs) == 20
     out = str(tmp_path / "ba.png")
@@ -101,6 +102,7 @@ def test_summary_row_format():
 
 
 def test_vitals_cli_stub_hub(tmp_path, monkeypatch, capsys):
+    pytest.importorskip("matplotlib")  # needs the [analysis] extra (D15)
     rows = _twenty_pairs()
     monkeypatch.setattr(v, "_fetch", lambda hub, ind, since: [r for r in rows if r["ind"] == ind])
     out, img = tmp_path / "out", tmp_path / "img"
