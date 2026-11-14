@@ -1,0 +1,18 @@
+{
+  "name": "ground",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build:pages": "VITE_GROUND_SOURCE=replay tsc && VITE_GROUND_SOURCE=replay vite build --base \"${GROUND_BASE:-/habitat-health-monitor/}\"",
+    "test": "vitest",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0"
+  }
+}
