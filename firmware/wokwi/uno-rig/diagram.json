@@ -18,7 +18,7 @@
     {
       "type": "wokwi-text",
       "id": "label_pot",
-      "top": 310,
+      "top": 340,
       "left": 500,
       "attrs": { "text": "pulse stand-in (simulated)" }
     },
