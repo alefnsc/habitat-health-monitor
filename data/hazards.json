@@ -1,0 +1,77 @@
+[
+ {
+  "id": "radiation",
+  "name": "Space radiation",
+  "hrp_url": "https://www.nasa.gov/hrp/hazard-space-radiation/",
+  "indicators_affected": [
+   "space_weather",
+   "rad_dose_cum"
+  ],
+  "one_line_effect": "Space radiation raises long-term cancer risk, and a solar storm can raise the dose within hours.",
+  "live_signal_ind": [
+   "space_weather",
+   "rad_dose_cum"
+  ]
+ },
+ {
+  "id": "isolation_confinement",
+  "name": "Isolation and confinement",
+  "hrp_url": "https://www.nasa.gov/hrp/hazard-isolation-and-confinement/",
+  "indicators_affected": [
+   "mood",
+   "sleep_h"
+  ],
+  "one_line_effect": "Long confinement with the same few people strains mood, sleep and teamwork.",
+  "live_signal_ind": [
+   "mood",
+   "sleep_h"
+  ]
+ },
+ {
+  "id": "distance",
+  "name": "Distance from Earth",
+  "hrp_url": "https://www.nasa.gov/hrp/hazard-distance-from-earth/",
+  "indicators_affected": [
+   "hr",
+   "bp_sys",
+   "bp_dia",
+   "glucose",
+   "body_temp",
+   "sleep_h",
+   "mood"
+  ],
+  "one_line_effect": "Far from Earth, messages take minutes to arrive, so the crew must judge a health problem on their own first.",
+  "live_signal_ind": "link"
+ },
+ {
+  "id": "gravity",
+  "name": "Altered gravity fields",
+  "hrp_url": "https://www.nasa.gov/hrp/hazard-gravity-fields/",
+  "indicators_affected": [
+   "hr",
+   "bp_sys",
+   "bp_dia"
+  ],
+  "one_line_effect": "Changed gravity shifts fluids and loads muscle and bone, and it changes how much work each exercise rep takes.",
+  "live_signal_ind": "session_g"
+ },
+ {
+  "id": "hostile_closed_environment",
+  "name": "Hostile, closed environment",
+  "hrp_url": "https://www.nasa.gov/hrp/hazard-hostile-closed-environments/",
+  "indicators_affected": [
+   "cabin_ppco2",
+   "cabin_temp",
+   "cabin_rh",
+   "cabin_lux",
+   "intake_water_ml"
+  ],
+  "one_line_effect": "A sealed cabin depends on clean air, safe temperature, light and food. Poor CO2 control, heat or low fluid intake harms health and focus.",
+  "live_signal_ind": [
+   "cabin_ppco2",
+   "cabin_temp",
+   "cabin_rh",
+   "intake_water_ml"
+  ]
+ }
+]

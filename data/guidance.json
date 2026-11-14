@@ -1,0 +1,449 @@
+[
+ {
+  "id": "default.ok",
+  "rule_id": "default",
+  "status": "ok",
+  "do_now": "Within the reference band. No action needed.",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "",
+  "risk_url": ""
+ },
+ {
+  "id": "default.unknown",
+  "rule_id": "default",
+  "status": "unknown",
+  "do_now": "This reading was not assessed (see the sensor flag). Check contact and measure again.",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "",
+  "risk_url": ""
+ },
+ {
+  "id": "baseline_2sd.watch",
+  "rule_id": "baseline_2sd",
+  "status": "watch",
+  "do_now": "This value is unusual for you: more than 2 SD from your own 30-day average. Measure again at rest.",
+  "tell": "Tell the CMO if repeat readings stay unusual.",
+  "escalate_to": "self",
+  "risk_title": "",
+  "risk_url": ""
+ },
+ {
+  "id": "hr_rest_high.watch",
+  "rule_id": "hr_rest_high",
+  "status": "watch",
+  "do_now": "Sit and rest 5 minutes, then measure again. If you exercised in the last 10 minutes, rest first.",
+  "tell": "Tell the CMO if it stays above 90 bpm at rest, or with chest discomfort, dizziness or breathlessness.",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "hr_rest_high.act",
+  "rule_id": "hr_rest_high",
+  "status": "act",
+  "do_now": "Stop activity, sit or lie down, and measure again with the chest strap or certified oximeter.",
+  "tell": "Tell the CMO now. The CMO decides whether to contact the flight surgeon.",
+  "escalate_to": "cmo",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "hr_rest_low.watch",
+  "rule_id": "hr_rest_low",
+  "status": "watch",
+  "do_now": "Measure again at rest with a certified device. A low resting rate can be normal for trained crew.",
+  "tell": "Tell the CMO if you feel faint, dizzy or unusually tired.",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "hr_rest_low.act",
+  "rule_id": "hr_rest_low",
+  "status": "act",
+  "do_now": "Sit or lie down and measure again with a certified device.",
+  "tell": "Tell the CMO now.",
+  "escalate_to": "cmo",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "spo2_low.watch",
+  "rule_id": "spo2_low",
+  "status": "watch",
+  "do_now": "Warm your hand, keep still and re-measure with the certified oximeter. The sensor value is an estimate.",
+  "tell": "If the certified reading is 95 % or lower, tell the CMO and check the cabin pressure display.",
+  "escalate_to": "self",
+  "risk_title": "In-mission medical conditions (HRP risk 95)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=95"
+ },
+ {
+  "id": "spo2_low.act",
+  "rule_id": "spo2_low",
+  "status": "act",
+  "do_now": "Keep still, stop activity if short of breath, and confirm with the certified oximeter now.",
+  "tell": "If confirmed, tell the CMO now; the CMO contacts the flight surgeon.",
+  "escalate_to": "cmo",
+  "risk_title": "In-mission medical conditions (HRP risk 95)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=95"
+ },
+ {
+  "id": "body_temp_low.watch",
+  "rule_id": "body_temp_low",
+  "status": "watch",
+  "do_now": "Re-measure with the clinical thermometer. Add a layer and check the cabin temperature.",
+  "tell": "Tell the CMO if it stays below 36.1 °C or you are shivering.",
+  "escalate_to": "self",
+  "risk_title": "In-mission medical conditions (HRP risk 95)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=95"
+ },
+ {
+  "id": "body_temp_low.act",
+  "rule_id": "body_temp_low",
+  "status": "act",
+  "do_now": "Warm up now: add layers and move to a warmer module. Re-measure in 15 minutes.",
+  "tell": "Tell the CMO now.",
+  "escalate_to": "cmo",
+  "risk_title": "In-mission medical conditions (HRP risk 95)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=95"
+ },
+ {
+  "id": "body_temp_high.watch",
+  "rule_id": "body_temp_high",
+  "status": "watch",
+  "do_now": "Rest away from exercise and heat, and re-measure with the clinical thermometer in 15 minutes.",
+  "tell": "Tell the CMO and answer the symptom check.",
+  "escalate_to": "cmo",
+  "risk_title": "In-mission medical conditions (HRP risk 95)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=95"
+ },
+ {
+  "id": "bp_sys_high.watch",
+  "rule_id": "bp_sys_high",
+  "status": "watch",
+  "do_now": "Sit quietly 5 minutes, arm supported at heart level, then take two readings 1 minute apart and enter both. Single reading is a screening prompt.",
+  "tell": "Tell the CMO at the next check-in if readings stay at 130/80 or above on two different days.",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "bp_dia_high.watch",
+  "rule_id": "bp_dia_high",
+  "status": "watch",
+  "do_now": "Sit quietly 5 minutes, arm supported at heart level, then take two readings 1 minute apart and enter both. Single reading is a screening prompt.",
+  "tell": "Tell the CMO at the next check-in if readings stay at 130/80 or above on two different days.",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "bp_sys_high.act",
+  "rule_id": "bp_sys_high",
+  "status": "act",
+  "do_now": "Sit quietly and measure again after 5 minutes. Single reading is a screening prompt.",
+  "tell": "If still above 180/120, tell the CMO now; the CMO contacts the flight surgeon.",
+  "escalate_to": "cmo",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "bp_dia_high.act",
+  "rule_id": "bp_dia_high",
+  "status": "act",
+  "do_now": "Sit quietly and measure again after 5 minutes. Single reading is a screening prompt.",
+  "tell": "If still above 180/120, tell the CMO now; the CMO contacts the flight surgeon.",
+  "escalate_to": "cmo",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "bp_sys_low.watch",
+  "rule_id": "bp_sys_low",
+  "status": "watch",
+  "do_now": "Sit or lie down and measure again. Stand up slowly.",
+  "tell": "Tell the CMO if you feel light-headed or faint.",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "bp_sys_low.act",
+  "rule_id": "bp_sys_low",
+  "status": "act",
+  "do_now": "Lie down with your legs raised and measure again.",
+  "tell": "Tell the CMO now.",
+  "escalate_to": "cmo",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179"
+ },
+ {
+  "id": "glucose_low.watch",
+  "rule_id": "glucose_low",
+  "status": "watch",
+  "do_now": "Follow the low-glucose step in the crew medical checklist and re-measure in 15 minutes. Screening prompt only.",
+  "tell": "Tell the CMO if it stays below 70 mg/dL.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "glucose_low.act",
+  "rule_id": "glucose_low",
+  "status": "act",
+  "do_now": "Stop activity, follow the low-glucose step in the crew medical checklist now, and do not exercise alone.",
+  "tell": "Tell the CMO now.",
+  "escalate_to": "cmo",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "glucose_high.watch",
+  "rule_id": "glucose_high",
+  "status": "watch",
+  "do_now": "Note what and when you last ate, and measure again before your next meal. Screening prompt only; timing unknown.",
+  "tell": "Tell the CMO at the next check-in if repeat readings stay at 140 mg/dL or above.",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "glucose_high.act",
+  "rule_id": "glucose_high",
+  "status": "act",
+  "do_now": "Wash and dry your hands and re-measure with a fresh strip. Screening prompt only.",
+  "tell": "If still 200 mg/dL or above, tell the CMO now.",
+  "escalate_to": "cmo",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176"
+ },
+ {
+  "id": "sleep_night.watch",
+  "rule_id": "sleep_night",
+  "status": "watch",
+  "do_now": "Plan a sleep period of at least 7 hours tonight and dim the module lights before it.",
+  "tell": "Tell the CMO if short nights continue; they reduce alertness on critical tasks.",
+  "escalate_to": "self",
+  "risk_title": "Sleep (HRP risk 100)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=100"
+ },
+ {
+  "id": "sleep_week.watch",
+  "rule_id": "sleep_week",
+  "status": "watch",
+  "do_now": "Your 7-day average is under 7 hours. Protect the sleep period in tomorrow's schedule.",
+  "tell": "Review the schedule with the CMO.",
+  "escalate_to": "cmo",
+  "risk_title": "Sleep (HRP risk 100)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=100"
+ },
+ {
+  "id": "mood_self.watch",
+  "rule_id": "mood_self",
+  "status": "watch",
+  "do_now": "Take a short break and talk with a crewmate you trust.",
+  "tell": "If low mood continues or affects your work, tell the CMO; private time with ground support can be requested.",
+  "escalate_to": "self",
+  "risk_title": "Behavioral health (HRP risk 99)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=99"
+ },
+ {
+  "id": "mood_7d.watch",
+  "rule_id": "mood_7d",
+  "status": "watch",
+  "do_now": "Mood has been low for a week. Talk with a crewmate or request private time with ground support.",
+  "tell": "Tell the CMO at the next check-in.",
+  "escalate_to": "cmo",
+  "risk_title": "Behavioral health (HRP risk 99)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=99"
+ },
+ {
+  "id": "co2_1h.act",
+  "rule_id": "co2_1h",
+  "status": "act",
+  "do_now": "Check the CO2 scrubber status and the fans, and move to a module with better airflow.",
+  "tell": "Tell the CMO and answer the headache check.",
+  "escalate_to": "cmo",
+  "risk_title": "OCHMO-TB-004 Carbon Dioxide",
+  "risk_url": "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf"
+ },
+ {
+  "id": "co2_7d.watch",
+  "rule_id": "co2_7d",
+  "status": "watch",
+  "do_now": "The 7-day CO2 average is above 2.5 mmHg, where headache reports rise. Check ventilation.",
+  "tell": "Tell the CMO at the next check-in; report headaches in the symptom check.",
+  "escalate_to": "self",
+  "risk_title": "OCHMO-TB-004 Carbon Dioxide",
+  "risk_url": "https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf"
+ },
+ {
+  "id": "cabin_health_box_temp.act",
+  "rule_id": "cabin_health_box_temp",
+  "status": "act",
+  "do_now": "The cabin temperature is outside the bounding box of NASA's crew health limits. Check the thermal control setpoint and fans.",
+  "tell": "Tell the CMO.",
+  "escalate_to": "cmo",
+  "risk_title": "NASA-STD-3001 Vol 2 Rev F",
+  "risk_url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf"
+ },
+ {
+  "id": "cabin_health_box_rh.act",
+  "rule_id": "cabin_health_box_rh",
+  "status": "act",
+  "do_now": "The cabin humidity is outside NASA's crew health limits. Check the humidity control and fans.",
+  "tell": "Tell the CMO.",
+  "escalate_to": "cmo",
+  "risk_title": "NASA-STD-3001 Vol 2 Rev F",
+  "risk_url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf"
+ },
+ {
+  "id": "cabin_performance_temp.watch",
+  "rule_id": "cabin_performance_temp",
+  "status": "watch",
+  "do_now": "The temperature is outside the zone where crew perform best. Adjust the setpoint and check the fans.",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "NASA-STD-3001 Vol 2 Rev F",
+  "risk_url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf"
+ },
+ {
+  "id": "cabin_performance_rh.watch",
+  "rule_id": "cabin_performance_rh",
+  "status": "watch",
+  "do_now": "The humidity is outside the zone where crew perform best. Check the humidity control.",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "NASA-STD-3001 Vol 2 Rev F",
+  "risk_url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf"
+ },
+ {
+  "id": "lux_general.watch",
+  "rule_id": "lux_general",
+  "status": "watch",
+  "do_now": "Work-surface light is below 350 lx. Turn up the work lights while awake.",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "NASA-STD-3001 Vol 2 Rev F",
+  "risk_url": "https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf"
+ },
+ {
+  "id": "radiation_career.watch",
+  "rule_id": "radiation_career",
+  "status": "watch",
+  "do_now": "Half of the career dose limit is used. No immediate action.",
+  "tell": "Review planned EVAs with the CMO at the next check-in.",
+  "escalate_to": "self",
+  "risk_title": "Radiation carcinogenesis (HRP risk 96)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=96"
+ },
+ {
+  "id": "radiation_career.act",
+  "rule_id": "radiation_career",
+  "status": "act",
+  "do_now": "You are near the career dose limit. Avoid optional EVAs until reviewed.",
+  "tell": "Tell the CMO; the flight surgeon reviews remaining exposure.",
+  "escalate_to": "flight_surgeon",
+  "risk_title": "Radiation carcinogenesis (HRP risk 96)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=96"
+ },
+ {
+  "id": "radiation_spe.watch",
+  "rule_id": "radiation_spe",
+  "status": "watch",
+  "do_now": "Space weather is elevated: a strong flare or geomagnetic storm in the last 24 hours. Check that the shelter route is clear.",
+  "tell": "Tell the CMO at the next check-in.",
+  "escalate_to": "self",
+  "risk_title": "Radiation carcinogenesis (HRP risk 96)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=96"
+ },
+ {
+  "id": "radiation_spe.act",
+  "rule_id": "radiation_spe",
+  "status": "act",
+  "do_now": "Solar particle event alert. Go to the designated shelter area and stay until the all-clear.",
+  "tell": "Acknowledge with your badge or the console button; the CMO informs the flight surgeon.",
+  "escalate_to": "flight_surgeon",
+  "risk_title": "Radiation carcinogenesis (HRP risk 96)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=96"
+ },
+ {
+  "id": "default.hr",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179",
+  "why": "Heart rate at rest is a basic sign of how the heart is coping. Spaceflight changes the cardiovascular system, so a trend helps the CMO spot a problem early."
+ },
+ {
+  "id": "default.bp_sys",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179",
+  "why": "Fluids shift toward the head in space, which can change blood pressure. A regular reading shows a trend early, so the CMO can act first."
+ },
+ {
+  "id": "default.bp_dia",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "Cardiovascular (HRP risk 179)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=179",
+  "why": "Fluids shift toward the head in space, which can change blood pressure. A regular reading shows a trend early, so the CMO can act first."
+ },
+ {
+  "id": "default.glucose",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "Nutrition (HRP risk 176)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=176",
+  "why": "Glucose reflects how the body gets and uses fuel. Food supply in flight is constrained, so a trend can flag a nutrition problem early."
+ },
+ {
+  "id": "default.body_temp",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "In-mission medical conditions (HRP risk 95)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=95",
+  "why": "Body temperature is a basic sign that something may be wrong. A steady rise or fall tells the CMO when to look closer."
+ },
+ {
+  "id": "default.sleep_h",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "Sleep (HRP risk 100)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=100",
+  "why": "Crews often sleep less in flight, and sleep loss lowers alertness and performance. Logging it lets the crew change the schedule early."
+ },
+ {
+  "id": "default.mood",
+  "rule_id": "default",
+  "status": "info",
+  "do_now": "—",
+  "tell": "—",
+  "escalate_to": "self",
+  "risk_title": "Behavioral health (HRP risk 99)",
+  "risk_url": "https://humanresearchroadmap.nasa.gov/Risks/?i=99",
+  "why": "Mood is an early sign of how the crew copes with isolation and confinement. A low trend is a prompt to talk and ask for support."
+ }
+]
