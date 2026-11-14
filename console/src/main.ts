@@ -8,6 +8,7 @@ import { el } from "./dom";
 import { appliesToCrew, applySnapshot } from "./model/status";
 import { board } from "./state";
 import { renderEntry } from "./views/entry";
+import { renderHistory } from "./views/history";
 import { loadBoard, renderStatus } from "./views/status";
 import { connectWs, wsUrl } from "./ws";
 
@@ -63,8 +64,11 @@ export function mountApp(root: HTMLElement): void {
     dispose?.();
     dispose = null;
     screen.replaceChildren();
-    if (cur === "status") dispose = renderStatus(screen);
+    if (cur === "status") dispose = renderStatus(screen, (t) => {
+      location.hash = `#/history/${t.id === "bp" ? "bp_sys" : t.id}`;
+    });
     else if (cur === "entry") renderEntry(screen);
+    else if (cur === "history") dispose = renderHistory(screen);
     else screen.append(el("p", { text: COPY["screen.pending"] }));
   };
   window.addEventListener("hashchange", render);
