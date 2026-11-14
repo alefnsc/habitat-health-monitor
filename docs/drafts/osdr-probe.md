@@ -23,7 +23,7 @@ Base URL: `https://visualization.osdr.nasa.gov/eda/api`. Probed with mission RR-
 | `/missions/{name}/humidity/ground/` | 200 | `time`, `humidity_ground` | % RH | `eda/humidity_ground_RR-6.json` |
 | `/missions/{name}/co2/ground/` | 200 | `time`, `co2_ground` | ppm | `eda/co2_ground_RR-6.json` |
 | `/missions/{name}/radiation_data/` | 200 | `time`, `gcr`, `saa`, `total`, `milestones` | mGy/day (EDA page script, "Dose [mGy/day]") | `eda/radiation_data_RR-6.json` |
-| `/temperature/iss/` (no mission segment, as listed in the plan) | 404 | none | n/a | none |
+| `/temperature/iss/` (no `/missions/{name}/` prefix, as the plan lists it; always use `/missions/{name}/...`) | 404 | none | n/a | none |
 | RadLab `https://visualization.osdr.nasa.gov/radlab/api/?instrument_id=DosTel1&timestamp>2024-05-10T00:00&timestamp<2024-05-10T03:00&absorbed_dose_rate&format=json` | 200 | `columns` (`timestamp`, `instrument_id`, `absorbed_dose_rate`), `index`, `data` | uGy/h per the OSDR docs example; not stated in the response | `radlab/dostel1.json` |
 
 `/missions/{name}/` (single mission) also answers 200 with `name`, `title`, `description`, `link` (fixture `eda/mission_RR-6.json`). Extra radiation routes `/missions/{name}/{gcr|saa|total}/` are documented, not probed.
@@ -49,9 +49,9 @@ RR-9 caveat: its radiation dates (Aug to Sep 2017) do not overlap its telemetry 
 
 ## Decisions
 
-Proposed by the N agent from the table above. The Science lane confirms or replaces the first line (S2 open point e).
+Mission signed by the operator on 2026-11-14 (D34). Radiation lines proposed by the N agent.
 
-Mission: RR-6
+Mission: RR-6, signed by the operator 2026-11-14
 Radiation source: eda
 RadLab unit confirmed: no
 

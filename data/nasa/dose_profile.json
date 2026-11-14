@@ -1,0 +1,10 @@
+{
+  "profile": "ISS six-month reference mission, low Earth orbit (illustrative profile for the demo, not a person's record)",
+  "mission_start": "2026-05-19",
+  "rate_msv_per_day": 0.5,
+  "rate_ref": "NTRS 20250006168",
+  "rate_url": "https://ntrs.nasa.gov/citations/20250006168",
+  "method": "mission_day × 0.5 mSv/day (upper ISS effective-dose rate, NTRS 20250006168); estimate, not measured",
+  "career_limit_msv": 600,
+  "career_limit_ref": "NASA-STD-3001 Vol 1 Rev C [V1 4030]"
+}
