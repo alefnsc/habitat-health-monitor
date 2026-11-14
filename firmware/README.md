@@ -159,7 +159,7 @@ tilt-1 node and its Wokwi twin:
 ```
 firmware/tilt-esp8266/test/run_host_tests.sh
 arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
-arduino-cli compile --fqbn esp32:esp32:esp32 firmware/tilt-esp8266        # the Wokwi stand-in, serial-only
+arduino-cli compile --fqbn esp32:esp32:esp32 --library firmware/libraries/HabitatNode firmware/tilt-esp8266   # the Wokwi stand-in
 firmware/wokwi/tilt-esp32/check_sync.sh
 ```
 

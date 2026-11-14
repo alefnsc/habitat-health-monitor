@@ -18,8 +18,10 @@ when the Pi is not ready: `scripts/dev-up.sh`.
 
 ## Optional, not used in D40: cabin sensors on the Pi header
 
-Only if a BME280 or SCD41 is fitted later. Enable `habitat-cabin` by hand then, and keep in mind that `cabin-1` already
-comes from the UNO.
+Only if a BME280 or SCD41 is fitted later. `nodes/cabin_pi` also publishes as `cabin-1`, so run it **instead of** the
+UNO's DHT11, never next to it: build `exercise-uno` with `-DENABLE_DHT=0`, then
+`sudo systemctl enable --now habitat-cabin`. Two sources on one node would collide on `(node, boot, seq)`, and the
+hub would drop one copy as a duplicate.
 
 | Pi pin | Signal | Goes to |
 |---|---|---|

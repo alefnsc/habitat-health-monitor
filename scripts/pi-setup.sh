@@ -103,6 +103,7 @@ for unit in habitat-hub habitat-cabin; do
 done
 sudo systemctl daemon-reload
 sudo systemctl enable habitat-hub
+sudo systemctl disable --now habitat-cabin 2>/dev/null || true  # a pre-D40 install had it enabled
 sudo systemctl restart habitat-hub
 printf 'habitat-cabin is installed but not enabled: in D40 cabin-1 comes from the UNO (set HUB_SERIAL_PORT in .env).\n'
 

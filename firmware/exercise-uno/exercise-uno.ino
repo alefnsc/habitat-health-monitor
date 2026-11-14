@@ -626,8 +626,12 @@ static void updateBuzzer(uint32_t now) {
 }
 
 #if ENABLE_DHT
-// DHT11 on D2, cabin-1, every 5 s (the sensor allows one read per second). The read blocks for
-// about 25 ms with interrupts off; command lines are short and rare, so the serial buffer copes.
+// DHT11 on D2, cabin-1, every 5 s (the sensor allows one read per second). The library waits about
+// 20 ms for the start pulse, then reads the frame with interrupts off for about 4 ms (up to 10 ms
+// when no sensor answers). Serial bytes arriving inside that window are lost, so a hub command
+// that overlaps it (about 0.1 % of commands) gets a bad_command or unknown ack and is not applied.
+// Nothing retries it: the hub re-sends the servo and alarm state only after a reconnect.
+// With the HX711 built in, about 2 samples drop per read.
 static DHT dht(PIN_DHT, DHT_TYPE);
 static FailCount dhtFails;
 static uint32_t dhtLastMs = (uint32_t)-3000;  // first read 2 s after boot

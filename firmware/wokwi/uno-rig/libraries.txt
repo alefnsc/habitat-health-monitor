@@ -1,2 +1,3 @@
 # Libraries for the UNO I/O board twin. EEPROM ships with the Uno core.
 DHT sensor library@1.4.7
+Adafruit Unified Sensor@1.1.15
