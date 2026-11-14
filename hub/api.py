@@ -23,6 +23,7 @@ from hub.contract import CREWS, DERIVED, INDICATORS, ContractError
 from hub.crew import CrewRegistry, parse_badge, validate_crew_post
 from hub.derive import derive_ppco2
 from hub.events import EventBus
+from hub.exercise import SessionError, SessionManager, pairs_for
 from hub.features import HubContext, load_features, wire_features
 from hub.ingest import Ingestor, IngestResult
 from hub.mqtt import MqttPublisher, NodeRegistry, run_subscriber
@@ -91,6 +92,9 @@ def create_app(
         crew_for=crew_registry.get,
     )
     publisher = MqttPublisher()
+    sessions = SessionManager(store, ingestor, clock)
+    ingestor.add_listener(sessions.on_load_raw)
+    app_sessions = sessions
     features = load_features(settings)
 
     def snapshot_frame() -> None:
@@ -156,6 +160,7 @@ def create_app(
     app.state.assessor = assessor
     app.state.clock = clock
     app.state.bus = bus
+    app.state.sessions = app_sessions
     app.state.nodes = nodes
     app.state.crew = crew_registry
     app.state.publisher = publisher
@@ -264,6 +269,53 @@ def create_app(
                 "last_id": items[-1].id if items else after,
             }
         )
+
+    @app.post("/api/sessions")
+    async def post_session(request: Request) -> JSONResponse:
+        try:
+            body = json.loads(await request.body())
+        except ValueError:
+            return reject("bad_json")
+        if not isinstance(body, dict):
+            return reject("bad_json")
+        for name, required in (("mass_kg", True), ("g", True), ("session", False), ("crew", False)):
+            if required and name not in body:
+                return reject(f"missing_field:{name}")
+        for name in ("mass_kg", "g"):
+            v = body[name]
+            if isinstance(v, bool) or not isinstance(v, int | float):
+                return reject(f"bad_type:{name}")
+        if body.get("session") is not None and not isinstance(body["session"], str):
+            return reject("bad_type:session")
+        try:
+            sess = await run_in_threadpool(
+                sessions.start, body.get("session"), float(body["mass_kg"]), float(body["g"]),
+                body.get("crew"),
+            )  # fmt: skip
+        except SessionError as e:
+            return reject(e.reason, 409 if e.reason == "session_exists" else 422)
+        return JSONResponse(sess.to_dict(), status_code=201)
+
+    @app.post("/api/sessions/{session}/end")
+    def end_session(session: str) -> JSONResponse:
+        try:
+            return JSONResponse(sessions.end(session).to_dict())
+        except SessionError as e:
+            return reject(e.reason, 404)
+
+    @app.get("/api/sessions")
+    def list_sessions() -> JSONResponse:
+        return JSONResponse([s.to_dict() for s in sessions.list()])
+
+    @app.get("/api/reps")
+    def get_reps(request: Request) -> JSONResponse:
+        session = request.query_params.get("session")
+        if not session:
+            return reject("missing_field:session")
+        body = pairs_for(store, sessions, session)
+        if body is None:
+            return reject("unknown_session", 404)
+        return JSONResponse(body)
 
     @app.get("/api/status")
     def get_status(request: Request) -> JSONResponse:

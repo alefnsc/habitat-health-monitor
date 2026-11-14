@@ -48,6 +48,10 @@ CREATE TABLE IF NOT EXISTS assessments (
 );
 CREATE INDEX IF NOT EXISTS assessments_reading ON assessments(reading_id);
 CREATE INDEX IF NOT EXISTS assessments_rule ON assessments(rule_id, ind, crew, id);
+CREATE TABLE IF NOT EXISTS sessions (
+  session TEXT PRIMARY KEY, mass_kg REAL NOT NULL, g REAL NOT NULL, crew TEXT,
+  started_at TEXT NOT NULL, ended_at TEXT
+);
 CREATE TABLE IF NOT EXISTS food_log (
   meal_id INTEGER PRIMARY KEY AUTOINCREMENT,
   crew TEXT, eaten_at TEXT NOT NULL, created_at TEXT NOT NULL, items TEXT NOT NULL
@@ -395,6 +399,82 @@ class Store:
         with self.lock:
             row = self.conn.execute(sql, args).fetchone()
         return row[0] if row else None
+
+    # sessions and reps (H15, H16)
+
+    def insert_session(
+        self, session: str, mass_kg: float, g: float, crew: str | None, started_at: datetime
+    ) -> bool:
+        """False when the id already exists."""
+        with self.lock:
+            try:
+                self.conn.execute(
+                    "INSERT INTO sessions (session, mass_kg, g, crew, started_at) VALUES (?,?,?,?,?)",
+                    (session, mass_kg, g, crew, to_iso(started_at)),
+                )
+                self.conn.commit()
+                return True
+            except sqlite3.IntegrityError:
+                self.conn.rollback()
+                return False
+
+    def end_session(self, session: str, ended_at: datetime) -> None:
+        with self.lock:
+            self.conn.execute(
+                "UPDATE sessions SET ended_at=? WHERE session=? AND ended_at IS NULL",
+                (to_iso(ended_at), session),
+            )
+            self.conn.commit()
+
+    def session_row(self, session: str) -> tuple | None:
+        with self.lock:
+            return self.conn.execute(
+                "SELECT session, mass_kg, g, crew, started_at, ended_at FROM sessions"
+                " WHERE session=?",
+                (session,),
+            ).fetchone()
+
+    def session_rows(self, active_only: bool = False) -> list[tuple]:
+        sql = "SELECT session, mass_kg, g, crew, started_at, ended_at FROM sessions"
+        if active_only:
+            sql += " WHERE ended_at IS NULL"
+        sql += " ORDER BY started_at DESC, rowid DESC"
+        with self.lock:
+            return self.conn.execute(sql).fetchall()
+
+    def rep_counts(self, session: str) -> tuple[int, int]:
+        """(camera reps, load-cell reps) as distinct rep numbers per src."""
+        with self.lock:
+            rows = self.conn.execute(
+                "SELECT src, COUNT(DISTINCT rep) FROM reps WHERE session=? GROUP BY src",
+                (session,),
+            ).fetchall()
+        d = dict(rows)
+        return d.get("camera", 0), d.get("load_cell", 0)
+
+    def next_rep_seq(self, node: str, boot: int) -> int:
+        with self.lock:
+            row = self.conn.execute(
+                "SELECT COALESCE(MAX(seq), 0) FROM reps WHERE node=? AND boot=?", (node, boot)
+            ).fetchone()
+        return int(row[0]) + 1
+
+    def reps_for_session(self, session: str) -> list[StoredRep]:
+        with self.lock:
+            rows = self.conn.execute(
+                f"SELECT {_P_COLS} FROM reps WHERE session=? ORDER BY rep, id", (session,)
+            ).fetchall()
+        return [_rep_row(r) for r in rows]
+
+    def reps_between(self, start: datetime, end: datetime) -> list[StoredRep]:
+        """Reps with start < measured_at <= end, all srcs and nodes, ascending."""
+        with self.lock:
+            rows = self.conn.execute(
+                f"SELECT {_P_COLS} FROM reps WHERE measured_at>? AND measured_at<=?"
+                " ORDER BY measured_at, id",
+                (to_iso(start), to_iso(end)),
+            ).fetchall()
+        return [_rep_row(r) for r in rows]
 
     # food log (NU14)
 
