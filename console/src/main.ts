@@ -8,11 +8,12 @@ import { el } from "./dom";
 import { appliesToCrew, applySnapshot } from "./model/status";
 import { board } from "./state";
 import { renderEntry } from "./views/entry";
+import { renderFood } from "./views/food";
 import { renderHistory } from "./views/history";
 import { loadBoard, renderStatus } from "./views/status";
 import { connectWs, wsUrl } from "./ws";
 
-export const SCREENS = ["status", "entry", "history", "exercise", "nasa", "prompts", "body"] as const;
+export const SCREENS = ["status", "entry", "history", "exercise", "food", "nasa", "prompts", "body"] as const;
 export type Screen = (typeof SCREENS)[number];
 
 export function screenFromHash(hash: string): Screen {
@@ -69,6 +70,7 @@ export function mountApp(root: HTMLElement): void {
     });
     else if (cur === "entry") renderEntry(screen);
     else if (cur === "history") dispose = renderHistory(screen);
+    else if (cur === "food") dispose = renderFood(screen);
     else screen.append(el("p", { text: COPY["screen.pending"] }));
   };
   window.addEventListener("hashchange", render);
