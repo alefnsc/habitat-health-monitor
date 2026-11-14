@@ -39,7 +39,7 @@ export const COPY: Record<string, string> = {
   "tile.body_temp": "Body temperature",
   "tile.sleep_h": "Sleep",
   "tile.mood": "Mood",
-  "tile.spo2": "SpO2 (finger sensor)",
+  "tile.spo2": "SpO2",
   "tile.skin_temp": "Skin temperature",
   "tile.cabin_ppco2": "Cabin CO2 partial pressure",
   "tile.cabin_temp": "Cabin temperature",
@@ -89,6 +89,7 @@ export const COPY: Record<string, string> = {
   "dev.H10": "Chest strap",
   "dev.manual": "Typed in",
   "dev.camera": "Camera",
+  "dev.RING": "Ring (delayed cloud sync)",
 
   "age.justNow": "just now",
 

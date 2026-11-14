@@ -81,14 +81,14 @@ BODY_MASS_RANGE: tuple[float, float] = (20.0, 300.0)
 
 NODES: frozenset[str] = frozenset(
     {"vitals-1", "cabin-1", "exercise-1", "strap-1", "manual", "camera", "sim-1", "nasa", "food",
-     "tilt-1"}
+     "tilt-1", "ring-1"}
 )
 SOURCES: frozenset[str] = frozenset({"certified", "hobby", "self", "nasa", "replay"})
 DEVICES: frozenset[str] = frozenset(
     {
         "MAX30102", "DS18B20", "MLX90614", "SCD41", "BME280", "DHT22", "DHT11", "BH1750",
         "HX711", "H10", "manual", "camera", "MPU6050", "MH-Z19", "DONKI", "OSDR", "catalog",
-        "NTC", "KY039", "KY017",
+        "NTC", "KY039", "KY017", "RING",
     }
 )  # fmt: skip
 FLAGS: frozenset[str] = frozenset(
