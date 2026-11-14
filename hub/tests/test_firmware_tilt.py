@@ -21,7 +21,7 @@ def test_sketch_pin_names_and_timing() -> None:
     assert "PIN_TILT = 14" in text  # D5 on the NodeMCU Amica
     assert 'node.begin("tilt-1")' in text
     assert "habitat::IND_TILT" in text and "habitat::DEV_KY017" in text
-    assert "kDebounceMs = 30" in text and "kHeartbeatMs = 10000" in text
+    assert "kDebounceMs = 200" in text and "kHeartbeatMs = 10000" in text
     assert "tilt-1" in NODES and "KY017" in DEVICES and INDICATORS["tilt"] == "state"
     assert "tilt" in UNGATED_INDS
 

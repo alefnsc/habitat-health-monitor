@@ -50,7 +50,7 @@ The pod rides on the weight, so the node runs on its own cells and nothing on th
 
 The `offset_ms` that `GET /api/reps` reports (midpoint of the switch interval minus the camera turnaround) carries some known biases:
 
-- The debounce stamps the accept time, so both edges read about +30 ms late.
+- The debounce is 200 ms: the mercury bounces for up to about 150 ms at each edge (bench check 14/11). It stamps the accept time, so both edges read about +200 ms late, inside the hub's ±500 ms witness window.
 - The camera turnaround is the first sample at the top level, so the offset leans positive.
 - A pause at the top shifts the switch midpoint by about half the pause.
 - A rise then fall shorter than a Wi-Fi or broker reconnect stall can be missed entirely. That reads as `seen: false`, which is honest, not an error.
