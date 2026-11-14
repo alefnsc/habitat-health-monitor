@@ -18,15 +18,15 @@ the weight tilted past the trip angle. Part and pin names follow docs.wokwi.com/
 
 **Saved project (share link):** https://wokwi.com/projects/480680478751478785. Until D40 this link held the vitals node
 twin (`../vitals-esp32`, now archived); the tilt-1 twin replaced it in place. Saved 2026-11-14 14:35 (UTC−03:00), and
-renamed "tilt-1 node twin". The custom-chip files were removed, and the three files match commit 8a38e07 byte for byte
-(SHA-256 checked after a reload). A run showed `tilt` 0 at rest, 1 after sliding right, 0 after sliding back, then a
+renamed "tilt-1 node twin". The custom-chip files were removed. Re-saved at 15:05 with the Ni-MH power label, and the three
+files match commit 13e1c39 byte for byte (SHA-256 checked after a reload). A run showed `tilt` 0 at rest, 1 after sliding right, 0 after sliding back, then a
 heartbeat 10 s later.
 
 ## What runs where (also written on the Wokwi canvas)
 
 - **Code:** the same sketch as the real node. `hub/tests/test_firmware_tilt_twin.py` checks the copy byte for byte.
 - **Real node:**
-  - a NodeMCU on 2 × AA/AAA cells, on the weight;
+  - a NodeMCU on 4 × Ni-MH AA cells into VIN, on the weight;
   - Wi-Fi/MQTT to the hub's broker;
   - one reading on every debounced change (30 ms) and a heartbeat every 10 s.
 - **Twin:** the same lines, on the serial monitor.

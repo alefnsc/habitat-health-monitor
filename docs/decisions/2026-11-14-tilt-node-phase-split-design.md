@@ -19,8 +19,8 @@ Each exercise rep reports its concentric work, its eccentric work and the time s
 
 ## 3. Hardware: node `tilt-1`
 
-> **Amended by D40** (`2026-11-14-fewer-mcus-design.md`): the node runs on 2 × AA/AAA cells on 3V3 and GND instead of USB
-> from the hub (never VIN, no CR2032), so the pod on the weight has no cable. Its Wokwi twin is `firmware/wokwi/tilt-esp32`.
+> **Amended by D40** (`2026-11-14-fewer-mcus-design.md`): the node runs on a cell pack instead of USB from the hub, so the
+> pod on the weight has no cable. The pack is 4 × Ni-MH AA on VIN (chosen), or 2 × alkaline AA/AAA on 3V3; see D40 §6. Its Wokwi twin is `firmware/wokwi/tilt-esp32`.
 > D40 also retires the vitals node: the D1 mini below is not used (§7).
 
 - **Board:** NodeMCU Amica (ESP8266). D37 had assigned it to the vitals node; the vitals node moves to a Wemos D1 mini running the same sketch and pin map (§7).

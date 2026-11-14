@@ -17,7 +17,7 @@ can really make.
 | Raspberry Pi 3 Model B | hub, Mosquitto, console | nothing on the 40-pin header | n/a | 5 V 2.5 A supply; a laptop runs the hub instead if the Pi is not ready |
 | UNO+WiFi R3, ATmega328P side | `firmware/exercise-uno` | DHT11 on D2, buzzer on D8 | USB serial to the hub, 250000 baud | USB from the hub |
 | UNO+WiFi R3, ESP8266 side | nothing | — | — | DIP switch set to "USB to ATmega328" |
-| NodeMCU (ESP8266) | `firmware/tilt-esp8266` (D39) | KY-017 tilt pod on D5 | Wi-Fi/MQTT to the hub's broker | 2 × AA or AAA in series on 3V3 and GND |
+| NodeMCU (ESP8266) | `firmware/tilt-esp8266` (D39) | KY-017 tilt pod on D5 | Wi-Fi/MQTT to the hub's broker | 4 × Ni-MH AA on VIN and GND (or 2 × alkaline AA/AAA on 3V3) |
 
 There are two microcontrollers (the ATmega and the NodeMCU's ESP8266) and one hub computer. Before D40 there were four
 or five processors: the Pi, the ATmega, the UNO's ESP8266 as a bridge, the NodeMCU as the tilt node, and a D1 mini to
@@ -73,12 +73,18 @@ ring through an importer. That importer is the next step (§9) and is not part o
 
 ## 6. Tilt node (D39, amended)
 
-- **Power.** Firmware, pins and contract are as in D39. The pod rides on the weight with no cable: two AA or AAA cells
-  in series (3.0–3.2 V) go to the NodeMCU's **3V3** and **GND** pins.
-  - Never VIN: its regulator needs more than about 4.5 V.
-  - Never more than 3.6 V on 3V3, so never three cells.
+- **Power.** Firmware, pins and contract are as in D39. The pod rides on the weight with no cable, on one of two packs.
+  The first is the operator's choice, made 2026-11-14 ~15:00 after the bench showed the team's AA cells are 1.2 V Ni-MH.
+  - **Chosen: 4 × Ni-MH AA in series** (about 4.8–5.6 V) into **VIN** and **GND**. The board's regulator makes 3.3 V.
+    With 2,450 mAh cells and Wi-Fi on all the time (about 80 mA), it lasts roughly a day.
+  - **Alternative: 2 × alkaline AA or AAA in series** (3.0–3.2 V fresh) on **3V3** and **GND**, about 15 hours.
+- **Pack rules:**
+  - Never 2 cells on VIN: the regulator needs more than about 4.5 V. Two Ni-MH on 3V3 are too low as well (2.4–2.8 V).
+  - Never 3 or more cells on 3V3: more than 3.6 V destroys the board.
+  - Never mix cell types or charge levels in one pack.
+  - The KY-017 stays on 3V3 and GND, never on VIN.
   - A CR2032 coin cell cannot supply the Wi-Fi bursts (170–300 mA) and is not used.
-  - Unplug the cells whenever USB is plugged in to flash.
+  - Unplug the pack before plugging USB in to flash.
 - **What it replaces.** This replaces "USB power from the hub" in D39 §3. It also removes the case of a held weight
   cabled to a mains-powered board.
 - **Superseded.** D39 §7 (vitals node on a Wemos D1 mini) is superseded: there is no vitals board.
