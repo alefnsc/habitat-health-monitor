@@ -146,9 +146,9 @@ REST_COVERAGE = 0.5
 def night_rest_hr(
     store: Store, crew: str | None, night: Night, replay: bool
 ) -> tuple[float | None, list[StoredReading]]:
-    """Median of the 5-minute HR block medians inside the night window, or None below 50 % of
-    the window's blocks. Returns the HR rows used, for the inputs list."""
-    rows = same_mode(ok_rows(store, "hr", night.start, night.end, crew), replay)
+    """Median of the 5-minute block medians of the ring's HR inside the night window, or None
+    below 50 % of the window's blocks. Returns the HR rows used, for the inputs list."""
+    rows = same_mode(ring_rows(ok_rows(store, "hr", night.start, night.end, crew)), replay)
     blocks = block_medians(points(rows), night.start, night.end, REST_BLOCK)
     if len(blocks) < REST_COVERAGE * expected_blocks(night.start, night.end, REST_BLOCK):
         return None, rows

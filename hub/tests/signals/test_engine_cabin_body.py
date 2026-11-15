@@ -170,7 +170,11 @@ def test_hr_outside_the_night_window_is_ignored(rig):
     for k in range(1, 13):  # awake samples after the wake time
         rig.put("hr", 95, end + timedelta(minutes=5 * k), node="ring-1", dev="RING", crew="crew-a")
     [night], replay = I.nights(rig.store, "crew-a", end + timedelta(hours=2), 2, ZoneInfo(TZ))
-    assert I.night_rest_hr(rig.store, "crew-a", night, replay)[0] == 57
+    value, rows = I.night_rest_hr(rig.store, "crew-a", night, replay)
+    assert value == 57
+    # the awake rows are not in the night at all (a median alone could hide a few of them)
+    assert rows and all(I.parse_iso(r.measured_at) <= night.end for r in rows)
+    assert all(r.val == 57 for r in rows)
 
 
 def test_a_night_under_half_covered_by_hr_has_no_resting_hr(rig):
@@ -266,3 +270,23 @@ def test_cabin_ppco2_ttl_fits_the_trailing_1h_mean(rig):
     raw_now = ppco2_mmhg(1500.0 + 1000.0 * (3 * 60 - 1) / 60, 1013.0)
     mean_now = ppco2_mmhg(1500.0 + 1000.0 * (3 * 60 - 1 - 30) / 60, 1013.0)  # mean lags ~30 min
     assert last_mean == pytest.approx(mean_now, abs=0.05) and last_mean < raw_now - 0.2
+
+
+def test_non_ring_spo2_and_hr_never_enter_a_night(rig):
+    end = T.replace(hour=10)
+    for d in range(10, -1, -1):
+        put_night(rig, end - timedelta(days=d), 7.0, 56 + d % 3)
+        put_spo2(rig, 96.0 + 0.5 * (d % 3), end - timedelta(days=d))
+    # a finger-clip reading of the same crew, the same night: not the ring
+    rig.clock.set(end - timedelta(minutes=1))
+    rig.seq += 1
+    clip = {"v": 1, "node": "vitals-1", "boot": 1, "seq": rig.seq, "age_ms": 0, "ind": "spo2",
+            "val": 90.0, "unit": "%", "src": "hobby", "dev": "MAX30102", "q": ["ok"], "crew": "crew-a"}  # fmt: skip
+    assert rig.ing.ingest_reading(clip, channel="test").reason is None
+    for k in range(84):  # a strap HR at 95 inside the ring night
+        rig.put("hr", 95, end - timedelta(minutes=5 * k + 1), node="vitals-1", dev="MAX30102",
+                crew="crew-a")  # fmt: skip
+    spo2 = one(rig, "spo2_baseline", at=end + timedelta(hours=1))
+    assert spo2.value.estimate != 90.0 and all(i.dev == "RING" for i in spo2.inputs)
+    hr = one(rig, "rest_hr_baseline", at=end + timedelta(hours=1))
+    assert hr.value.estimate < 60 and all(i.dev == "RING" for i in hr.inputs)
