@@ -100,3 +100,17 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 - Committed file: `data/replay/ring-synthetic-nights.jsonl`, a **synthetic** pull (invented values in the vendor's field layout, labelled so on its first line). Real pulls are saved to `var/ring/pulls.jsonl` (mode 600, git-ignored) and are never committed.
 - Use: delayed cloud sync of vitals. A pull is `src hobby` with its true age; a replay is `src replay`, shown as "Replay (recorded)". The habitat core never calls the cloud; the importer is a separate process that posts to `POST /api/readings`.
 - Without it: the vitals tiles stay empty; the synthetic replay keeps the demo working with no network.
+
+## Earth weather (outdoor reference, D45)
+
+- Use: the outdoor temperature, humidity and pressure next to the bench cabin, for the signals module's
+  "side by side" card. Readings are node `earth-1`, `src ref`, device `WEATHER`, shown as "Earth reference, outdoor".
+- Importer: `python -m nodes.weather pull --hours 48`, a separate process like the ring importer. The habitat hub
+  never calls the internet.
+- Location: a coarse grid cell (1 decimal, about 11 km) from `WEATHER_LAT` and `WEATHER_LON` in `.env`
+  (git-ignored), used only to pick the nearest station. The cell and the station code are never committed, posted,
+  logged or shown.
+- Provider: INMET (Instituto Nacional de Meteorologia) automatic stations, chosen by the team owner on 2026-11-15.
+  Endpoint, token, fields, terms and access date go here when the adapter lands (D45 plan, Task 9). Until then
+  `nodes/weather` refuses to fetch.
+- Without it: the "side by side" card says not enough data; nothing else changes.

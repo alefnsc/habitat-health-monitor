@@ -9,7 +9,8 @@ line lands at "now" and every reading is node sim-1, src replay. Planted effects
 - cabin RH ramping 3 %/h over the last 3 hours, about 3.8 h short of the 75 % limit at the end;
 - crew-c resting HR flat; crew-c SpO2 on 4 nights only (gaps);
 - crew-a water logged rising, crew-a body mass slowly falling;
-- one space-weather day at level 1; the bench cabin temperature follows a daily cycle.
+- one space-weather day at level 1; outdoor Earth temperature with a daily cycle the bench
+  cabin follows about 2 hours later.
 Camera sets are not in the file: hub.sim cannot create sessions, so lift signals show
 `not enough data` on this replay (the engine tests cover them with direct sessions).
 """
@@ -33,7 +34,7 @@ CREWS = ("crew-a", "crew-c")
 DEV = {
     "hr": "RING", "spo2": "RING", "sleep_h": "RING", "body_mass": "manual",
     "intake_water_ml": "catalog", "cabin_temp": "DHT22", "cabin_rh": "DHT22",
-    "cabin_co2": "SCD41", "cabin_p": "BME280", "space_weather": "DONKI",
+    "cabin_co2": "SCD41", "cabin_p": "BME280", "earth_temp": "WEATHER", "space_weather": "DONKI",
 }  # fmt: skip
 NOTE = {"t_ms": -1, "kind": "note", "note": "synthetic: invented data for the D45 signals demo"}
 
@@ -81,6 +82,8 @@ def synth(seed: int = 45) -> list[ReplayLine]:
                 out.append(_line(night_end + 1_800_000, "body_mass", mass, crew))
         if k > 0:
             out.append(_line(night_end + 2 * H_MS, "space_weather", 1 if k == 5 else 0, None))
+    for t in range(END_MS - 7 * DAY_MS, END_MS + 1, H_MS):
+        out.append(_line(t, "earth_temp", earth_temp(t) + rnd.uniform(-0.2, 0.2), None))
     for t in range(END_MS - 7 * DAY_MS, END_MS + 1, 300_000):
         if t < END_MS - 2 * DAY_MS and (t // 300_000) % 6:
             continue  # every 30 minutes before the last 2 days, every 5 minutes after
