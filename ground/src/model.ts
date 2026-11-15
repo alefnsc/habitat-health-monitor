@@ -83,6 +83,7 @@ export function reduce(view: GroundView, arrival: Arrival, nowMs: number): Groun
         source_kind: p.source_kind ?? null,
         measured_at: p.measured_at,
         crew,
+        node: p.node ?? null,
         greyed: flagged,
       };
       latest.set(key, entry);
@@ -111,6 +112,21 @@ export function reduce(view: GroundView, arrival: Arrival, nowMs: number): Groun
     alerts,
     seen,
   };
+}
+
+/** Nodes whose readings are synthetic (the replay node). */
+export const SYNTHETIC_NODES = new Set(["sim-1"]);
+
+/** True when the Readings table shows at least one synthetic reading. */
+export function showsSynthetic(view: GroundView): boolean {
+  for (const e of view.latest.values()) if (e.node !== null && SYNTHETIC_NODES.has(e.node)) return true;
+  return false;
+}
+
+/** Ground-clock time of an arrival: its received_at, or `fallbackMs` when that is not a date. */
+export function arrivalMs(a: Arrival, fallbackMs: number): number {
+  const t = Date.parse(a.received_at);
+  return Number.isNaN(t) ? fallbackMs : t;
 }
 
 function two(n: number): string {

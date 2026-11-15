@@ -69,14 +69,14 @@ export function render(
   root.innerHTML = `
     ${banner ? `<p class="banner" role="status">${esc(banner)}</p>` : ""}
     <header>
-      <h1>Ground segment ${DASH} Earth's view</h1>
+      <h2>Earth's view</h2>
       <p class="asof">${esc(asOf)}</p>
       <p>T = ${utcClock(nowMs)} UTC ${silence ? `<span class="silence">${esc(silence)}</span>` : ""}</p>
     </header>
     <section aria-label="Link"><h2>Link</h2>${linkPanel}</section>
     <section aria-label="Readings"><h2>Readings</h2>
-      <table><thead><tr><th>Indicator</th><th>Value</th><th>Status</th><th>Basis</th><th>Source</th><th>Crew</th><th>Measured</th></tr></thead>
-      <tbody>${rows}</tbody></table>
+      <div class="table-scroll"><table><thead><tr><th>Indicator</th><th>Value</th><th>Status</th><th>Basis</th><th>Source</th><th>Crew</th><th>Measured</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>
     </section>
     <section aria-label="Alerts"><h2>Alerts</h2>${alerts ? `<ul>${alerts}</ul>` : "<p>No alerts received.</p>"}</section>`;
 }

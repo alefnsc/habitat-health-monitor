@@ -4,7 +4,14 @@
 }
 body {
   margin: 0;
+  padding: 0 1rem 2rem;
 }
+.site h1 { font-size: 1.5rem; margin: 1rem 0 0.25rem; }
+.site p { margin: 0.25rem 0; }
+p, li, dd { overflow-wrap: anywhere; }
+/* Wide tables scroll inside their own box, never the page (phones). */
+.table-scroll { max-width: 100%; overflow-x: auto; }
+.table-scroll th, .table-scroll td { white-space: nowrap; }
 main {
   max-width: 48rem;
   margin: 0 auto;
@@ -24,7 +31,7 @@ tr.greyed { opacity: 0.5; }
 .status-watch { color: #9a6700; }
 .status-act { color: #cf222e; }
 .status-unknown { color: #6e7781; }
-dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.25rem 1rem; }
+dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.25rem 1rem; }
 dt { font-weight: bold; }
 
 /* Overview: habitat map + Mars link (plain SVG) */
@@ -63,6 +70,7 @@ dt { font-weight: bold; }
 }
 .overview svg {
   flex: 1 1 22rem;
+  min-width: 0;
   max-width: 40rem;
   height: auto;
   font-family: system-ui, sans-serif;

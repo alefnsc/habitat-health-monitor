@@ -1,10 +1,10 @@
 import "./style.css";
-import { emptyView, reduce } from "./model";
+import { arrivalMs, emptyView, reduce } from "./model";
 import { apiBase, replayUrl } from "./paths";
 import { loadReplay, positionLabel, replayBanner, replaySource } from "./replay";
 import type { GuidanceItem } from "./replay";
 import { render, renderCrewView } from "./render";
-import { LIVE_BANNER, decideMode, fetchSummary } from "./mode";
+import { decideMode, fetchSummary, liveBanner } from "./mode";
 import { liveSource } from "./sources";
 import type { GroundView } from "./types";
 import { emptyLit, litSpots, noteArrival, spotsInFile } from "./habitat";
@@ -34,13 +34,14 @@ function startLive(): void {
   liveSource(
     base,
     (a) => {
-      view = reduce(view, a, Date.now());
-      lit = noteArrival(lit, a, Date.now());
+      const now = Date.now();
+      view = reduce(view, a, arrivalMs(a, now));
+      lit = noteArrival(lit, a, now);
     },
     (...args) => fetch(...args),
   );
   const draw = () =>
-    render(root, view, Date.now(), import.meta.env.VITE_GROUND_SOURCE === "auto" ? LIVE_BANNER : null);
+    render(root, view, Date.now(), import.meta.env.VITE_GROUND_SOURCE === "auto" ? liveBanner(view) : null);
   draw();
   setInterval(draw, 500);
   animate(() => {
