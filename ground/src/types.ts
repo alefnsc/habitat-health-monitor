@@ -53,6 +53,8 @@ export interface LatestEntry {
   source_kind: string | null;
   measured_at: string;
   crew: string | null;
+  /** Node that made the reading; sim-1 is synthetic. */
+  node: string | null;
   greyed: boolean;
 }
 
