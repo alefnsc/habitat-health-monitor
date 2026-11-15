@@ -61,7 +61,7 @@ apart. If time runs out, P2 `search` is cut first, then P2 entirely; the cut par
 - **Ring later.** Add `RING_CLIENT_ID=<secret>,RING_CLIENT_SECRET=<secret>` to `VAULT_MAP` and run
   `python -m tools.vault run -- python -m nodes.ring pull`. The importer reads the environment before `.env`
   already, so `nodes/ring/` does not change.
-- **Rejected:** writing the values into `.env` (secrets on disk) and the Azure SDK for Python (new dependencies; the
+- **Rejected:** writing the values into `.env` (secrets on disk) and the key vault's Python SDK (new dependencies; the
   team owner asked for the command line).
 
 ## 5. P2: FoodData Central tool
