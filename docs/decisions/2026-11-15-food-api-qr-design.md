@@ -43,7 +43,7 @@ apart. If time runs out, P2 `search` is cut first, then P2 entirely; the cut par
   - an unknown or foreign code shows "This code is not a food in the catalogue." and keeps scanning;
   - a "Pack code" text field does the same for a typed code, for browsers without `BarcodeDetector` or a camera.
 - **Offline.** The lookup is the catalogue the console already loaded from `/api/food/catalog`. No network call.
-- **Code.** Pure functions `parsePackCode` and `packCodeFor` in `console/src/model/scan.ts`; the camera loop and the
+- **Code.** A pure function `parsePackCode` in `console/src/model/scan.ts`; the camera loop and the
   button live in the food view. All new text goes through `console/src/copy.ts`.
 
 ## 4. P1: secret runner
@@ -91,7 +91,7 @@ apart. If time runs out, P2 `search` is cut first, then P2 entirely; the cut par
 
 ## 7. Testing
 
-- **Console (vitest):** `parsePackCode` (valid, unknown id, foreign text, whitespace, wrong prefix), `packCodeFor`,
+- **Console (vitest):** `parsePackCode` (valid, unknown id, foreign text, whitespace, wrong prefix)
   and the copy lint.
 - **Python (pytest):** the runner with a fake `az` (the value reaches the child; never captured output; missing
   config; `az` failure); `fdc search` and `fdc add` with mocked HTTP (respx): one item appended, others unchanged,
