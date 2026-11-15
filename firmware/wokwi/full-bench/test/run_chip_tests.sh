@@ -8,3 +8,5 @@ mkdir -p "$out"
 trap 'rm -rf "$out"' EXIT
 cc -std=c11 -Wall -Wextra -Werror -I "$here/stub" "$here/test_hub_chip.c" -o "$out/t_hub"
 "$out/t_hub"
+cc -std=c11 -Wall -Wextra -Werror -I "$here/stub" "$here/test_bmp280_chip.c" -o "$out/t_bmp280" -lm
+"$out/t_bmp280"

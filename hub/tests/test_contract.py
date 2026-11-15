@@ -295,8 +295,8 @@ def test_ring_node_and_device():
     assert (r.node, r.dev, r.age_ms, r.crew) == ("ring-1", "RING", 3_600_000, "crew-b")
     root = Path(__file__).resolve().parents[2]
     fw = root / "firmware/libraries/HabitatNode/src"
-    assert "DEV_RING, DEV_COUNT" in (fw / "ReadingFormat.h").read_text()
-    assert '"KY017", "RING"}' in (fw / "ReadingFormat.cpp").read_text()
+    assert "DEV_RING, DEV_BMP280, DEV_COUNT" in (fw / "ReadingFormat.h").read_text()
+    assert '"KY017", "RING", "BMP280"}' in (fw / "ReadingFormat.cpp").read_text()
     assert '"dev.RING": "Ring (delayed cloud sync)"' in (root / "console/src/copy.ts").read_text()
 
 

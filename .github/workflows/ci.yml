@@ -102,6 +102,8 @@ jobs:
           firmware/exercise-uno/test/run_host_tests.sh
           firmware/tilt-esp8266/test/run_host_tests.sh
           firmware/vitals-esp32/test/run_host_tests.sh
+          firmware/bmp280/test/run_host_tests.sh
+          firmware/bmp280/check_sync.sh
       - name: Wokwi chip tests and copy checks
         run: |
           firmware/wokwi/full-bench/test/run_chip_tests.sh

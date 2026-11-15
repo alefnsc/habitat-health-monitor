@@ -20,8 +20,9 @@ PART_PINS = {
     "wokwi-slide-switch": {"1", "2", "3"},
     "chip-nimh-pack": {"+", "-"},
     "chip-rpi3-hub": {"RX", "TX", "GND", "PWR_IN", "MICROSD", "HEADER_EMPTY"},
+    "chip-bmp280": {"VCC", "GND", "SCL", "SDA", "CSB", "SDO"},
 }
-UNO_PINS = {"5V", "GND.1", "GND.2", "GND.3", "A0", "A1"} | {str(i) for i in range(14)}
+UNO_PINS = {"5V", "3.3V", "GND.1", "GND.2", "GND.3", "A0", "A1", "A4", "A5"} | {str(i) for i in range(14)}
 ESP_PINS = {"3V3", "VIN", "GND.1", "GND.2"} | {
     f"D{i}" for i in (2, 4, 5, 12, 13, 14, 15, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35)
 }
@@ -176,3 +177,12 @@ def test_readme_lists_paste_files_and_link() -> None:
     ):  # fmt: skip
         assert f in readme and (BENCH / f).is_file(), f
     assert "https://wokwi.com/projects/" in readme
+
+
+def test_bmp280_chip_runs_on_3v3_and_the_i2c_pins() -> None:
+    """The simulated BMP280 sits where the real one does: 3.3V (never 5V), A4 SDA, A5 SCL."""
+    d = _diagram()
+    wires = {frozenset(c[:2]) for c in d["connections"]}
+    for pair in (("baro:VCC", "uno:3.3V"), ("baro:SDA", "uno:A4"), ("baro:SCL", "uno:A5")):
+        assert frozenset(pair) in wires, pair
+    assert not any("baro:VCC" in c[:2] and "uno:5V" in c[:2] for c in d["connections"])
