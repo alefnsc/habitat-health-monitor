@@ -25,17 +25,19 @@ export async function mountReplayApp(root: HTMLElement, o: { base: string; fetch
   const mainEl = el("main", {}, title, controls, screen, el("p", { class: "footnote", text: COPY["app.disclaimer"] }));
   root.replaceChildren(banner, replayBar, el("header", { class: "top" }, nav), mainEl);
 
+  // Both files at once. The exercise replay is optional: without it the lift cards keep their empty text.
+  const replayRes = o.fetchImpl(`${o.base}replay.json`);
+  const exerciseP = o.fetchImpl(`${o.base}exercise-day.jsonl`).then((r) => (r.ok ? r.text() : "")).catch(() => "");
   let file;
   try {
-    const res = await o.fetchImpl(`${o.base}replay.json`);
+    const res = await replayRes;
     if (!res.ok) throw new Error("Replay file not recognised");
     file = parseReplayFile(await res.json());
   } catch {
     root.replaceChildren(el("p", { text: COPY["replay.notRecognised"] }));
     return;
   }
-  // Optional: without it the lift cards keep their empty text.
-  const exerciseText = await o.fetchImpl(`${o.base}exercise-day.jsonl`).then((r) => (r.ok ? r.text() : "")).catch(() => "");
+  const exerciseText = await exerciseP;
 
   const buttons = new Map<string, HTMLButtonElement>();
   for (const s of SCREENS) {
