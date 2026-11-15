@@ -79,6 +79,14 @@ CATALOGUE: tuple[Spec, ...] = (
          limits=(INDEPENDENCE, CAMERA, NOT_FOOD), unit="kg_m"),
     Spec("lift_tilt_agreement", "baseline", "lift_tilt", None, 60 * D, None, 7, 0.0, True,
          side="high", limits=(RIG_CHECK,), unit="ms"),
+    Spec("cabin_vs_earth", "lagged_pair", "cabin_earth", None, 7 * D, None, 20, 0.0, False,
+         limits=(OWN_DATA, NEIGHBOUR_HOURS, EARTH)),
+    Spec("training_vs_rest_hr", "lagged_pair", "training_rest_hr", None, 60 * D, None, 20, 0.0,
+         True, limits=(OWN_DATA, CAMERA, RING)),
+    Spec("last_meal_vs_sleep", "lagged_pair", "meal_sleep", None, 60 * D, None, 20, 0.0, True,
+         limits=(OWN_DATA, LOGGED_ONLY, RING)),
+    Spec("space_weather_vs_sleep", "lagged_pair", "space_weather_sleep", None, 60 * D, None, 20,
+         0.0, True, limits=(OWN_DATA, ON_EARTH)),
 )  # fmt: skip
 
 BY_ID: dict[str, Spec] = {s.id: s for s in CATALOGUE}
