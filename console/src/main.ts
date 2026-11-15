@@ -15,6 +15,7 @@ import { renderExercise } from "./views/exercise";
 import { renderHistory } from "./views/history";
 import { renderLanes } from "./views/lanes";
 import { renderPanel } from "./views/panel";
+import { renderSignals } from "./views/signals";
 import { entryForTile, openGuidance, setLinkState } from "./views/guidance";
 import { refreshBanner, renderNasa, startBanner } from "./views/nasa";
 import { loadBoard, renderStatus } from "./views/status";
@@ -92,6 +93,7 @@ export function mountApp(root: HTMLElement): void {
     else if (cur === "exercise") dispose = renderExercise(screen);
     else if (cur === "nasa") dispose = renderNasa(screen);
     else if (cur === "food") dispose = renderFood(screen);
+    else if (cur === "signals") dispose = renderSignals(screen);
     else screen.append(el("p", { text: COPY["screen.pending"] }));
   };
   window.addEventListener("hashchange", render);

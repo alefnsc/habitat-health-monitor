@@ -1,7 +1,9 @@
+// @vitest-environment jsdom
 // D45 signals: the wording model and the screen's cards, from hub-shaped signal objects.
 import { describe, expect, test } from "vitest";
 import type { Prompt, Signal, SignalsBody } from "../src/contract";
 import { fmt, groupOf, headline, lagLines, limitLines, missingLines, notableCount, selfCheckFor } from "../src/model/signals";
+import { renderSignalsBody } from "../src/views/signals";
 
 const NOW = Date.parse("2026-11-20T10:00:00Z");
 
@@ -66,5 +68,52 @@ describe("signals model", () => {
     expect(earth).toContain("not the bench itself");
     expect(iss).toContain("US Lab ppCO2 item only");
     expect(iss).not.toContain("Node 3");
+  });
+});
+
+describe("signals screen", () => {
+  test("cards per group, not-enough-data greyed and shown, replay chips", () => {
+    const root = document.createElement("div");
+    const body: SignalsBody = { crew: "crew-a", at: "x", signals: [
+      sig({ state: "notable", headline_key: "signals.baseline.above", value: { estimate: 66, low: 54, high: 60, unit: "bpm", per: null } }),
+      sig({ id: "water_14d", state: "not_enough_data", headline_key: "signals.nodata", value: null,
+        missing: [{ key: "signals.missing.days", need: 11, have: 9 }], replay: true,
+        inputs: [{ ...sig().inputs[0], ind: "intake_water_ml", src: "replay", dev: "catalog" }] }),
+    ] };
+    renderSignalsBody(root, body, [], NOW);
+    const t = root.textContent ?? "";
+    expect(t).toContain("Body");
+    expect(t).toContain("Food and body mass");
+    expect(t).toContain("Above your own usual range: 66.0 bpm");
+    expect(t).toContain("Needs 11 days with a value; has 9.");
+    expect(t).toContain("Replay (recorded) · catalog");
+    expect(t).toContain("This is not a diagnosis.");
+    expect(root.querySelector('[data-signal="water_14d"]')?.classList.contains("greyed")).toBe(true);
+    expect(root.querySelector('[data-signal="rest_hr_baseline"]')?.classList.contains("watch")).toBe(true);
+  });
+
+  test("signals off on the hub", () => {
+    const root = document.createElement("div");
+    renderSignalsBody(root, null, [], NOW);
+    expect(root.textContent).toContain("the signals feature is off");
+  });
+
+  test("the outdoor data credit is on the cabin_vs_earth card only", () => {
+    const root = document.createElement("div");
+    const pair = sig({ id: "cabin_vs_earth", kind: "lagged_pair", crew: null, value: null, headline_key: "signals.pair.few",
+      limits: ["signals.limit.earthReference"], detail: { lags: [] },
+      inputs: [{ ...sig().inputs[0], ind: "earth_temp", src: "ref", dev: "WEATHER" }] });
+    const body: SignalsBody = { crew: null, at: "x", signals: [
+      pair, sig(), sig({ id: "cabin_temp_6h", crew: null, kind: "trend", limits: ["signals.limit.benchSensor"] }),
+    ] };
+    renderSignalsBody(root, body, [], NOW);
+    const credit = "Weather data by Open-Meteo.com (CC BY 4.0)";
+    const cards = [...root.querySelectorAll<HTMLElement>("[data-signal]")];
+    expect(cards.length).toBe(3);
+    for (const c of cards) {
+      expect(c.textContent?.includes(credit), c.dataset.signal).toBe(c.dataset.signal === "cabin_vs_earth");
+    }
+    expect((root.textContent ?? "").split(credit).length - 1).toBe(1);
+    expect(root.querySelector('[data-signal="cabin_vs_earth"] a')).toBeNull();
   });
 });

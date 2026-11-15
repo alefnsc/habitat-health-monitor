@@ -65,6 +65,8 @@ describe("honesty lint", () => {
     expect(signalTexts.length).toBeGreaterThan(60);
     expect(bad(rulePrediction, signalTexts)).toEqual([]);
     expect(bad(ruleCameraWording, signalTexts)).toEqual([]);
+    // The one approved vendor name: the outdoor data's licence credit, in one copy key only.
+    expect(ALL.filter((w) => /open-?meteo/i.test(w.text)).map((w) => w.where)).toEqual(["COPY.signals.credit.weather"]);
   });
 
   test("self-check: rules catch the fixed samples", () => {

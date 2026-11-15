@@ -393,6 +393,8 @@ export const COPY: Record<string, string> = {
   "signals.limit.rigCheck": "A check on the rig and camera timing, not on the crew.",
   "signals.limit.onEarth": "The bench crew is on Earth, shielded by the atmosphere. This pairing shows the method, not an effect.",
   "signals.limit.loggedOnly": "Only what was logged. A day without an entry has no value.",
+  // The one vendor name in the console: the outdoor data's licence (CC BY 4.0) asks for this credit next to the data.
+  "signals.credit.weather": "Weather data by Open-Meteo.com (CC BY 4.0)",
   "signals.unit.kg_m": "kg·m",
   "signals.per.h": "hour",
   "signals.per.day": "day",

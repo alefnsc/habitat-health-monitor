@@ -144,3 +144,9 @@ svg.linkstrip text.lt { fill: var(--text); font-size: 26px; font-weight: 650; }
 .food-scan { margin: 0.5rem 0; }
 .food-scan-video { display: block; width: min(100%, 320px); margin-top: 0.5rem; border-radius: 6px; }
 .food-scan-video[hidden] { display: none; }
+
+/* D45 signals */
+.signal p { margin: 6px 0; }
+.spark { width: 100%; height: 30px; margin: 4px 0; }
+.spark svg { width: 100%; height: 100%; display: block; }
+.spark polyline { fill: none; stroke: var(--muted); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
