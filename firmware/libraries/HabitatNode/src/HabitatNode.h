@@ -7,6 +7,7 @@
 #include <Arduino.h>
 #include <MQTT.h>
 
+#include "MqttLink.h"
 #include "ReadingFormat.h"
 #include "RingBuffer.h"
 
@@ -27,7 +28,7 @@ uint32_t bumpBootCounter();
 struct HabitatConfig {
   const char* wifi_ssid;
   const char* wifi_pass;
-  const char* mqtt_host;
+  const char* mqtt_host;  // an IP or a hostname (.local works over mDNS); resolved on each try
   uint16_t mqtt_port;
   const char* mqtt_user;
   const char* mqtt_pass;
@@ -50,7 +51,8 @@ class HabitatNode {
 
   // Fixes seq now (first message is 1). Safe to call from another core on ESP32.
   void queue(uint8_t ind, float val, uint8_t dev, uint8_t q);
-  // Call often: reconnects with backoff, drains the ring oldest first.
+  // Call often: reconnects with backoff, drains the ring oldest first. Every failed MQTT attempt
+  // prints "# mqtt fail ..." with the host and the address it resolved to (MqttLink.h).
   void loop();
   uint32_t boot() const { return boot_; }
 
@@ -58,9 +60,22 @@ class HabitatNode {
   void lock();
   void unlock();
   void connectWifi(uint32_t now);
-  void connectMqtt(uint32_t now);
-  void drain(uint32_t now);
   void diagnostics(uint32_t now);
+
+  // What MqttLink needs from the board: the MQTT client, DNS, Serial and the ring lock.
+  struct Port {
+    HabitatNode& node;
+    bool connected();
+    bool resolve(const char* host, uint16_t port, char* ip, size_t cap);
+    bool connect(const char* id, const char* user, const char* pass);
+    int returnCode();
+    int lastError();
+    bool publish(const char* topic, const char* payload, int len, bool retained, int qos);
+    void poll();
+    void lock() { node.lock(); }
+    void unlock() { node.unlock(); }
+    void log(const char* line);
+  };
 
   HabitatConfig cfg_;
   char node_[16];
@@ -71,10 +86,10 @@ class HabitatNode {
   RingBuffer<habitat::PendingReading, 32> ring_;
   WiFiClient net_;
   MQTTClient mqtt_;
+  Port port_;
+  habitat::MqttLink<Port, 32> link_;
   bool wifi_was_up_;
-  bool mqtt_was_up_;
-  uint32_t wifi_retry_at_, wifi_backoff_ms_;
-  uint32_t mqtt_retry_at_, mqtt_backoff_ms_;
+  habitat::Backoff wifi_backoff_;
   uint32_t last_diag_ms_;
   uint32_t last_dropped_;
 #if defined(ARDUINO_ARCH_ESP32)

@@ -29,8 +29,9 @@ The Pi takes these, and nothing else:
 - The LAN jack is not used.
 - Two settings change when the Pi becomes the hub:
   - in the hub's `.env` on the Pi: `HUB_SERIAL_PORT=/dev/ttyACM0` (step 10);
-  - in the NodeMCU's `secrets.h`: `MQTT_HOST` becomes the Pi's address from `hostname -I` (step 14). The ESP8266
-    does not resolve `.local` names, so it needs the address. Flash it last, once the Pi hub works: until then the
+  - in the NodeMCU's `secrets.h`: `MQTT_HOST` becomes the Pi's address from `hostname -I` (step 14). HabitatNode
+    accepts a `.local` name too, but that is untested on the bench board, so use the address
+    (`firmware/tilt-esp8266/README.md`, "Broker address"). Flash it last, once the Pi hub works: until then the
     laptop hub stays a working fallback.
 
 ## What you need
