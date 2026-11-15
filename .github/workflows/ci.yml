@@ -115,3 +115,86 @@ jobs:
         run: |
           cp firmware/tilt-esp8266/secrets.example.h firmware/tilt-esp8266/secrets.h
           arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
+
+  # D47: the image and the compose stack. Nothing is pushed to any registry.
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      HOST_HUB_PORT: "18000"
+      HOST_BROKER_PORT: "18830"
+      HOST_LINKSIM_PORT: "18200"
+      HOST_RECEIVER_PORT: "18100"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t habitat-health-monitor:local .
+      # A throwaway broker password and .env, made here and gone with the runner.
+      - name: Throwaway broker password and .env
+        run: |
+          pw="$(openssl rand -hex 16)"
+          echo "::add-mask::$pw"
+          docker run --rm --user "$(id -u):$(id -g)" -v "$PWD/hub/mosquitto:/work" eclipse-mosquitto:2 \
+            mosquitto_passwd -b -c /work/passwd habitat "$pw"
+          ( umask 077 && printf 'HUB_MQTT_USER=habitat\nHUB_MQTT_PASS=%s\nDONKI_MODE=replay\n' "$pw" > .env )
+      - name: Start the stack with the sim profile (synthetic data)
+        run: docker compose -p habitat-ci --profile sim up -d
+      - name: Hub, linksim and receiver answer
+        run: |
+          for url in http://127.0.0.1:18000/api/status http://127.0.0.1:18200/link/state \
+                     http://127.0.0.1:18100/ground/summary; do
+            for _ in $(seq 1 60); do curl -fsS "$url" >/dev/null 2>&1 && break; sleep 2; done
+            curl -fsS "$url" >/dev/null || { echo "no answer from $url"; exit 1; }
+            echo "ok $url"
+          done
+      - name: The hub stored sim-1 readings, the broker took its login, the receiver got items
+        run: |
+          count() { curl -fsS "$1" 2>/dev/null | python3 -c "$2" 2>/dev/null || echo 0; }
+          for _ in $(seq 1 30); do
+            n=$(count 'http://127.0.0.1:18000/api/readings?ind=cabin_temp&limit=50' \
+              'import json,sys; print(sum(r["node"] == "sim-1" for r in json.load(sys.stdin)))')
+            [ "$n" -gt 0 ] && break
+            sleep 2
+          done
+          echo "sim-1 cabin_temp readings: $n"
+          [ "$n" -gt 0 ]
+          curl -fsS -o /dev/null http://127.0.0.1:18000/
+          curl -fsS -o /dev/null http://127.0.0.1:18000/camera/
+          docker compose -p habitat-ci logs hub > hub.log
+          grep -q 'mqtt connected to broker:1883' hub.log
+          for _ in $(seq 1 30); do
+            s=$(count http://127.0.0.1:18100/ground/summary 'import json,sys; print(json.load(sys.stdin)["stored"])')
+            [ "$s" -gt 0 ] && break
+            sleep 2
+          done
+          echo "receiver stored: $s"
+          [ "$s" -gt 0 ]
+      - name: Logs on failure
+        if: failure()
+        run: docker compose -p habitat-ci --profile sim logs --no-color | tail -n 200
+      - name: Tear down
+        if: always()
+        run: docker compose -p habitat-ci --profile sim down -v
+
+  # The same image for the Raspberry Pi 3 on 64-bit Raspberry Pi OS. The web stage runs natively;
+  # the Python stage runs under QEMU. Built and loaded on the runner only, never pushed.
+  docker-arm64:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/arm64
+          push: false
+          load: true
+          tags: habitat-health-monitor:arm64
+      - name: The arm64 image imports every package
+        run: |
+          docker run --rm --platform linux/arm64 habitat-health-monitor:arm64 \
+            python -c "import platform, hub.api, hub.sim, linksim, receiver.app; print(platform.machine())"
