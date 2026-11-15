@@ -4,7 +4,7 @@ import { join } from "node:path";
 import type { RefusalReason, RepResult, SessionResult } from "@ground-truth/capture";
 import { G_ENV_MS2 } from "@ground-truth/physics";
 import { createSequencer } from "../src/seq";
-import { ENVIRONMENT_MENU, EXERCISE_MENU, analyseRecording, exerciseCaption, inputProblemText, parseExercise, refusalText, resultView, toRepMessages } from "../src/reps";
+import { ENVIRONMENT_MENU, EXERCISE_MENU, MARS_G_MS2, analyseRecording, exerciseCaption, inputProblemText, parseExercise, refusalText, resultView, toRepMessages } from "../src/reps";
 import { refusalSentences, repNotes } from "../../vendor/ground-truth/demo/src/model/captureFlow";
 import { syntheticSession } from "../../vendor/ground-truth/capture/test/helpers";
 import { ruleBrand, ruleCalories, ruleDiagnosis, ruleNonEnglish, ruleTreatmentDose } from "../../console/tests/honesty";
@@ -68,12 +68,22 @@ describe("reps", () => {
   });
 
   test("test_gravity_import", () => {
+    // Earth, Moon and the ISS come from the vendored table. Mars is the NASA NSSDC mean surface gravity,
+    // 3.73 m/s²: the vendored 3.71 is not on that fact sheet (docs/img/image-facts.md).
     expect(ENVIRONMENT_MENU.map((e) => [e.id, e.g])).toEqual([
-      ["EARTH", G_ENV_MS2.EARTH], ["MOON", G_ENV_MS2.MOON], ["MARS", G_ENV_MS2.MARS], ["ISS", G_ENV_MS2.ISS],
+      ["EARTH", G_ENV_MS2.EARTH], ["MOON", G_ENV_MS2.MOON], ["MARS", MARS_G_MS2], ["ISS", G_ENV_MS2.ISS],
     ]);
-    expect(ENVIRONMENT_MENU.map((e) => e.g)).toEqual([9.81, 1.62, 3.71, 0]);
+    expect(ENVIRONMENT_MENU.map((e) => e.g)).toEqual([9.81, 1.62, 3.73, 0]);
     const dir = join(__dirname, "..", "src");
     for (const f of readdirSync(dir)) expect(/\b3\.71\b|\b1\.62\b/.test(readFileSync(join(dir, f), "utf8")), f).toBe(false);
+  });
+
+  test("test_one_mars_gravity_with_the_panel", () => {
+    // The console's four-places card rescales a rep by rep.g; the camera must log the same Mars g.
+    const places = readFileSync(join(__dirname, "..", "..", "console", "src", "model", "panel", "places.ts"), "utf8");
+    const m = /key: "mars", g: ([0-9.]+)/.exec(places);
+    expect(m).not.toBeNull();
+    expect(ENVIRONMENT_MENU.find((e) => e.id === "MARS")!.g).toBe(Number(m![1]));
   });
 
   test("test_iss_zero_g", () => {
