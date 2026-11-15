@@ -9,6 +9,7 @@ import { formatTrainingWork } from "../model/exercise";
 import {
   NUTRIENT_LABEL, buildMealRequest, formatNutrient, mealPreview, reportedBy, validSelection, type Selection,
 } from "../model/food";
+import { packScanner } from "./scan";
 
 const msg = (e: unknown) => (e instanceof ApiError || e instanceof Error ? e.message : String(e));
 
@@ -85,13 +86,19 @@ export function renderFood(root: HTMLElement): () => void {
   const servings = el("input", { id: "food-servings", type: "number", min: 0.5, max: 20, step: 0.5, value: 1 });
   const add = el("button", { type: "button", text: COPY["food.addItem"] });
   const log = el("button", { type: "button", text: COPY["food.logMeal"] });
+  const scanner = packScanner(() => catalog, (id) => {
+    picker.value = id;
+    const item = catalog?.items.find((x) => x.id === id);
+    notice.textContent = `${COPY["food.scanPicked"]}${item?.name ?? id}. ${COPY["food.scanNext"]}`;
+    servings.focus();
+  });
 
   root.replaceChildren(
     el("p", { class: "footnote", text: COPY["food.disclaimer"] }),
     err,
     el("section", {}, el("h3", { text: COPY["food.logTitle"] }),
       el("label", { for: "food-item", text: `${COPY["food.pickItem"]} ` }), picker, " ",
-      el("label", { for: "food-servings", text: `${COPY["food.servings"]} ` }), servings, " ", add, draft, draftSums, log, notice),
+      el("label", { for: "food-servings", text: `${COPY["food.servings"]} ` }), servings, " ", add, scanner.node, draft, draftSums, log, notice),
     el("h3", { text: COPY["food.dayTitle"] }), dayBox,
     trainBox,
     refBox,
@@ -188,6 +195,7 @@ export function renderFood(root: HTMLElement): () => void {
   });
   return () => {
     disposed = true;
+    scanner.stop();
     off();
   };
 }

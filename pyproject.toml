@@ -20,10 +20,11 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "respx", "pytest-asyncio"]
+dev = ["pytest", "ruff", "respx", "pytest-asyncio", "segno"]
 analysis = ["matplotlib", "numpy"]
 pi = ["smbus2"]  # cabin node on a Raspberry Pi (MIT)
 cloud = ["upstash-redis"]  # public ground segment (MIT)
+labels = ["segno"]  # printable food pack QR labels, tools/food/qr_labels.py (BSD-3-Clause)
 
 [tool.setuptools.packages.find]
 where = [".", "ground"]
