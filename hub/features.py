@@ -7,6 +7,7 @@ Every feature module is imported under a guard: a cut or broken task lands in
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import importlib
 import inspect
 import logging
@@ -72,6 +73,7 @@ _TABLE: dict[str, dict[str, tuple[str, ...]]] = {
     "signals": {
         "hub.signals.engine": ("evaluate",),
         "hub.signals.routes": ("router", "SignalsState"),
+        "hub.signals.trigger": ("SignalTrigger",),
     },
 }
 
@@ -119,12 +121,14 @@ class FeatureRuntime:
     iss_client: Any | None = None
     mcp: Any | None = None
     wearable: Any | None = None
+    signals_trigger: Any | None = None
     badge_handlers: list[Callable[[str, str, datetime], object]] = field(default_factory=list)
     _poller: Any | None = None  # (coroutine factory) built by wire_features
     _client: httpx.AsyncClient | None = None
     _task: asyncio.Task | None = None
     _stop: asyncio.Event | None = None
     _stack: AsyncExitStack | None = None
+    _trigger_task: asyncio.Task | None = None
 
     async def start(self, stop: asyncio.Event) -> None:
         self._stop = stop
@@ -141,6 +145,8 @@ class FeatureRuntime:
                     await r
             except Exception:
                 log.exception("iss client failed to start")
+        if self.signals_trigger is not None:
+            self._trigger_task = asyncio.create_task(_run_trigger(self.signals_trigger, stop))
         if self.mcp is not None:
             self._stack = AsyncExitStack()
             try:
@@ -150,6 +156,10 @@ class FeatureRuntime:
                 self._stack = None
 
     async def stop(self) -> None:
+        if self._trigger_task is not None:
+            self._trigger_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await self._trigger_task
         if self._stack is not None:
             try:
                 await self._stack.aclose()
@@ -175,6 +185,18 @@ class FeatureRuntime:
                 await self._client.aclose()
             except Exception:
                 log.exception("http client failed to close")
+
+
+async def _run_trigger(trigger: Any, stop: asyncio.Event) -> None:
+    """The signals self-check loop (D45 §8): one tick every period_s, errors logged and survived."""
+    period = getattr(trigger, "period_s", 300)
+    while not stop.is_set():
+        try:
+            await asyncio.to_thread(trigger.tick)
+        except Exception:
+            log.exception("signals trigger tick failed")
+        with contextlib.suppress(TimeoutError):
+            await asyncio.wait_for(stop.wait(), timeout=period)
 
 
 def _guard(
@@ -305,6 +327,12 @@ def wire_features(app: FastAPI, features: Features, ctx: HubContext) -> FeatureR
             ctx.store, ctx.assessor.rules, crews, settings.tz, ctx.clock
         )
         app.include_router(routes.router)
+        prompts = getattr(app.state, "prompts", None)
+        if prompts is not None:
+            rt.signals_trigger = f.mod("hub.signals.trigger").SignalTrigger(
+                ctx.store, ctx.assessor.rules, prompts, crews=crews, tz=settings.tz,
+                clock=ctx.clock,
+            )  # fmt: skip
 
     if "signals" in on and "signals" not in f.skipped:
         _guard(f, "signals", build_signals)
