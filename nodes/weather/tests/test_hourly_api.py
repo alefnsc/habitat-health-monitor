@@ -92,3 +92,25 @@ def test_an_http_error_names_the_status_but_never_the_url_or_location():
 def test_default_provider_needs_the_api_url():
     assert isinstance(default_provider(-23.6, -46.7, None), NoProvider)
     assert isinstance(default_provider(-23.6, -46.7, URL), HourlyApi)
+
+
+def test_the_request_url_is_not_logged_even_at_info(caplog):
+    def handler(req: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json=sample())
+
+    rows_all = parse(sample())
+    api = HourlyApi(URL, -23.6, -46.7, http=client(handler))
+    with caplog.at_level("DEBUG"):
+        api.hours(rows_all[0].t, rows_all[-1].t)
+    assert (
+        "-23.6" not in caplog.text
+        and "46.7" not in caplog.text
+        and "weather.example" not in caplog.text
+    )
+
+
+def test_a_non_numeric_value_is_a_clean_api_error():
+    data = sample()
+    data["hourly"]["surface_pressure"][0] = "n/a"
+    with pytest.raises(WeatherApiError, match="value"):
+        parse(data)

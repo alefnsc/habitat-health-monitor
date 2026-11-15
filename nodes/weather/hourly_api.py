@@ -8,12 +8,18 @@ logged, printed or put in an error message.
 
 from __future__ import annotations
 
+import logging
 import math
 from datetime import UTC, datetime, timedelta
 
 import httpx
 
 from nodes.weather.mapper import HourRow
+
+# httpx logs every request line, query string included, at INFO: that would put the coarse cell in a
+# log. Only this importer process loads this module (the hub never does), so quieten it here.
+for _name in ("httpx", "httpcore"):
+    logging.getLogger(_name).setLevel(logging.WARNING)
 
 HOURLY = ("temperature_2m", "relative_humidity_2m", "surface_pressure")
 UNITS = {"temperature_2m": "°C", "relative_humidity_2m": "%", "surface_pressure": "hPa"}
@@ -40,8 +46,12 @@ def parse(data: dict) -> list[HourRow]:
     rows = []
     for i, t in enumerate(times):
         vals = [c[i] if i < len(c) else None for c in cols]
-        temp, rh, p = (None if v is None else float(v) for v in vals)
-        rows.append(HourRow(datetime.fromtimestamp(int(t), UTC), temp, rh, p))
+        try:
+            temp, rh, p = (None if v is None else float(v) for v in vals)
+            at = datetime.fromtimestamp(int(t), UTC)
+        except (TypeError, ValueError, OverflowError):
+            raise WeatherApiError(f"weather API sent a non-numeric value at hour {i}") from None
+        rows.append(HourRow(at, temp, rh, p))
     rows.sort(key=lambda r: r.t)
     return rows
 
