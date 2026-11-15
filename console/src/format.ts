@@ -68,3 +68,22 @@ export function formatTimeUtc(iso: string): string {
   const mm = String(d.getUTCMinutes()).padStart(2, "0");
   return `${hh}:${mm} UTC`;
 }
+
+/** A source chip: the reference alone when it already starts with the kind label, so the standard is named once. */
+export function chipSource(kindLabel: string, ref: string | null): string {
+  if (!ref) return kindLabel;
+  return ref.startsWith(kindLabel) ? ref : `${kindLabel} ${ref}`;
+}
+
+/** 24-hour UTC clock stamp for chart axes ("13:05"). */
+export function hhmmUtc(tS: number): string {
+  const d = new Date(tS * 1000);
+  return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+}
+
+/** Axis stamp: "13:05" for windows up to 36 hours, "11-14" (UTC month-day) for longer ones. */
+export function axisStamp(tS: number, spanS: number): string {
+  if (spanS <= 36 * 3600) return hhmmUtc(tS);
+  const d = new Date(tS * 1000);
+  return `${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+}

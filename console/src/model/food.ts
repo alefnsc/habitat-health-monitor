@@ -82,3 +82,8 @@ export function mealPreview(catalog: FoodCatalog, sel: Selection): Record<Intake
   }
   return out;
 }
+
+/** Food energy logged in a day window, formatted with its unit (the panel shows it without naming the unit itself). */
+export function foodEnergyLogged(day: { totals: Partial<Record<IntakeInd, Pick<NutrientTotal, "val">>> }): string {
+  return formatNutrient("intake_kcal", day.totals.intake_kcal?.val ?? null);
+}

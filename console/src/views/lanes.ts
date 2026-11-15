@@ -4,12 +4,13 @@ import { COPY } from "../copy";
 import type { CrewId, StoredReading } from "../contract";
 import { currentCrew, onCrewChange } from "../crew";
 import { el } from "../dom";
-import { formatValue } from "../format";
+import { axisStamp, formatValue } from "../format";
 import {
-  LANES, bandSlices, bandTicks, laneLayout, laneRules, laneSeries, laneTag, setWork, sharedX, sourceLine, statusOf, yRange,
+  LANES, bandSlices, bandTicks, laneLayout, laneRules, laneSeries, laneTag, setWork, sourceLine, statusOf, yRange,
   type BandSlice, type LaneSpec, type SetWork,
 } from "../model/lanes";
 import { RULES } from "../model/rules";
+import { alpha, color } from "../palette";
 
 const WINDOWS = [
   { key: "1h", hours: 1 },
@@ -19,15 +20,9 @@ const WINDOWS = [
 const REFRESH_MS = 10_000;
 const LIMIT = 5000;
 const SYNC_KEY = "lanes";
-const SERIES = "#4aa3ff";
-const FILL: Record<string, string> = {
-  ok: "rgba(31, 157, 85, 0.20)",
-  watch: "rgba(217, 154, 0, 0.22)",
-  act: "rgba(209, 59, 59, 0.20)",
-};
+const fill = (status: string): string | undefined =>
+  status === "ok" || status === "watch" || status === "act" ? alpha(color(status), status === "watch" ? 0.22 : 0.2) : undefined;
 
-const css = (name: string, fallback: string) =>
-  (typeof getComputedStyle !== "undefined" && getComputedStyle(document.documentElement).getPropertyValue(name).trim()) || fallback;
 
 async function loadSets(sinceS: number, crew: CrewId | undefined): Promise<SetWork[]> {
   const sessions = (await getSessions()).filter(
@@ -37,24 +32,24 @@ async function loadSets(sinceS: number, crew: CrewId | undefined): Promise<SetWo
   return setWork(bodies).filter((w) => w.t >= sinceS);
 }
 
-function shade(u: uPlot, slices: BandSlice[]): void {
+export function shade(u: uPlot, slices: BandSlice[]): void {
   const { left, width } = u.bbox;
   const ymin = u.scales.y.min ?? 0;
   const ymax = u.scales.y.max ?? 0;
   u.ctx.save();
   for (const s of slices) {
-    const fill = FILL[s.status];
+    const f = fill(s.status);
     const lo = Math.max(s.lo, ymin);
     const hi = Math.min(s.hi, ymax);
-    if (!fill || hi <= lo) continue;
+    if (!f || hi <= lo) continue;
     const top = u.valToPos(hi, "y", true);
-    u.ctx.fillStyle = fill;
+    u.ctx.fillStyle = f;
     u.ctx.fillRect(left, top, width, u.valToPos(lo, "y", true) - top);
   }
   u.ctx.restore();
 }
 
-interface Prepared {
+export interface Prepared {
   spec: LaneSpec;
   layout: "chart" | "empty" | "hidden";
   x: number[];
@@ -73,19 +68,19 @@ const pts = (color: string, size: number, fill = color): uPlot.Series => ({
   stroke: "transparent", width: 0, points: { show: true, size, stroke: color, fill, width: 1.5 },
 });
 
-function prepareReadings(spec: LaneSpec, rows: StoredReading[]): Prepared {
+export function prepareReadings(spec: LaneSpec, rows: StoredReading[]): Prepared {
   const ind = spec.ind!;
   const rules = laneRules(RULES, ind, spec.window);
   const slices = bandSlices(rules);
   const s = laneSeries(rows, rules, spec.window);
-  const line = SERIES;
+  const line = color("series");
   const series: uPlot.Series[] = [{}, { stroke: line, width: s.mean ? 1 : 2, spanGaps: true, points: { show: false } }];
   const data: (number | null)[][] = [s.x, s.raw];
   if (s.mean) {
-    series.push({ stroke: css("--text", "#e6ebf0"), width: 2.5, spanGaps: true, points: { show: false } });
+    series.push({ stroke: color("text"), width: 2.5, spanGaps: true, points: { show: false } });
     data.push(s.mean);
   }
-  series.push(pts(css("--watch", "#d99a00"), 7), pts(css("--act", "#d13b3b"), 9), pts("#9aa6b2", 7, "transparent"));
+  series.push(pts(color("watch"), 7), pts(color("act"), 9), pts(color("muted"), 7, "transparent"));
   data.push(s.watch, s.act, s.greyed);
   const judged = s.mean ?? s.raw;
   const lastAt = [...judged.keys()].reverse().find((i) => judged[i] !== null);
@@ -109,10 +104,29 @@ function prepareSets(spec: LaneSpec, sets: SetWork[]): Prepared {
   const top = sets.reduce((m, w) => Math.max(m, w.j), 0);
   return {
     spec, layout: laneLayout(spec, sets.length), x: sets.map((w) => w.t),
-    series: [{}, pts(SERIES, 10)], data: [sets.map((w) => w.t), sets.map((w) => w.j)],
+    series: [{}, pts(color("series"), 10)], data: [sets.map((w) => w.t), sets.map((w) => w.j)],
     slices: [], y: [0, top > 0 ? top * 1.2 : 1],
     value: last ? `${last.j.toFixed(1)} J · ${last.reps} ${COPY["lanes.reps"]}` : COPY["status.none"],
     status: "unknown", tag: last ? COPY["badge.camera"] : "", source: COPY["lanes.workSource"], note: "",
+  };
+}
+
+/** uPlot options for one lane: shaded NASA bands, 24-hour UTC stamps, and the x range given (the chosen window). */
+export function laneOptions(p: Prepared, o: { width: number; height: number; showX: boolean; x: [number, number] }): uPlot.Options {
+  const stroke = color("muted");
+  const grid = { stroke: color("line"), width: 1 };
+  const ticks = p.y ? bandTicks(p.slices, p.y) : null;
+  return {
+    width: o.width, height: o.height, legend: { show: false },
+    tzDate: (t) => uPlot.tzDate(new Date(t * 1000), "UTC"),
+    cursor: { sync: { key: SYNC_KEY }, y: false, points: { show: false } },
+    scales: { x: { time: true, range: () => o.x }, y: { range: (_u, lo, hi) => p.y ?? [lo, hi] } },
+    axes: [
+      { show: o.showX, stroke, grid, size: 30, values: (_u, splits) => splits.map((t) => axisStamp(t, o.x[1] - o.x[0])), label: COPY["lanes.utc"], labelSize: 16 },
+      { stroke, grid, size: 56, ticks: { show: false }, ...(ticks ? { splits: () => ticks } : {}) },
+    ],
+    series: p.series,
+    hooks: { drawClear: [(u) => shade(u, p.slices)] },
   };
 }
 
@@ -136,16 +150,14 @@ export function renderLanes(root: HTMLElement): () => void {
     box, foot,
   );
 
-  function draw(prepared: Prepared[]) {
+  function draw(prepared: Prepared[], win: [number, number]) {
     plots.forEach((p) => p.destroy());
     plots = [];
     const shown = prepared.filter((p) => p.layout !== "hidden");
     const charts = shown.filter((p) => p.layout === "chart");
-    const xr = sharedX(charts.map((p) => p.x));
+    const xr = charts.length ? win : null;
     const lastChart = charts[charts.length - 1];
     const width = Math.max(280, (root.clientWidth || 900) - 230);
-    const stroke = css("--muted", "#9aa6b2");
-    const grid = { stroke: css("--line", "#2b3643"), width: 1 };
     const rows: HTMLElement[] = [];
     for (const p of shown) {
       const head = el("div", { class: "lane-head" },
@@ -159,20 +171,8 @@ export function renderLanes(root: HTMLElement): () => void {
         plotBox.append(el("div", { class: "lane-empty", text: COPY["lanes.empty"] }));
         continue;
       }
-      const isLast = p === lastChart;
-      const ticks = p.y ? bandTicks(p.slices, p.y) : null;
-      plots.push(new uPlot({
-        width, height: isLast ? 112 : 78, legend: { show: false },
-        tzDate: (t) => uPlot.tzDate(new Date(t * 1000), "UTC"),
-        cursor: { sync: { key: SYNC_KEY }, y: false, points: { show: false } },
-        scales: { x: { time: true, range: () => xr }, y: { range: (_u, lo, hi) => p.y ?? [lo, hi] } },
-        axes: [
-          { show: isLast, stroke, grid, size: 34 },
-          { stroke, grid, size: 56, ticks: { show: false }, ...(ticks ? { splits: () => ticks } : {}) },
-        ],
-        series: p.series,
-        hooks: { drawClear: [(u) => shade(u, p.slices)] },
-      }, p.data as unknown as uPlot.AlignedData, plotBox));
+      plots.push(new uPlot(laneOptions(p, { width, height: p === lastChart ? 128 : 78, showX: p === lastChart, x: xr }),
+        p.data as unknown as uPlot.AlignedData, plotBox));
     }
     box.replaceChildren(...rows);
   }
@@ -189,7 +189,7 @@ export function renderLanes(root: HTMLElement): () => void {
       ]);
       if (disposed || mine !== token) return;
       let i = 0;
-      draw(LANES.map((spec) => (spec.ind ? prepareReadings(spec, rows[i++]) : prepareSets(spec, sets))));
+      draw(LANES.map((spec) => (spec.ind ? prepareReadings(spec, rows[i++]) : prepareSets(spec, sets))), [sinceS, Date.now() / 1000]);
       foot.textContent = "";
     } catch (e) {
       if (disposed || mine !== token) return;

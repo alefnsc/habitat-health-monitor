@@ -6,7 +6,7 @@ import type { Prompt } from "./contract";
 import { CREW, currentCrew, onCrewChange, setCurrentCrew } from "./crew";
 import { el } from "./dom";
 import { appliesToCrew, applySnapshot } from "./model/status";
-import { board } from "./state";
+import { board, hubEvents } from "./state";
 import { SCREENS, screenFromHash, type Screen } from "./screens";
 import { mountReplayApp } from "./replay/app";
 import { renderEntry } from "./views/entry";
@@ -14,6 +14,7 @@ import { renderFood } from "./views/food";
 import { renderExercise } from "./views/exercise";
 import { renderHistory } from "./views/history";
 import { renderLanes } from "./views/lanes";
+import { renderPanel } from "./views/panel";
 import { entryForTile, openGuidance, setLinkState } from "./views/guidance";
 import { refreshBanner, renderNasa, startBanner } from "./views/nasa";
 import { loadBoard, renderStatus } from "./views/status";
@@ -38,6 +39,7 @@ export function mountApp(root: HTMLElement): void {
   const bannerBox = el("div", { id: "sw-banner" });
   const title = el("h1", { class: "screen-title" });
   const screen = el("section", { id: "screen" });
+  const mainEl = el("main", {}, title, screen, el("p", { class: "footnote", text: COPY["app.disclaimer"] }));
   root.replaceChildren(
     el("div", { class: "banner", text: COPY["app.banner"] }),
     lost,
@@ -48,7 +50,7 @@ export function mountApp(root: HTMLElement): void {
       nav,
       el("div", {}, el("label", { for: "crew-select", text: `${COPY["crew.viewing"]} ` }), crewSel),
     ),
-    el("main", {}, title, screen, el("p", { class: "footnote", text: COPY["app.disclaimer"] })),
+    mainEl,
   );
 
   const badge = el("span", { class: "badge-count", hidden: true });
@@ -73,7 +75,10 @@ export function mountApp(root: HTMLElement): void {
     dispose?.();
     dispose = null;
     screen.replaceChildren();
-    if (cur === "status") dispose = renderStatus(screen, (t) => {
+    mainEl.classList.toggle("wide", cur === "panel");
+    title.hidden = cur === "panel"; // the active nav button already names it; the panel needs the height
+    if (cur === "panel") dispose = renderPanel(screen);
+    else if (cur === "status") dispose = renderStatus(screen, (t) => {
       const toHistory = () => {
         location.hash = `#/history/${t.id === "bp" ? "bp_sys" : t.id}`;
       };
@@ -117,8 +122,11 @@ export function mountApp(root: HTMLElement): void {
       if (appliesToCrew(m.data, currentCrew())) board.apply([m.data]);
     } else if (m.type === "link") {
       setLinkState(m.data);
+      hubEvents.link(m.data);
     } else if (m.type === "alert") {
-      if (m.data.status === "watch" || m.data.status === "act") {
+      hubEvents.alert(m.data);
+      // On the panel the alert is drawn in place (amber lane, packet on the link), so the popup does not cover it.
+      if ((m.data.status === "watch" || m.data.status === "act") && screenFromHash(location.hash) !== "panel") {
         const e = board.entries.find((x) => x.ind === m.data.ind);
         if (e) void openGuidance(e);
       }

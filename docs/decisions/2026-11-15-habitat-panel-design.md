@@ -165,3 +165,17 @@ colours in the lanes, NASA and banner code switch to these variables.
 1. The packet animation becomes a static strip with the light time.
 2. The 30-day extension is dropped, and dots and the trend line stay.
 3. The four-places bars become a table.
+
+## 11. Adjustments made while building (2026-11-15, for the team owner's review in the PR)
+
+- **Radiation card.** The career-dose bar and the space-weather line moved out of card 4 into a small unnumbered
+  "Radiation" card under the link card. Card 4 alone was taller than a 1080 px frame.
+- **Screen title.** The heading "Habitat panel" is hidden on the panel, because the active navigation button already
+  names it. That height lets the disclaimer footnote fit in the frame.
+- **Guidance popup.** On the panel, a watch or act alert no longer opens the guidance popup by itself. The panel
+  already shows the alert in place: an amber or red lane with its sentence, and a packet on the link. On every other
+  screen the popup opens as before. This needs the team owner's yes.
+- **Cabin chip age.** The cabin chip's age comes from the newest cabin reading. A node's `last_seen` is its
+  connection time, which made the chip read "1 h ago" while readings arrived every 5 s.
+- **Lane sources.** Lane sources on the panel are compact, with the kind label once plus every requirement ID, for
+  example "NASA-STD-3001 [V2 6012] [V2 6013]". The full references stay on the Lanes screen.

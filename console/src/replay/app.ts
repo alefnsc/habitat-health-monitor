@@ -37,7 +37,7 @@ export async function mountReplayApp(root: HTMLElement, o: { base: string; fetch
   }
   let dispose: (() => void) | null = null;
   const render = () => {
-    const cur = screenFromHash(location.hash);
+    const cur = screenFromHash(location.hash, "status");
     title.textContent = COPY[`nav.${cur}`];
     buttons.forEach((b, s) => (s === cur ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
     dispose?.();

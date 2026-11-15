@@ -5,6 +5,7 @@ import type { RepsBody, Session } from "../contract";
 import { el } from "../dom";
 import { formatTimeUtc } from "../format";
 import { compareReps, nextSelected } from "../model/exercise";
+import { color } from "../palette";
 
 const POLL_MS = 2000;
 
@@ -60,8 +61,8 @@ export function renderExercise(root: HTMLElement): () => void {
       plot = new uPlot(
         {
           width: Math.max(320, Math.min(900, root.clientWidth || 700)), height: 240,
-          series: [{}, { label: COPY["exercise.chartCamera"], stroke: "#4aa3ff", width: 2, spanGaps: true }, { label: COPY["exercise.chartCell"], stroke: "#e6a23c", width: 2, spanGaps: true }],
-          axes: [{ stroke: "#e6ebf0" }, { stroke: "#e6ebf0" }],
+          series: [{}, { label: COPY["exercise.chartCamera"], stroke: color("series"), width: 2, spanGaps: true }, { label: COPY["exercise.chartCell"], stroke: color("series-2"), width: 2, spanGaps: true }],
+          axes: [{ stroke: color("text") }, { stroke: color("text") }],
         },
         [x, rows.map((r) => r.cameraPeakN), rows.map((r) => r.cellPeakN)] as unknown as uPlot.AlignedData,
         chart,
