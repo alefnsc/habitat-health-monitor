@@ -79,7 +79,7 @@ See `docs/decisions/links.md`.
 
 DRAFT [confirm: operator and hardware member review this text before submission]
 
-Claude Code (Anthropic) helped plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware and validation work, and reviewed the outputs. Every AI-assisted commit carries a `Co-Authored-By` trailer. No AI-generated images, video or voice are used. Full disclosure: [docs/AI_DISCLOSURE.md](docs/AI_DISCLOSURE.md).
+Claude Code (Anthropic) helped plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware and validation work, and reviewed the outputs. Every AI-assisted commit carries a `Co-Authored-By` trailer. Two presentation images are AI-generated illustrations with a visible label, and the 29-second video's narration is an AI-generated voice (ElevenLabs). No AI video is used. Full disclosure: [docs/AI_DISCLOSURE.md](docs/AI_DISCLOSURE.md).
 
 ## Licence
 
