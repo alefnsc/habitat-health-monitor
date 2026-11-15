@@ -43,7 +43,9 @@ from nodes.ring.records import KIND, append_record, load_records
 DEFAULT_HUB = "http://127.0.0.1:8000"
 DEFAULT_TOKEN = "var/ring/token.json"
 DEFAULT_PULLS = "var/ring/pulls.jsonl"
-DEFAULT_REDIRECT = "http://127.0.0.1:8799/callback"
+# localhost, not 127.0.0.1: the vendor's load balancer answers 403 to any request carrying 127.0.0.1.
+# The listener still binds 127.0.0.1; the browser reaches it through localhost.
+DEFAULT_REDIRECT = "http://localhost:8799/callback"
 
 
 def set_env_values(path: Path, values: Mapping[str, str]) -> None:
@@ -138,7 +140,7 @@ def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
         if not args.no_browser:
             webbrowser.open(url)
 
-    if is_loopback_redirect(cfg.redirect_uri):
+    if is_loopback_redirect(cfg.redirect_uri) and not args.paste:
         # the callback port is bound before the browser opens (see wait_for_redirect)
         redirect = wait_for_redirect(cfg.redirect_uri, on_ready=open_sign_in)
     else:
@@ -187,6 +189,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--use-registered-redirect", action="store_true",
         help="send no redirect_uri: the vendor uses the app's one registered redirect "
         "(still listened for on RING_REDIRECT_URI)",
+    )  # fmt: skip
+    au.add_argument(
+        "--paste", action="store_true",
+        help="do not listen for the callback: paste the address the browser ended on "
+        "(it holds the code even if the page does not load)",
     )  # fmt: skip
     pu = sub.add_parser("pull", help="fetch, save the raw pull, post as src hobby")
     pu.add_argument("--days", type=int, default=2, help="how many days back (default 2)")

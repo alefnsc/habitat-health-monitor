@@ -226,6 +226,32 @@ def test_auth_can_use_the_registered_redirect(tmp_path, monkeypatch):
     assert "redirect_uri" not in parse_qs(exch.calls.last.request.content.decode())
 
 
+@respx.mock
+def test_auth_paste_skips_the_listener_and_reads_the_address_the_browser_ended_on(tmp_path, monkeypatch):
+    opened: list[str] = []
+    monkeypatch.setattr(cli.webbrowser, "open", lambda url: opened.append(url) or True)
+
+    def no_wait(*_a, **_k) -> str:
+        raise AssertionError("--paste must not bind the callback port")
+
+    def pasted(prompt: str) -> str:
+        assert opened, "the browser opens before the paste prompt"
+        state = parse_qs(urlsplit(opened[0]).query)["state"][0]
+        return f"  http://localhost:8799/callback?code=C0DE&state={state}\n"
+
+    monkeypatch.setattr(cli, "wait_for_redirect", no_wait)
+    monkeypatch.setattr("builtins.input", pasted)
+    exch = respx.post(TOKEN_URL).respond(200, json={"access_token": "AT", "refresh_token": "RT",
+                                                     "expires_in": 86400})  # fmt: skip
+    path = tmp_path / "t.json"
+    argv = ["auth", "--paste", "--use-registered-redirect", "--token", str(path),
+            "--env-file", str(tmp_path / ".env")]  # fmt: skip
+    assert cli.main(argv, env=ENV) == 0
+    form = {k: v[0] for k, v in parse_qs(exch.calls.last.request.content.decode()).items()}
+    assert form["code"] == "C0DE" and "redirect_uri" not in form
+    assert load_token(path)["access_token"] == "AT"
+
+
 def test_fill_missing_prompts_saves_privately_and_never_prints_the_secret(tmp_path, capsys):
     env_file = tmp_path / ".env"
     env_file.write_text("# keep me\nRING_API_BASE=https://api.example.test\nRING_CLIENT_ID=\n"
@@ -253,7 +279,8 @@ def test_fill_missing_rejects_an_empty_answer_and_defaults_the_redirect(tmp_path
     assert not env_file.exists()
     got = cli.fill_missing({"RING_CLIENT_ID": "a", "RING_CLIENT_SECRET": "b"}, env_file,
                            lambda p: "", lambda p: "")  # fmt: skip
-    assert got["RING_REDIRECT_URI"] == cli.DEFAULT_REDIRECT == "http://127.0.0.1:8799/callback"
+    # localhost, not 127.0.0.1: the vendor's load balancer answers 403 to any request carrying 127.0.0.1
+    assert got["RING_REDIRECT_URI"] == cli.DEFAULT_REDIRECT == "http://localhost:8799/callback"
     assert env_file.stat().st_mode & 0o777 == 0o600
 
 

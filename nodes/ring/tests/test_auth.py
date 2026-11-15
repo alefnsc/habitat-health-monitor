@@ -139,8 +139,10 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
-def test_wait_for_redirect_catches_the_callback_on_loopback():
-    uri = f"http://127.0.0.1:{_free_port()}/callback"
+@pytest.mark.parametrize("host", ["127.0.0.1", "localhost"])
+def test_wait_for_redirect_catches_the_callback_on_loopback(host):
+    """A localhost redirect (the registered one) still lands on the 127.0.0.1 listener."""
+    uri = f"http://{host}:{_free_port()}/callback"
     got: list[str] = []
     t = threading.Thread(target=lambda: got.append(wait_for_redirect(uri, timeout_s=10)))
     t.start()
