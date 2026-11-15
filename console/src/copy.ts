@@ -198,6 +198,7 @@ export const COPY: Record<string, string> = {
   "food.useCode": "Use code",
   "food.scanLooking": "Hold the QR code on the pack in front of the camera.",
   "food.scanUnknown": "This code is not a food in the catalogue.",
+  "food.scanCatalogLoading": "The food list is still loading. Try the code again in a moment.",
   "food.scanUnavailable": "Scanning is not available in this browser. Type the code printed under the QR code.",
   "food.scanCameraError": "The camera could not be opened: ",
   "food.scanPicked": "Picked from the pack: ",

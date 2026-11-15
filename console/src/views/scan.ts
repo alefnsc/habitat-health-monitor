@@ -31,8 +31,12 @@ export function packScanner(getCatalog: () => Ids | null, onPick: (id: string) =
   let stream: MediaStream | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
   let busy = false;
+  let opening = false;
+  let run = 0; // bumped by stop(), so a camera that opens after stop() is closed at once
 
   const stop = () => {
+    run++;
+    opening = false;
     if (timer !== null) clearInterval(timer);
     timer = null;
     stream?.getTracks().forEach((t) => t.stop());
@@ -54,12 +58,22 @@ export function packScanner(getCatalog: () => Ids | null, onPick: (id: string) =
       status.textContent = COPY["food.scanUnavailable"];
       return;
     }
+    const mine = ++run;
+    opening = true;
+    let opened: MediaStream;
     try {
-      stream = await deps.getStream();
+      opened = await deps.getStream();
     } catch (e) {
-      status.textContent = COPY["food.scanCameraError"] + (e instanceof Error ? e.message : String(e));
+      if (mine === run) status.textContent = COPY["food.scanCameraError"] + (e instanceof Error ? e.message : String(e));
+      opening = false;
       return;
     }
+    if (mine !== run) {
+      opened.getTracks().forEach((t) => t.stop());
+      return;
+    }
+    opening = false;
+    stream = opened;
     video.srcObject = stream;
     video.hidden = false;
     await video.play().catch(() => {});
@@ -82,10 +96,14 @@ export function packScanner(getCatalog: () => Ids | null, onPick: (id: string) =
     }, FRAME_MS);
   };
 
-  scan.addEventListener("click", () => (stream ? stop() : void start()));
+  scan.addEventListener("click", () => (stream || opening ? stop() : void start()));
   use.addEventListener("click", () => {
     const cat = getCatalog();
-    const id = cat ? parsePackCode(code.value, cat) : null;
+    if (!cat) {
+      status.textContent = COPY["food.scanCatalogLoading"];
+      return;
+    }
+    const id = parsePackCode(code.value, cat);
     if (id) {
       code.value = "";
       pick(id);

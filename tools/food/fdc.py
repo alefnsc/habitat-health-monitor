@@ -28,6 +28,7 @@ try:
 except ImportError:  # run as python -m tools.food.fdc
     from tools.food import build_catalog as bc
 
+personal_key = bc.personal_key
 SEARCH_URL = "https://api.nal.usda.gov/fdc/v1/foods/search"
 DATA_TYPES = ["Foundation", "SR Legacy"]
 ITEMS = Path("data/food/items.csv")
@@ -36,16 +37,6 @@ FIELDS = [
     "id", "fdc_id", "fdc_dataset", "name", "category", "serving_g", "serving_label", "serving_source",
     "fluid_ml_per_serving", "fluid_basis", "note",
 ]  # fmt: skip
-
-
-def _key(env: Mapping[str, str]) -> str:
-    key = env.get("USDA_FDC_API_KEY") or env.get("FDC_API_KEY")
-    if not key or key == "DEMO_KEY":
-        raise SystemExit(
-            "set USDA_FDC_API_KEY to a personal key (DEMO_KEY is not allowed), "
-            "for example with python -m tools.vault run -- python -m tools.food.fdc ..."
-        )
-    return key
 
 
 def dump_catalog(cat: Mapping) -> str:
@@ -75,7 +66,10 @@ def _portion(p: Mapping) -> str:
 
 
 def add(args: argparse.Namespace, key: str, today: str) -> int:
-    rows = bc.read_items(args.items)
+    try:
+        rows = bc.read_items(args.items)
+    except bc.BuildError as e:
+        raise SystemExit(f"{args.items}: {e}") from None
     cat = json.loads(args.catalog.read_text(encoding="utf-8"))
     ids = {r.id for r in rows} | {i["id"] for i in cat["items"]}
     if args.id in ids:
@@ -118,6 +112,7 @@ def add(args: argparse.Namespace, key: str, today: str) -> int:
     item["values_via"] = "FDC API"
     item["accessed_at"] = today
     cat["items"].append(item)
+    args.catalog.write_text(dump_catalog(cat), encoding="utf-8")
     with open(args.items, "a", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
         w.writerow({
@@ -125,7 +120,6 @@ def add(args: argparse.Namespace, key: str, today: str) -> int:
             "serving_g": f"{row.serving_g:g}",
             "fluid_ml_per_serving": f"{row.fluid_ml_per_serving:g}",
         })  # fmt: skip
-    args.catalog.write_text(dump_catalog(cat), encoding="utf-8")
     print(f"added {args.id} (FDC {args.fdc_id}, {meta['dataset']}); restart a demo hub to load it")
     return 0
 
@@ -154,7 +148,9 @@ def main(
     a.add_argument("--items", type=Path, default=ITEMS)
     a.add_argument("--catalog", type=Path, default=CATALOG)
     args = ap.parse_args(argv)
-    key = _key(env)
+    key = personal_key(
+        env, "for example with python -m tools.vault run -- python -m tools.food.fdc ..."
+    )
     if args.cmd == "search":
         names = {"SR Legacy": "sr_legacy", "Foundation": "foundation"}
         for f in search(key, args.words, args.limit):

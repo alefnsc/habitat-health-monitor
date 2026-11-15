@@ -45,7 +45,11 @@ def _az(args: list[str]) -> tuple[int, str]:
 
 
 def _spawn(cmd: list[str], env: dict[str, str]) -> int:
-    return subprocess.call(cmd, env=env)
+    try:
+        return subprocess.call(cmd, env=env)
+    except FileNotFoundError:
+        print(f"vault: command not found: {cmd[0]}", file=sys.stderr)
+        return 127
 
 
 def read_dotenv(path: Path) -> dict[str, str]:

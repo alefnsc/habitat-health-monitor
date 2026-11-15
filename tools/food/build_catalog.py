@@ -288,6 +288,16 @@ def _report(cat: dict) -> str:
     return "\n".join(lines)
 
 
+def personal_key(env: Mapping[str, str], hint: str) -> str:
+    """A personal FDC key from USDA_FDC_API_KEY (or FDC_API_KEY); DEMO_KEY is refused."""
+    key = env.get("USDA_FDC_API_KEY") or env.get("FDC_API_KEY")
+    if not key or key == "DEMO_KEY":
+        raise SystemExit(
+            f"set USDA_FDC_API_KEY to a personal key (DEMO_KEY is not allowed), {hint}"
+        )
+    return key
+
+
 def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None) -> int:
     env = os.environ if env is None else env
     argv = list(sys.argv[1:] if argv is None else argv)
@@ -302,13 +312,7 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         raise SystemExit("choose exactly one of --bulk-dir (repeatable) or --api")
     try:
         if args.api:
-            key = env.get("USDA_FDC_API_KEY") or env.get("FDC_API_KEY")
-            if not key or key == "DEMO_KEY":
-                raise SystemExit(
-                    "set USDA_FDC_API_KEY to a personal key (DEMO_KEY is not allowed), "
-                    "or use --bulk-dir"
-                )
-            source: NutrientSource = ApiSource(key)
+            source: NutrientSource = ApiSource(personal_key(env, "or use --bulk-dir"))
         else:
             source = BulkSource(args.bulk_dir)
         warnings: list[str] = []

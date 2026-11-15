@@ -51,4 +51,39 @@ describe("pack scanner panel (D44)", () => {
     expect(stop).toHaveBeenCalled();
     expect(q<HTMLVideoElement>(s.node, "video").hidden).toBe(true);
   });
+
+  test("closing the screen while the camera opens stops the camera", async () => {
+    vi.useFakeTimers();
+    const stop = vi.fn();
+    let open!: (s: MediaStream) => void;
+    const detect = vi.fn(async () => []);
+    const s = packScanner(() => cat, () => {}, {
+      detector: () => ({ detect }),
+      getStream: () => new Promise<MediaStream>((r) => (open = r)),
+    });
+    button(s.node, COPY["food.scanPack"]).click();
+    s.stop();
+    open({ getTracks: () => [{ stop }] } as unknown as MediaStream);
+    await vi.advanceTimersByTimeAsync(600);
+    expect(stop).toHaveBeenCalled();
+    expect(detect).not.toHaveBeenCalled();
+  });
+
+  test("a second click while the camera opens does not open a second camera", async () => {
+    const getStream = vi.fn(() => new Promise<MediaStream>(() => {}));
+    const s = packScanner(() => cat, () => {}, { detector: () => ({ detect: async () => [] }), getStream });
+    button(s.node, COPY["food.scanPack"]).click();
+    await Promise.resolve();
+    button(s.node, COPY["food.scanPack"]).click();
+    await Promise.resolve();
+    expect(getStream).toHaveBeenCalledTimes(1);
+  });
+
+  test("a code typed before the food list loads is not called unknown", () => {
+    const s = packScanner(() => null, () => {}, { detector: () => null, getStream: async () => { throw new Error("no"); } });
+    q<HTMLInputElement>(s.node, "#food-code").value = "hhm-food:bar";
+    button(s.node, COPY["food.useCode"]).click();
+    expect(s.node.textContent).toContain(COPY["food.scanCatalogLoading"]);
+    expect(s.node.textContent).not.toContain(COPY["food.scanUnknown"]);
+  });
 });

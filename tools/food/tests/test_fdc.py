@@ -161,3 +161,36 @@ def test_unknown_fdc_id(data):
         router.get(FOOD).mock(return_value=httpx.Response(404))
         with pytest.raises(SystemExit, match="900042 not found"):
             fdc.main(add_args(items, cat), env=ENV)
+
+
+def test_a_failed_catalogue_write_leaves_items_csv_unchanged(data, monkeypatch):
+    items, cat = data
+    old_items = items.read_text(encoding="utf-8")
+    real = Path.write_text
+
+    def fail_catalog(self, *a, **k):
+        if self.name == "catalog.json":
+            raise OSError("disk full")
+        return real(self, *a, **k)
+
+    monkeypatch.setattr(Path, "write_text", fail_catalog)
+    with respx.mock() as router:
+        router.get(FOOD).mock(return_value=httpx.Response(200, json=FOOD_BODY))
+        with pytest.raises(OSError):
+            fdc.main(add_args(items, cat), env=ENV)
+    assert items.read_text(encoding="utf-8") == old_items
+
+
+def test_a_bad_items_csv_is_reported_without_a_traceback(data):
+    items, cat = data
+    items.write_text(
+        items.read_text(encoding="utf-8").replace(",sr_legacy,", ",branded,", 1), encoding="utf-8"
+    )
+    with respx.mock(), pytest.raises(SystemExit, match="fdc_dataset must be"):
+        fdc.main(add_args(items, cat), env=ENV)
+
+
+def test_the_key_rule_is_shared_with_the_catalogue_builder():
+    import build_catalog as bc
+
+    assert fdc.personal_key is bc.personal_key

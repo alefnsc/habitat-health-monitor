@@ -136,3 +136,11 @@ def test_check_uses_metadata_only(capsys):
     out = capsys.readouterr().out
     assert "USDA_FDC_API_KEY: present" in out and "RING_CLIENT_ID: missing" in out
     assert SECRET not in out and "fdc-key" not in out
+
+
+def test_a_missing_command_is_reported_without_a_traceback(capsys):
+    code = vault.main(["run", "--", "no-such-command-hhm"], environ=ENV, runner=FakeAz(),
+                      dotenv=Path("/nonexistent/.env"))  # fmt: skip
+    assert code == 127
+    err = capsys.readouterr().err
+    assert "no-such-command-hhm" in err and SECRET not in err
