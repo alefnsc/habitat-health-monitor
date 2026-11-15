@@ -116,12 +116,19 @@ class Night:
     row: StoredReading
 
 
+NIGHT_DEV = "RING"  # nights come from the ring's main sleep (spec §6.5), never a self-report
+
+
+def ring_rows(rows: Iterable[StoredReading]) -> list[StoredReading]:
+    return [r for r in rows if r.dev == NIGHT_DEV]
+
+
 def nights(
     store: Store, crew: str | None, end: datetime, days: int, tz: ZoneInfo
 ) -> tuple[list[Night], bool]:
-    """The crew's nights ending in (end - days, end], one per local day (the latest end wins),
-    ascending, with the replay flag of the chosen rows."""
-    rows, replay = choose(ok_rows(store, "sleep_h", end - DAY * days, end, crew))
+    """The crew's ring nights ending in (end - days, end], one per local day (the latest end wins),
+    ascending, with the replay flag of the chosen rows. A self-reported sleep_h is not a night."""
+    rows, replay = choose(ring_rows(ok_rows(store, "sleep_h", end - DAY * days, end, crew)))
     by_day: dict[date, Night] = {}
     for r in rows:
         t_end = parse_iso(r.measured_at)
