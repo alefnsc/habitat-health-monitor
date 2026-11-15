@@ -2,13 +2,13 @@
 
 Plan task S19, Sunday 15/11 20:00–21:00 (São Paulo time). Every line reads pass, fail or pending, with the time and who checked it.
 
-- **Agent lines:** re-run by an agent on `main` at `239924d`, 15/11 16:32–16:41. The 20:00 check re-runs them on the main of that moment and updates the time.
+- **Agent lines:** re-run by an agent on `main` at `239924d`, 15/11 16:32–16:59. The 20:00 check re-runs them on the main of that moment and updates the time.
 - **Pending lines:** need a person, and the operator fills them at 20:00.
 - **Fails:** each one has a fix task below, with an owner and a 21:30 deadline (S19 step 2).
 - **Tests:** run with `pytest -m 'not broker'` only, so nothing touches the live bench broker.
 - **Bench:** nothing on the bench was touched (no hub restart, serial, MQTT or flashing).
 
-**Count at 16:41:** 12 pass, 4 fail, 7 pending.
+**Count at 16:59:** 14 pass, 2 fail, 7 pending. Lines 3a and 16 failed at 16:39 and pass after the text fixes F2 and F4. Lines 2 and 7 wait for operator rulings.
 
 ## Checklist
 
@@ -17,7 +17,7 @@ Plan task S19, Sunday 15/11 20:00–21:00 (São Paulo time). Every line reads pa
 | 1 | Video: ffprobe duration ≤ 29.0 s and the player shows ≤ 0:30 | pending: operator at 20:00 | | | The export comes after the 17:00 takes. Record the ffprobe duration and the SHA-256 of the exported file here and in `docs/video/script.md` ("Export"). The placeholder dry run (`out/dryrun-29s.mp4`) was 29.000 s, but it is not the final file. |
 | 2 | Video subtitles name the challenge question: the "Question answered:" line of `docs/video/script.md` matches the 2.0–6.0 s subtitle | **fail** | 16:38 | agent | `script.md:3` has the "Question answered:" line. The 2.0–6.0 s cues in `subtitles.en.srt` are "A camera tracks each lift on the bench," and "and turns every rep into work, in joules.", and neither names the question. `script.md:5` says the title card (0.0–1.6 s) states the question as picture text, but SRT cue 1 reads only "Habitat Health Monitor." Fix task F1. |
 | 3 | Doc and content tests, all pass | pass | 16:40 | agent | `pytest -m 'not broker'` on the six content files that exist gives 117 passed. **Left out, never created:** `docs/tests/` (with `test_references.py`), because S14's reference tests were not built; and `hub/tests/test_environments_content.py`, because the environment presets were cut (the console has no ISS, Moon or Mars mode). Line 3a re-checks the dependency citations by hand instead. |
-| 3a | `test_every_dependency_cited`, re-checked against the manifests as they stand now (hand check, because the test does not exist) | **fail** | 16:39 | agent | 33 dependencies are in `pyproject.toml` and `camera`, `console` and `ground/package.json`. Five of them are named neither in the References (`docs/drafts/s14-nasa-data-and-references.md`) nor in `DATA_SOURCES.md`: `uplot` (console), `segno`, `smbus2`, `upstash-redis` (Python extras) and `@types/node` (camera and console dev types). Fix task F2. |
+| 3a | `test_every_dependency_cited`, re-checked against the manifests as they stand now (hand check, because the test does not exist) | pass | 16:59 | agent | All 33 dependencies in `pyproject.toml` and `camera`, `console` and `ground/package.json` are now named in the References (`docs/drafts/s14-nasa-data-and-references.md`) or in `DATA_SOURCES.md`. At 16:39 five were missing, so this line failed: `uplot`, `segno`, `smbus2`, `upstash-redis` and `@types/node`. Fix F2 cited them. |
 | 4 | Links: video, public page and repo each open in a private window on mobile data, with no sign-in | pending: operator at 20:00 | | | Agent pre-check at 16:34, from this machine (not a private window and not mobile data): `https://alefnsc.github.io/habitat-health-monitor/`, `…/console/` and `https://github.com/alefnsc/habitat-health-monitor` all return 200. The video link does not exist yet. |
 | 5 | Entry repository is public, Apache-2.0 and created at or after 2026-11-14 09:00 (D24) | pass | 16:33 | agent | `gh repo view alefnsc/habitat-health-monitor --json visibility,licenseInfo,createdAt` gives `PUBLIC`, `apache-2.0` and `2026-11-14T13:04:59Z` (10:04 in São Paulo). |
 | 6 | The public page shows all six named indicators | pass | 16:36 | agent | The C25 console replay at `/habitat-health-monitor/console/#/status`, linked from the ground page as "Crew console (replay)", shows Blood pressure, Heart rate, Glucose, Body temperature, Sleep and Mood. The ground page's own table does not show them. |
@@ -31,7 +31,7 @@ Plan task S19, Sunday 15/11 20:00–21:00 (São Paulo time). Every line reads pa
 | 13 | No demo key used as a key (the S19 `git grep`) | pass | 16:40 | agent | No output. |
 | 14 | No secrets tracked (`git ls-files \| grep -i -E "passw\|secret\|\.env$"`) | pass, with exceptions | 16:40 | agent | 3 hits, all `secrets.example.h` files: `firmware/cabin-esp8266`, `firmware/tilt-esp8266` and `firmware/vitals-esp32`. They hold only placeholders (`your-wifi-name`, `your-wifi-password`, `change-me`, a 192.168.0.10 example host and a placeholder user name). Exception E2. No `.env` file is tracked. |
 | 15 | Licence: `LICENSE` is Apache-2.0 | pass | 16:33 | agent | `LICENSE` is the Apache License 2.0 text (202 lines), and GitHub detects `apache-2.0`. |
-| 16 | The `ground-truth` SHA in References equals the `commit=` line of `vendor/ground-truth/PINNED` | **fail** | 16:39 | agent | `PINNED` gives `commit=0940adab0ec33dd5127d7efdacfbc6744a31e4d6`, and `docs/decisions/links.md` and `camera/public/NOTICE.txt` match it. But the References text (`docs/drafts/s14-nasa-data-and-references.md:30`) still has the placeholder "[40-hex SHA from `vendor/ground-truth/PINNED`]" and "Public status pending S1". `alefnsc/ground-truth` is public, Apache-2.0. Fix task F4. |
+| 16 | The `ground-truth` SHA in References equals the `commit=` line of `vendor/ground-truth/PINNED` | pass | 16:59 | agent | The References (`docs/drafts/s14-nasa-data-and-references.md:30`) now give `0940adab0ec33dd5127d7efdacfbc6744a31e4d6`. It equals `PINNED`'s `commit=` line, `docs/decisions/links.md` and `camera/public/NOTICE.txt`. At 16:39 the line failed: it still had the SHA placeholder and "Public status pending S1". Fix F4 replaced both; `alefnsc/ground-truth` is public, Apache-2.0. |
 | 17 | NASA Data has one sentence per source | pending: operator at 20:00 | | | Agent pre-check of the draft (`s14-nasa-data-and-references.md`, "NASA Data"): 6 sources, one sentence each, plus one leftover placeholder line, "[ISS Live: add when built …]". ISS Live was not built, so delete that line (fix task F4). The operator checks the text in the submission form. |
 | 18 | The SI field is filled | pending: operator at 20:00 | | | Form field. Not visible to the agent. |
 | 19 | The roster has every member at São Paulo, none waitlisted | pending: operator at 20:00 | | | Form field. Not visible to the agent. |
@@ -54,9 +54,9 @@ Plan task S19, Sunday 15/11 20:00–21:00 (São Paulo time). Every line reads pa
 | Task | Line | What | Owner |
 |---|---|---|---|
 | F1 | 2 | The operator rules whether the title card's picture text ("Helps astronauts assess their own health during space missions.") counts as naming the question. If it counts, write the ruling here and mark line 2 pass. If it doesn't, change subtitle cue 1 or a 2.0–6.0 s caption to carry the question. A caption change has to happen **before the 29 s cut is assembled**, after the 17:00 takes. | operator; presentation session for the caption |
-| F2 | 3a | Add `uplot`, `segno`, `smbus2`, `upstash-redis` and `@types/node` to the References, each with its licence read from the package metadata. Text only. | science lane agent; operator approves |
+| F2 | 3a | **Done 16:59.** The References now cite segno (BSD-3-Clause), smbus2 (MIT) and upstash-redis (MIT), marked as optional extras of `pyproject.toml`, and uPlot (MIT) and @types/node (MIT, dev only). Licences come from the package metadata, segno's from its licence file. Text only. | agent; operator approves the text |
 | F3 | 7 | The operator rules that the project page's linked hazard list satisfies this line (the dry run's fix route). The alternative is adding the list to the ground page, which is a page change after the 16:00 freeze and the operator's call. | operator |
-| F4 | 16, 17 | In `docs/drafts/s14-nasa-data-and-references.md`, put `0940adab0ec33dd5127d7efdacfbc6744a31e4d6` in the `ground-truth` reference, replace "Public status pending S1" with the fact that the repo is public, and delete the ISS Live placeholder line from NASA Data. Text only. | science lane agent; operator approves |
+| F4 | 16, 17 | **Line 16 done 16:59.** The `ground-truth` reference gives `0940adab0ec33dd5127d7efdacfbc6744a31e4d6`, and "Public status pending S1" now reads "The repository is public." **Still open, under line 17:** delete the ISS Live placeholder line from NASA Data. Text only. | agent for line 16; operator for line 17 |
 
 ## Also found (not S19 lines)
 
