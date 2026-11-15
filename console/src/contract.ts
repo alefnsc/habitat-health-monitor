@@ -158,11 +158,22 @@ export interface Session {
 
 export type StoredRep = RepMessage & { id: number; measured_at: string };
 
+/** The tilt-1 switch seen around one camera rep (hub/tilt.py tilt_witness); offset_ms > 0 means the switch was late. */
+export interface TiltWitness {
+  seen: boolean;
+  turn_inside: boolean;
+  offset_ms: number | null;
+  rise_at: string | null;
+  fall_at: string | null;
+}
+
 export interface RepPair {
   rep: number;
   camera: StoredRep | null;
   load_cell: StoredRep | null;
   work_cell_j: number | null;
+  /** null when the camera rep has no turnaround; absent from replays and older hubs. */
+  tilt?: TiltWitness | null;
 }
 
 export interface RepsBody {

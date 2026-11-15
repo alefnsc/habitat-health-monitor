@@ -4,6 +4,7 @@ import { el } from "../../dom";
 import { formatTimeUtc } from "../../format";
 import { formatTrainingWork as formatWork } from "../../model/exercise";
 import { placesWork } from "../../model/panel/places";
+import { tiltLine } from "../../model/panel/tilt";
 import { card } from "./common";
 import { liveSource, type PanelClock } from "./source";
 
@@ -20,6 +21,7 @@ export function liftCard(src: PanelClock = liveSource): { node: HTMLElement; upd
   const c = card("p-lift", "1", COPY["panel.lift"]);
   const update = ({ session, reps }: LiftData) => {
     const cams = cameraReps(reps);
+    const tilt = tiltLine((reps?.pairs ?? []).filter((p) => !!p.camera && Number.isFinite(p.camera.work_j)));
     if (!session || !cams.length) {
       c.sub.textContent = "";
       c.body.replaceChildren(el("p", { class: "kv", text: COPY["panel.liftNone"] }), el("p", { class: "note", text: COPY["panel.liftNote"] }));
@@ -42,6 +44,7 @@ export function liftCard(src: PanelClock = liveSource): { node: HTMLElement; upd
         el("span", { class: "kv", text: `${cams.length} ${COPY["lanes.reps"]} · ${COPY["badge.camera"]}` })),
       bars, xs,
       el("p", { class: "note", text: `${COPY["panel.liftNote"]} ${COPY["work.note"]}` }),
+      ...(tilt ? [el("p", { class: "note tilt", text: tilt })] : []),
       ...(src.replay ? [el("p", { class: "note", text: COPY["panel.replaySet"] })] : []),
     );
   };
