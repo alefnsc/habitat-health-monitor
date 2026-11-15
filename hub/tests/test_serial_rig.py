@@ -156,6 +156,7 @@ def test_disabled_without_port(settings, clock):
 D40_SERIAL_READINGS = {
     ("cabin-1", "cabin_temp"),  # DHT11, always built (D40)
     ("cabin-1", "cabin_rh"),
+    ("cabin-1", "cabin_p"),  # BMP280 on A4/A5, when the module answers
     ("exercise-1", "load_raw"),  # only with ENABLE_HX711=1
 }
 
@@ -206,6 +207,25 @@ def test_cabin_line_accepted_and_tilt_rejected_over_serial(ing):
     tilt = msg(node="tilt-1", boot=1, seq=2, ind="tilt", unit="state", val=1, dev="KY017")
     res = handle_line(ing, json.dumps(tilt).encode() + b"\n", st)
     assert res.reason == "topic_node_mismatch"
+
+
+def test_bmp280_pressure_line_accepted_over_serial(ing):
+    # The exact shape of exercise-uno.ino baroPoll(): cabin-1, cabin_p in hPa, dev BMP280.
+    st = new_stats()
+    line = (
+        b'{"v":1,"node":"cabin-1","boot":8,"seq":603,"age_ms":0,"ind":"cabin_p","val":1006.53,'
+        b'"unit":"hPa","src":"hobby","dev":"BMP280","q":["ok"]}\n'
+    )
+    assert handle_line(ing, line, st).reason is None
+    assert check_capture(
+        [
+            '{"v":1,"node":"cabin-1","boot":8,"seq":601,"age_ms":0,"ind":"cabin_temp","val":25.2,'
+            '"unit":"C","src":"hobby","dev":"DHT11","q":["ok"]}',
+            '{"v":1,"node":"cabin-1","boot":8,"seq":602,"age_ms":0,"ind":"cabin_rh","val":52,'
+            '"unit":"%","src":"hobby","dev":"DHT11","q":["ok"]}',
+            line.decode().strip(),
+        ]
+    ) == {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh"), ("cabin-1", "cabin_p")}
 
 
 def test_serial_nodes_go_online_and_offline_together(ing, settings, clock):

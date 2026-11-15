@@ -15,7 +15,7 @@ const char* const kIndUnits[IND_COUNT] = {
     "%", "hPa", "ppm", "lx", "g", "N", "state"};
 const char* const kDevNames[DEV_COUNT] = {
     "MAX30102", "DS18B20", "MLX90614", "SCD41", "BME280", "DHT22", "DHT11",
-    "BH1750", "HX711", "H10", "manual", "camera", "MPU6050", "NTC", "KY039", "KY017", "RING"};
+    "BH1750", "HX711", "H10", "manual", "camera", "MPU6050", "NTC", "KY039", "KY017", "RING", "BMP280"};
 
 // Decimals per indicator; unlisted indicators use 1.
 static const uint8_t kDecimals[IND_COUNT] = {

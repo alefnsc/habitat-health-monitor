@@ -105,6 +105,20 @@ int main() {
     assert(std::string(d["dev"].as<const char*>()) == "KY017");
     assert(std::strstr(buf, "\"val\":1,"));
   }
+  {  // test_format_bmp280: cabin pressure from the BMP280 on tilt-1 and cabin-2, one decimal
+    PendingReading r{4, 0, IND_CABIN_P, 1006.5327f, DEV_BMP280, 0};
+    size_t n = formatReading(r, "cabin-2", 1, 0, buf, sizeof buf);
+    assert(n > 0);
+    JsonDocument d;
+    assert(!deserializeJson(d, buf));
+    assert(std::string(d["ind"].as<const char*>()) == "cabin_p");
+    assert(std::string(d["unit"].as<const char*>()) == "hPa");
+    assert(std::string(d["dev"].as<const char*>()) == "BMP280");
+    assert(std::strstr(buf, "\"val\":1006.5,"));
+    r.dev = DEV_BME280;  // a BME280 on a "BMP280" board is named for what it is
+    formatReading(r, "tilt-1", 1, 0, buf, sizeof buf);
+    assert(std::strstr(buf, "\"dev\":\"BME280\""));
+  }
   std::puts("ok");
   return 0;
 }

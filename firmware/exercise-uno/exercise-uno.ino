@@ -5,13 +5,22 @@
 // Link: USB serial, 250000 baud 8N1, to the hub. One contract-v1 reading per line (plain Serial
 // output, no JSON library on the Uno). Lines starting with "# " are diagnostics. Command lines (D7)
 // come in on the same port, one JSON object per line; every command is answered with one ack line.
-// Two nodes share the link: cabin-1 (DHT11) and exercise-1 (acks, and the rig channels if built).
+// Two nodes share the link: cabin-1 (DHT11, BMP280) and exercise-1 (acks, and the rig channels if built).
 //
 // Pins: DHT11 data D2 | buzzer D8 | HX711 DOUT D3, SCK D4 | servo signal D6 | NTC out A0 | pulse A1.
+// BMP280 (cabin_p on cabin-1, every 5 s): SDA A4, SCL A5, VCC on 3V3 (never 5V: the chip's limit is
+// 3.6 V), CSB to 3V3 (I2C mode), SDO to GND (address 0x76) or 3V3 (0x77); both addresses are probed.
+// The UNO drives I2C at 5 V: setup() switches the AVR's internal pull-ups on A4/A5 off after
+// Wire.begin(), so only the module's own pull-ups, to 3.3 V, set the high level (3.3 V is above
+// the AVR's 3.0 V input-high threshold). A bidirectional 3.3 V/5 V level shifter is the proper fix.
+// The BMP280's own temperature is not published: cabin_temp stays with the DHT11.
 //
 // Build flags (D40 defaults: only the DHT11 and the buzzer are wired). A module that is not wired is
 // compiled out, so a floating pin never publishes numbers (a floating HX711 DOUT reads as "ready"):
 //   ENABLE_DHT=1  ENABLE_HX711=0  ENABLE_SERVO=0  ENABLE_NTC=0  ENABLE_KY039=0
+//   ENABLE_BMP280=1 when bmp280_lite.h sits next to this file (the repository sketch folder; the
+//   Wokwi twins have no such file and no BMP280 part, so they build without it). A module that does
+//   not answer is reported once ("# bmp280 missing") and every other channel goes on.
 //   BUZZER_PASSIVE=1 (the bench buzzer is passive, driven with tone(); 0 for an active one)  DHT_TYPE=DHT11
 //   arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_HX711=1" ...
 // The HX711 RATE pin must be tied to DVDD for 80 SPS when the load cell is fitted.
@@ -44,6 +53,13 @@
 #ifndef BUZZER_PASSIVE
 #define BUZZER_PASSIVE 1
 #endif
+#ifndef ENABLE_BMP280
+#if __has_include("bmp280_lite.h")
+#define ENABLE_BMP280 1
+#else
+#define ENABLE_BMP280 0
+#endif
+#endif
 
 #include <EEPROM.h>
 #if ENABLE_HX711
@@ -57,6 +73,10 @@
 #ifndef DHT_TYPE
 #define DHT_TYPE DHT11
 #endif
+#endif
+#if ENABLE_BMP280
+#include <Wire.h>
+#include "bmp280_lite.h"
 #endif
 
 #ifndef CELL_CAPACITY_KG
@@ -654,6 +674,40 @@ static void dhtPoll(uint32_t now) {
 }
 #endif
 
+#if ENABLE_BMP280
+// BMP280 on A4/A5, cabin-1 cabin_p every 5 s, 2.5 s after the DHT11 so their lines do not bunch up.
+// A read is one 6-byte I2C burst with interrupts on (under 1 ms at 100 kHz), so serial input is
+// not lost; Wire's timeout keeps a stuck bus from hanging the loop.
+static bmp280::Poller baro;
+static bool baroStarted = false;
+
+static void baroPoll(uint32_t now) {
+  if (!baroStarted) {
+    if ((uint32_t)(now - bootMs) < 4500) return;  // first probe 4.5 s after boot
+    baroStarted = true;
+  }
+  float p = 0;
+  switch (baro.poll(now, 5000, &p)) {
+    case bmp280::EV_READING:
+      emitReading(NODE_CABIN, "cabin_p", p, "hPa", baro.isBme280() ? "BME280" : "BMP280",
+                  bmp280::inRange(p) ? 0 : QF_OUT_OF_RANGE);
+      break;
+    case bmp280::EV_FOUND:
+      Serial.print(F("# bmp280 found addr=0x"));
+      Serial.println(baro.address(), HEX);
+      break;
+    case bmp280::EV_MISSING:
+      Serial.println(F("# bmp280 missing at 0x76 and 0x77: no cabin_p, other channels go on"));
+      break;
+    case bmp280::EV_LOST:
+      Serial.println(F("# bmp280 lost: no cabin_p until it answers again"));
+      break;
+    default:
+      break;
+  }
+}
+#endif
+
 #if ENABLE_NTC
 static Settle30 ntcSettle;
 static uint32_t ntcLastMs = 0;
@@ -725,6 +779,8 @@ void setup() {
   Serial.print(ENABLE_NTC ? F("on") : F("off"));
   Serial.print(F(" ky039="));
   Serial.print(ENABLE_KY039 ? F("on") : F("off"));
+  Serial.print(F(" bmp280="));
+  Serial.print(ENABLE_BMP280 ? F("on") : F("off"));
   Serial.print(F(" buzzer="));
   Serial.println(BUZZER_PASSIVE ? F("passive") : F("active"));
 
@@ -733,6 +789,12 @@ void setup() {
 #endif
 #if ENABLE_DHT
   dht.begin();
+#endif
+#if ENABLE_BMP280
+  Wire.begin();
+  digitalWrite(SDA, LOW);  // Wire.begin() turned the AVR's internal pull-ups (to 5 V) on: switch them
+  digitalWrite(SCL, LOW);  // off, so the 3.3 V module's pull-ups alone set the bus high level
+  Wire.setWireTimeout(25000, true);  // 25 ms, then reset the TWI: a stuck bus never hangs the board
 #endif
 #if ENABLE_KY039
   hr.reset();
@@ -761,5 +823,8 @@ void loop() {
 #endif
 #if ENABLE_KY039
   hrPoll(now);
+#endif
+#if ENABLE_BMP280
+  baroPoll(now);
 #endif
 }
