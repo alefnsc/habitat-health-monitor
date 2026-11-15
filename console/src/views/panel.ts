@@ -49,12 +49,20 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   let token = 0;
   let disposed = false;
   let lanesAt = 0;
+  // The source clock at the last load and at the last lane load. A paused replay holds its clock still, so once the
+  // lanes have caught up with the frozen frame there is nothing to reload or redraw.
+  let loadedAt = Number.NaN;
+  let lanesClock = Number.NaN;
   const load = async () => {
+    const clock = src.now();
+    if (clock === loadedAt && clock === lanesClock) return;
+    const frozen = clock === loadedAt;
+    loadedAt = clock;
     const mine = ++token;
     const crew = currentCrew() ?? undefined;
-    const nowS = src.now() / 1000;
+    const nowS = clock / 1000;
     const win = src.laneWindow?.(nowS) ?? [nowS - LANE_HOURS * 3600, nowS];
-    const lanesDue = Date.now() - lanesAt >= (src.lanesRefreshMs ?? LANES_REFRESH_MS);
+    const lanesDue = frozen || Date.now() - lanesAt >= (src.lanesRefreshMs ?? LANES_REFRESH_MS);
     const [status, set, weather, linkState, weighIns, food, training, rows, iss, ref] = await Promise.all([
       soft(src.status(crew)), latestSet(src, crew), soft(src.spaceWeather()), soft(src.link()),
       soft(src.readings("body_mass", { since: new Date((nowS - MASS_DAYS * 86400) * 1000).toISOString(), limit: 500, crew })),
@@ -69,6 +77,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
     mass.update({ weighIns, food, training, sessions: set.sessions });
     if (rows !== undefined) {
       lanesAt = Date.now();
+      lanesClock = clock;
       vitals.update({ rows, win, iss });
     }
     rad.update({ ref, weather });
@@ -78,6 +87,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   const timer = setInterval(() => void load(), src.refreshMs ?? REFRESH_MS);
   const offCrew = onCrewChange(() => {
     lanesAt = 0;
+    loadedAt = Number.NaN;
     void load();
   });
   return () => {
