@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import type { FoodCatalog, FoodItem } from "../src/contract";
-import { buildMealRequest, formatNutrient, mealPreview, reportedBy, validSelection } from "../src/model/food";
+import { buildMealRequest, formatNutrient, mealLine, mealPreview, reportedBy, validSelection } from "../src/model/food";
 
 const item = (id: string, g: number, fluid: number, per: (number | null)[]): FoodItem => ({
   id, name: id, category: "test", fdc_id: 1, fdc_dataset: "sr_legacy", fdc_description: "t", serving_g: g,
@@ -38,6 +38,13 @@ describe("food model", () => {
     expect(validSelection([])).toBe(false);
     expect(validSelection([{ food_id: "bar", servings: 0 }])).toBe(false);
     expect(validSelection([{ food_id: "bar", servings: 20 }])).toBe(true);
+  });
+  test("mealLine names each food from the catalogue and keeps the id only when the name is unknown", () => {
+    const meal = { eaten_at: "2026-11-15T21:40:00Z", items: [{ food_id: "bar", servings: 2 }, { food_id: "gone", servings: 0.5 }] };
+    expect(mealLine(cat, meal)).toBe("21:40 UTC: bar x 2, gone x 0.5");
+    expect(mealLine(null, meal)).toBe("21:40 UTC: bar x 2, gone x 0.5");
+    const named = { items: [{ ...cat.items[0], name: "Cereal bar" }] } as unknown as FoodCatalog;
+    expect(mealLine(named, meal)).toBe("21:40 UTC: Cereal bar x 2, gone x 0.5");
   });
   test("reportedBy wording", () => {
     expect(reportedBy({ meals_reporting: 3, meals_total: 4 })).toBe("reported by 3 of 4 meals");

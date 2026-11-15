@@ -30,6 +30,8 @@ export const COPY: Record<string, string> = {
   "crew.wearerNote": "set from this console",
   "crew.wearerError": "Could not set the wearer: ",
   "crew.choose": "Choose who this reading is for.",
+  "crew.pick": "Pick the crew",
+  "crew.needed": "Pick the crew first.",
 
   "status.waitingFor": "Waiting for",
   "status.incomplete": "Waiting for both values",
@@ -189,6 +191,7 @@ export const COPY: Record<string, string> = {
   "food.refNote": "Reference values are population references from NASA documents, not a personal target.",
   "food.refTitle": "Exploration reference values (NASA JSC-67378)",
   "food.logTitle": "Log a meal",
+  "food.crew": "Eaten by",
   "food.pickItem": "Food item",
   "food.servings": "Servings",
   "food.addItem": "Add to meal",
