@@ -97,7 +97,8 @@ like any other reading.
      generic new dev `WEATHER`.
    - The console labels it "Earth reference, outdoor".
    - The location is a coarse grid cell held in `.env`. It is never committed, published or shown.
-   - The provider is an open, keyless API, named only in `DATA_SOURCES.md` (R5).
+   - The provider is INMET's automatic stations (raw, not quality-checked hourly data from the nearest public
+     station, with a token in `.env`), named only in `DATA_SOURCES.md` (R5). Decided 2026-11-15, see §13.
    - Failures are logged and retried at the next run. Missing hours stay missing.
 
 The contract gains the six indicators, node `earth-1`, src `ref` and devs `ISSLIVE` and `WEATHER`. None of the new
@@ -175,7 +176,8 @@ published worked example (section 10).
 - The slope is Sen's (1968): the median of all pairwise slopes. Its confidence interval comes from the rank method in
   Gilbert (1987) §16.5.
 - **Points are blocked first, because raw samples are serially correlated:**
-  - cabin, ISS and Earth series become 10-minute medians over 6 h (36 blocks);
+  - cabin and Earth series become 10-minute medians over 6 h (36 blocks); ISS series become 30-minute medians
+    (12 blocks), because ISS Live pushes a value only when it changes (team owner, 2026-11-15);
   - body series become one value per night or per day over 14 days;
   - lift series become one value per set.
 - **Minimum:** n ≥ 10 blocks, and the blocks present cover at least 75 % of the window.
@@ -386,7 +388,14 @@ Each slice is its own PR, after the event, from `main`.
 - Correcting the tilt witness's 200 ms debounce lag. That is its own follow-up (gap analysis, "after the event"),
   and `lift_tilt_agreement` uses its own baseline, so the constant offset cancels out.
 
-## 13. Open points for the team owner's review
+## 13. Decisions after the review (2026-11-15)
 
-- The unit of each ISS Live item, which decides the conversion in slice 3.
-- The Earth-weather provider, to be recorded in `DATA_SOURCES.md`.
+Both open points are settled by the team owner:
+
+- **ISS units confirmed.** Pressure in mmHg (the feed mislabels it PSI; the capture reads about 758.6), stored in
+  hPa; temperature in °C; both ppCO2 items in mmHg (2.4 and 2.95; the feed's PSIA label cannot be right). ISS
+  ppCO2 uses 30-minute blocks (§6.1).
+- **Outdoor provider: INMET automatic stations.** Open-Meteo was considered and dropped: its licence asks for a
+  credit link next to the displayed data, against the vendor-free console text. INMET needs a token that the team
+  owner requests; the station code stays in `.env` like the location. The plan's Task 9 checks INMET's API against
+  the live server first, because no official manual was found online.
