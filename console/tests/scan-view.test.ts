@@ -86,4 +86,36 @@ describe("pack scanner panel (D44)", () => {
     expect(s.node.textContent).toContain(COPY["food.scanCatalogLoading"]);
     expect(s.node.textContent).not.toContain(COPY["food.scanUnknown"]);
   });
+
+  test("stopping while the video starts leaves no scan running", async () => {
+    vi.useFakeTimers();
+    let played!: () => void;
+    HTMLMediaElement.prototype.play = () => new Promise<void>((r) => (played = r));
+    const detect = vi.fn(async () => []);
+    const stream = { getTracks: () => [{ stop: () => {} }] } as unknown as MediaStream;
+    const s = packScanner(() => cat, () => {}, { detector: () => ({ detect }), getStream: async () => stream });
+    button(s.node, COPY["food.scanPack"]).click();
+    await vi.advanceTimersByTimeAsync(0);
+    s.stop();
+    played();
+    await vi.advanceTimersByTimeAsync(600);
+    expect(detect).not.toHaveBeenCalled();
+    expect(button(s.node, COPY["food.scanPack"])).toBeTruthy();
+  });
+
+  test("a frame read before Stop does not pick a food after it", async () => {
+    vi.useFakeTimers();
+    const picked: string[] = [];
+    let seen!: (v: { rawValue: string }[]) => void;
+    const detect = vi.fn(() => new Promise<{ rawValue: string }[]>((r) => (seen = r)));
+    const stream = { getTracks: () => [{ stop: () => {} }] } as unknown as MediaStream;
+    const s = packScanner(() => cat, (id) => picked.push(id), { detector: () => ({ detect }), getStream: async () => stream });
+    button(s.node, COPY["food.scanPack"]).click();
+    await vi.advanceTimersByTimeAsync(300);
+    expect(detect).toHaveBeenCalledTimes(1);
+    s.stop();
+    seen([{ rawValue: "hhm-food:bar" }]);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(picked).toEqual([]);
+  });
 });

@@ -6,6 +6,10 @@ import json
 import re
 from pathlib import Path
 
+import pytest
+
+pytest.importorskip("segno")  # optional `labels` extra; the shared venv may not have it
+
 import qr_labels as ql
 
 CAT = {

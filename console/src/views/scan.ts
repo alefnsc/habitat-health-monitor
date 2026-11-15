@@ -77,6 +77,7 @@ export function packScanner(getCatalog: () => Ids | null, onPick: (id: string) =
     video.srcObject = stream;
     video.hidden = false;
     await video.play().catch(() => {});
+    if (mine !== run) return; // stopped while the video was starting; stop() already closed the camera
     scan.textContent = COPY["food.scanStop"];
     status.textContent = COPY["food.scanLooking"];
     timer = setInterval(async () => {
@@ -85,6 +86,7 @@ export function packScanner(getCatalog: () => Ids | null, onPick: (id: string) =
       busy = true;
       try {
         const texts = (await detector.detect(video)).map((b) => b.rawValue);
+        if (mine !== run) return; // a frame read before Stop was pressed
         const id = firstKnownCode(texts, cat);
         if (id) pick(id);
         else if (texts.length) status.textContent = COPY["food.scanUnknown"];
