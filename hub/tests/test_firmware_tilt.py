@@ -29,7 +29,7 @@ def test_sketch_pin_names_and_timing() -> None:
 def test_firmware_tables_carry_tilt() -> None:
     h = (FW / "libraries/HabitatNode/src/ReadingFormat.h").read_text()
     cpp = (FW / "libraries/HabitatNode/src/ReadingFormat.cpp").read_text()
-    assert "IND_TILT, IND_COUNT" in h and "DEV_KY017, DEV_RING, DEV_COUNT" in h
+    assert "IND_TILT, IND_COUNT" in h and "DEV_KY017, DEV_RING, DEV_BMP280, DEV_COUNT" in h
     assert '"tilt"' in cpp and '"state"' in cpp and '"KY017"' in cpp
 
 
