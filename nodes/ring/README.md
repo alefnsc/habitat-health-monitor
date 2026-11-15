@@ -48,11 +48,17 @@ python -m nodes.ring replay var/ring/pulls.jsonl
 
 ## One-time setup (team owner only)
 
-1. Register a developer application on the ring vendor's developer portal (link in `DATA_SOURCES.md`). Give it
-   exactly **one** redirect URI, `http://localhost:8799/callback`, and set `RING_REDIRECT_URI` to the same value.
-   Do not use `127.0.0.1`: the vendor's load balancer answers 403 to any request that carries it.
+1. Register a developer application **for this importer only** on the ring vendor's developer portal (link in
+   `DATA_SOURCES.md`). Give it a neutral name, the scopes `daily`, `heartrate` and `spo2`, and exactly **one**
+   redirect URI. Set `RING_REDIRECT_URI` to that same value. Use either:
+   - `http://localhost:8799/callback`: `auth` listens for the callback itself; or
+   - a path on the project's public site that serves a static 404, such as `https://<public site>/ring/callback`.
+     `auth` then asks you to paste the address the browser stops on.
+
+   Do not use `127.0.0.1`: the vendor's load balancer answers 403 to any request that carries it. Do not reuse
+   another product's app either (decision D41 §9).
 2. Copy the client id and secret into `.env`, which is git-ignored, along with the three URLs from
-   `DATA_SOURCES.md`.
+   `DATA_SOURCES.md`. The token URL is the identity server's own endpoint; the older one refuses every exchange.
 3. Run `python -m nodes.ring auth --use-registered-redirect`, sign in, and allow `heartrate`, `spo2` and `daily` on
    the consent page.
 4. Run `python -m nodes.ring pull --dry-run` and check the counts. Then pull for real with the hub running.
@@ -73,7 +79,10 @@ python -m nodes.ring replay var/ring/pulls.jsonl
   Register `localhost` instead (step 1).
 - `no redirect within 300 s`: the browser never came back to `RING_REDIRECT_URI`. Run
   `auth --use-registered-redirect --paste` and paste the address the browser ends on. That address holds the code
-  even when the page does not load.
+  even when the page does not load. Paste it into the terminal where `auth` is waiting, and do it quickly: the code
+  expires within minutes.
+- `token endpoint answered 400: … invalid_request` after the paste: `RING_TOKEN_URL` is the older token URL. Use
+  the identity server's token endpoint listed in `DATA_SOURCES.md`.
 
 ## Tests
 

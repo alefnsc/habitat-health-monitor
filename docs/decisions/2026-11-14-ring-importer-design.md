@@ -36,7 +36,7 @@ core, and writing to SQLite directly would skip contract validation.
 |---|---|---|
 | `mapper.py` | Pure: one *pull record* (raw vendor JSON plus `pulled_at`) → contract-v1 dicts and a skip summary | none |
 | `client.py` | Fetches the three endpoints, follows `next_token`, refreshes the token once on a 401 | vendor API |
-| `auth.py` | Authorization code with `state` and PKCE; the callback lands on a one-shot `127.0.0.1` server, or the team owner pastes the redirect URL; writes the token file with mode 600 | vendor OAuth |
+| `auth.py` | Authorization code with `state` and PKCE; the callback lands on a one-shot loopback server (127.0.0.1, plus [::1] for `localhost`), or the team owner pastes the redirect URL (§9); writes the token file with mode 600 | vendor OAuth |
 | `__main__.py` | `pull`: fetch → append the raw record to `var/ring/pulls.jsonl` → map → post. `replay FILE`: map → post | hub only for replay |
 
 Configuration lives in `.env`, which is git-ignored: `RING_API_BASE`, `RING_AUTHORIZE_URL`, `RING_TOKEN_URL`,
@@ -111,3 +111,27 @@ A hub test pins this down.
 - Hub: a reading 6 hours old is assessed at its measured time and its alert carries the old `measured_at`.
 - Contract: `ring-1` and `RING` are present, and the firmware device table lists `RING`.
 - Gates: `pytest -q`, `ruff check .` and the camera and console tests.
+
+## 9. Sign-in, as found on the real vendor (amendment, 2026-11-15)
+
+The first real sign-in found five facts. None were in the public docs on 2026-11-14.
+
+1. **A separate app.** The importer has its own developer app, with a neutral name, the scopes `daily`, `heartrate`
+   and `spo2` (all required), and exactly one redirect URI. It never reuses another product's app or client id:
+   that app's redirect leads to the other product's own callback, so the authorization code would go there.
+2. **No 127.0.0.1.** The vendor's load balancer answers 403 to any request that carries `127.0.0.1`. A local
+   redirect is therefore `http://localhost:8799/callback`, the default. The listener binds 127.0.0.1 and also
+   [::1], because browsers try [::1] first for `localhost`. If another program holds either one, `auth` stops
+   before the browser opens. `auth` warns when `RING_REDIRECT_URI` still names 127.0.0.1.
+3. **Or the public site.** The redirect may instead be a path on the project's public site that serves a static
+   404, such as `/ring/callback`. The browser stops there with `?code=…&state=…` in the address bar. `auth` then
+   asks for that address (it always asks for a non-local redirect, or with `--paste`). The code is single-use and
+   short-lived, and it cannot be redeemed without the PKCE verifier, which never leaves the importer's process. With
+   no interactive terminal, `auth` stops with a plain error instead of a traceback.
+4. **Redirect matching.** A `redirect_uri` that is not registered is refused with `400 invalid_request` before
+   sign-in. A registered one is accepted. With exactly one registered redirect, `--use-registered-redirect` sends
+   none, and the vendor uses the registered one.
+5. **Token URL.** The authorize URL hands sign-in to a newer identity server, and the code comes back with that
+   server as its issuer (`iss`). The older token URL answered `400 invalid_request` to every exchange. The
+   identity server's own token endpoint is taken from its discovery document. It returns specific errors
+   (`invalid_grant`, `invalid_client`) and is the one to use. Its address is in `DATA_SOURCES.md`.
