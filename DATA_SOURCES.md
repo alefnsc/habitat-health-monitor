@@ -38,6 +38,9 @@ Last updated by the Science lane (N11a). The BLE, wearable-baseline, OAuth, grou
 - Committed file: `data/nasa/isslive_capture.jsonl`, a 13-minute capture (13:56 to 14:10 UTC) recorded on 2026-11-14, all four items present, always shown as "recorded".
 - Use: "ISS cabin now" beside the habitat cabin, with a data-age badge.
 - Without it: the page serves the recorded capture, labelled recorded.
+- Stored (D45): the hub also stores each fresh item as a reference reading (`iss_cabin_p` in hPa from the mmHg value,
+  `iss_cabin_temp` in C, `iss_ppco2` in mmHg for both CO2 items), at most one per item per minute. These readings are
+  never assessed, never sent over the link and never on `/api/status`; the signals module reads them.
 
 ## Mission dose estimate (effective dose)
 
