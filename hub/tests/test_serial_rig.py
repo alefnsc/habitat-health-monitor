@@ -153,14 +153,49 @@ def test_disabled_without_port(settings, clock):
     assert threading.active_count() <= before + 1
 
 
+D40_SERIAL_READINGS = {
+    ("cabin-1", "cabin_temp"),  # DHT11, always built (D40)
+    ("cabin-1", "cabin_rh"),
+    ("exercise-1", "load_raw"),  # only with ENABLE_HX711=1
+}
+
+
+def check_capture(lines: list[str]) -> set[tuple[str, str]]:
+    """Every reading line of a UNO capture parses under contract v1 as a D40 serial reading."""
+    seen = set()
+    for raw in lines:
+        if raw.startswith("{") and '"type"' not in raw:  # skip acks, `#` comments and blanks
+            r = parse_reading(raw, max_bytes=256)
+            assert (r.node, r.ind) in D40_SERIAL_READINGS, raw
+            seen.add((r.node, r.ind))
+    assert {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh")} <= seen  # the D40 default build
+    return seen
+
+
+def test_capture_check_on_d40_lines():
+    # Lines in the exact shape of exercise-uno.ino buildReading()/buildAck() with the D40 defaults.
+    lines = [
+        "# exercise-1 boot=8",
+        (
+            '{"v":1,"node":"cabin-1","boot":8,"seq":601,"age_ms":0,"ind":"cabin_temp","val":25.2,'
+            '"unit":"C","src":"hobby","dev":"DHT11","q":["ok"]}'
+        ),
+        (
+            '{"v":1,"node":"cabin-1","boot":8,"seq":602,"age_ms":0,"ind":"cabin_rh","val":52,'
+            '"unit":"%","src":"hobby","dev":"DHT11","q":["ok"]}'
+        ),
+        '{"v":1,"node":"exercise-1","type":"ack","cmd":"alarm","ok":true}',
+    ]
+    assert check_capture(lines) == {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh")}
+    with pytest.raises(AssertionError):
+        check_capture(lines[:1] + lines[3:])  # no DHT11 lines: not a D40 capture
+
+
 def test_capture_contract():
     p = Path(__file__).parent / "fixtures" / "rig_capture.jsonl"
     if not p.exists():
-        pytest.skip("no rig capture yet")
-    for raw in p.read_text().splitlines():
-        if raw.startswith("{") and '"type"' not in raw:
-            r = parse_reading(raw, max_bytes=256)
-            assert (r.node, r.ind) == ("exercise-1", "load_raw")
+        pytest.skip("no real UNO capture yet: save a minute of its serial output to " + str(p))
+    check_capture(p.read_text().splitlines())
 
 
 def test_cabin_line_accepted_and_tilt_rejected_over_serial(ing):

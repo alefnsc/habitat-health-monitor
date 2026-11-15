@@ -4,7 +4,7 @@ from dataclasses import replace
 import pytest
 
 import hub.serial_rig as sr
-from hub.commands import Command, CommandRouter, encode_command, parse_command
+from hub.commands import Command, CommandRouter, command_topic, encode_command, parse_command
 from hub.contract import ContractError
 from hub.mqtt import route_message
 from hub.serial_rig import RigLink
@@ -98,11 +98,27 @@ def test_router(settings):
     r = CommandRouter(link, pub)
     assert r.send("exercise-1", Command(1, "alarm", on=True)) is None
     assert link._port.writes and pub.calls == []
-    r.send("cabin-1", Command(1, "alarm", on=True))
-    assert pub.calls[0] == ("habitat/v1/cmd/cabin-1", b'{"v":1,"cmd":"alarm","on":true}', 1, True)
-    r.send("cabin-1", Command(1, "tare"))
+    r.send("vitals-1", Command(1, "alarm", on=True))  # an MQTT node
+    assert pub.calls[0] == ("habitat/v1/cmd/vitals-1", b'{"v":1,"cmd":"alarm","on":true}', 1, True)
+    r.send("vitals-1", Command(1, "tare"))
     assert pub.calls[1][3] is False
     CommandRouter(None, None).send("exercise-1", Command(1, "tare"))
+
+
+def test_router_sends_cabin_commands_over_the_serial_link(settings):
+    # D40: cabin-1 is the UNO's DHT11, on the same USB serial link as exercise-1. Nothing
+    # subscribes to habitat/v1/cmd/cabin-1, so an MQTT publish there was silently lost.
+    link, pub = rig(settings), Pub()
+    CommandRouter(link, pub).send("cabin-1", Command(1, "alarm", on=True))
+    assert link._port.writes == [b'{"v":1,"cmd":"alarm","on":true}\n']
+    assert pub.calls == []
+
+
+def test_cli_topic_for_serial_nodes_is_the_rig_topic():
+    # The hub bridges only habitat/v1/cmd/exercise-1 to the serial link.
+    assert command_topic("cabin-1") == "habitat/v1/cmd/exercise-1"
+    assert command_topic("exercise-1") == "habitat/v1/cmd/exercise-1"
+    assert command_topic("vitals-1") == "habitat/v1/cmd/vitals-1"
 
 
 def test_mqtt_bridge(settings, tmp_path, clock, caplog):
