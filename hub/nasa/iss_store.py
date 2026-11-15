@@ -18,12 +18,14 @@ NODE = "nasa"
 DEV = "ISSLIVE"
 MIN_GAP = timedelta(minutes=1)  # at most one row per item per minute
 FRESH = timedelta(minutes=10)  # an item older than this when it arrives is not stored
-# ISS item name -> hub indicator. Both ppCO2 items are stored as iss_ppco2 (lab and Node 3).
+AHEAD = timedelta(minutes=2)  # an item stamped further ahead than this is a bad clock: skipped
+# ISS item name -> hub indicator. The Lab and Node 3 ppCO2 items are two modules at different
+# levels: one series of both would move with the update mix alone, so each has its own indicator.
 IND_FOR: dict[str, str] = {
     "cabin_pressure": "iss_cabin_p",
     "cabin_temperature": "iss_cabin_temp",
     "lab_ppco2": "iss_ppco2",
-    "node3_ppco2": "iss_ppco2",
+    "node3_ppco2": "iss_ppco2_node3",
 }
 
 
@@ -51,6 +53,8 @@ class IssWriter:
             return False
         if u.received_at - u.measured_at > FRESH:
             return False
+        if u.measured_at - u.received_at > AHEAD:
+            return False  # a future stamp would also block the item's next updates (MIN_GAP)
         with self._lock:
             last = self._last.get(u.item)
             if last is not None and u.measured_at - last < MIN_GAP:

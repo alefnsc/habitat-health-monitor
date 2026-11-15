@@ -47,9 +47,10 @@ def test_seq_is_fixed_per_hour_so_a_second_pull_is_a_duplicate():
 
 
 def test_location_is_coarse_and_env_wins():
-    assert coarse_location({"WEATHER_LAT": "-23.5617", "WEATHER_LON": "-46.6559"}, {}) == (
-        -23.6,
-        -46.7,
+    # invented coordinates, not anyone's location
+    assert coarse_location({"WEATHER_LAT": "12.3456", "WEATHER_LON": "-45.6789"}, {}) == (
+        12.3,
+        -45.7,
     )
     assert coarse_location({}, {"WEATHER_LAT": "10.04", "WEATHER_LON": "20.06"}) == (10.0, 20.1)
     with pytest.raises(LocationError):
@@ -76,14 +77,21 @@ def test_no_provider_refuses():
 
 def test_the_bench_location_is_in_no_tracked_file():
     env = env_file_values(REPO / ".env")
-    values = [env[k] for k in ("WEATHER_LAT", "WEATHER_LON") if env.get(k)]
-    if not values:
+    raw = [env[k] for k in ("WEATHER_LAT", "WEATHER_LON") if env.get(k)]
+    if len(raw) < 2:
         pytest.skip("no local .env location to check")
+    lat, lon = coarse_location({}, env)
+    coarse = (f"{lat:.1f}", f"{lon:.1f}")
     tracked = subprocess.run(["git", "ls-files"], cwd=REPO, capture_output=True, text=True,
                              check=True).stdout.split()  # fmt: skip
+    leaks = []
     for f in tracked:
         p = REPO / f
-        if p.is_file() and p.stat().st_size < 2_000_000:
-            text = p.read_text(encoding="utf-8", errors="ignore")
-            for v in values:
-                assert v not in text, f"{f} holds the bench location"
+        if not p.is_file() or p.stat().st_size > 2_000_000:
+            continue
+        text = p.read_text(encoding="utf-8", errors="ignore")
+        # the exact values, or the coarse cell (both coordinates in one file)
+        if any(v in text for v in raw) or all(c in text for c in coarse):
+            leaks.append(f)
+    # the message names the files only, never the location
+    assert not leaks, f"tracked files hold the bench location: {leaks}"

@@ -47,10 +47,12 @@ def parse(data: dict) -> list[HourRow]:
     for i, t in enumerate(times):
         vals = [c[i] if i < len(c) else None for c in cols]
         try:
-            temp, rh, p = (None if v is None else float(v) for v in vals)
+            nums = [None if v is None else float(v) for v in vals]
             at = datetime.fromtimestamp(int(t), UTC)
         except (TypeError, ValueError, OverflowError):
             raise WeatherApiError(f"weather API sent a non-numeric value at hour {i}") from None
+        # NaN or infinity is no value: missing stays missing (and json cannot carry it to the hub)
+        temp, rh, p = (x if x is not None and math.isfinite(x) else None for x in nums)
         rows.append(HourRow(at, temp, rh, p))
     rows.sort(key=lambda r: r.t)
     return rows

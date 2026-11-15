@@ -20,7 +20,8 @@ def test_contract_accepts_the_new_feeds():
         parse_reading({"v": 1, "node": "earth-1", "boot": 1, "seq": 1, "age_ms": 0, "ind": ind,
                        "val": 20, "unit": unit, "src": "ref", "dev": "WEATHER", "q": ["ok"]})  # fmt: skip
     assert REFERENCE_INDS == {
-        "iss_cabin_p", "iss_cabin_temp", "iss_ppco2", "earth_temp", "earth_rh", "earth_p",
+        "iss_cabin_p", "iss_cabin_temp", "iss_ppco2", "iss_ppco2_node3", "earth_temp", "earth_rh",
+        "earth_p",
     }  # fmt: skip
 
 

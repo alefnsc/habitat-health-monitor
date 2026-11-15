@@ -39,7 +39,8 @@ Last updated by the Science lane (N11a). The BLE, wearable-baseline, OAuth, grou
 - Use: "ISS cabin now" beside the habitat cabin, with a data-age badge.
 - Without it: the page serves the recorded capture, labelled recorded.
 - Stored (D45): the hub also stores each fresh item as a reference reading (`iss_cabin_p` in hPa from the mmHg value,
-  `iss_cabin_temp` in C, `iss_ppco2` in mmHg for both CO2 items), at most one per item per minute. These readings are
+  `iss_cabin_temp` in C, `iss_ppco2` for the US Lab CO2 item and `iss_ppco2_node3` for Node 3, both in mmHg, never
+  pooled), at most one per item per minute; an item stamped more than 2 minutes ahead of its arrival is skipped. These readings are
   never assessed, never sent over the link and never on `/api/status`; the signals module reads them.
 
 ## Mission dose estimate (effective dose)

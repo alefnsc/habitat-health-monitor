@@ -62,10 +62,10 @@ def test_hours_asks_for_the_past_days_and_keeps_only_the_range():
 
     rows_all = parse(sample())
     start, end = rows_all[2].t, rows_all[8].t
-    api = HourlyApi(URL, -23.6, -46.7, http=client(handler))
+    api = HourlyApi(URL, 12.3, -45.7, http=client(handler))
     rows = api.hours(start, end)
     assert [r.t for r in rows] == [r.t for r in rows_all[2:9]]
-    assert seen["latitude"] == "-23.6" and seen["longitude"] == "-46.7"
+    assert seen["latitude"] == "12.3" and seen["longitude"] == "-45.7"
     assert seen["hourly"] == "temperature_2m,relative_humidity_2m,surface_pressure"
     assert seen["timeformat"] == "unixtime" and seen["timezone"] == "GMT"
     assert int(seen["past_days"]) >= 1 and seen["forecast_days"] == "1"
@@ -76,7 +76,7 @@ def test_an_http_error_names_the_status_but_never_the_url_or_location():
     def handler(req: httpx.Request) -> httpx.Response:
         return httpx.Response(400, json={"error": True, "reason": "bad"})
 
-    api = HourlyApi(URL, -23.6, -46.7, http=client(handler))
+    api = HourlyApi(URL, 12.3, -45.7, http=client(handler))
     now = datetime(2026, 11, 15, 12, tzinfo=UTC)
     with pytest.raises(WeatherApiError) as e:
         api.hours(now - timedelta(hours=6), now)
@@ -84,14 +84,14 @@ def test_an_http_error_names_the_status_but_never_the_url_or_location():
     assert (
         "400" in text
         and "weather.example" not in text
-        and "-23.6" not in text
-        and "46.7" not in text
+        and "12.3" not in text
+        and "45.7" not in text
     )
 
 
 def test_default_provider_needs_the_api_url():
-    assert isinstance(default_provider(-23.6, -46.7, None), NoProvider)
-    assert isinstance(default_provider(-23.6, -46.7, URL), HourlyApi)
+    assert isinstance(default_provider(12.3, -45.7, None), NoProvider)
+    assert isinstance(default_provider(12.3, -45.7, URL), HourlyApi)
 
 
 def test_the_request_url_is_not_logged_even_at_info(caplog):
@@ -99,7 +99,7 @@ def test_the_request_url_is_not_logged_even_at_info(caplog):
         return httpx.Response(200, json=sample())
 
     rows_all = parse(sample())
-    api = HourlyApi(URL, -23.6, -46.7, http=client(handler))
+    api = HourlyApi(URL, 12.3, -45.7, http=client(handler))
     with caplog.at_level("DEBUG"):
         api.hours(rows_all[0].t, rows_all[-1].t)
     assert (
@@ -114,3 +114,11 @@ def test_a_non_numeric_value_is_a_clean_api_error():
     data["hourly"]["surface_pressure"][0] = "n/a"
     with pytest.raises(WeatherApiError, match="value"):
         parse(data)
+
+
+def test_nan_and_infinity_count_as_missing():
+    data = sample()
+    data["hourly"]["temperature_2m"][0] = float("nan")
+    data["hourly"]["surface_pressure"][1] = float("inf")
+    rows = parse(data)
+    assert rows[0].temp_c is None and rows[1].p_hpa is None and rows[1].temp_c is not None

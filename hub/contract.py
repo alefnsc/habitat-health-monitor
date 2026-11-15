@@ -42,13 +42,15 @@ INDICATORS: dict[str, str] = {
     # Reference feeds (D45 §4.2): stored for signals, never assessed, outboxed or on /api/status.
     "iss_cabin_p": "hPa",
     "iss_cabin_temp": "C",
-    "iss_ppco2": "mmHg",
+    "iss_ppco2": "mmHg",  # the US Lab item
+    "iss_ppco2_node3": "mmHg",  # Node 3: another module, never pooled with the Lab
     "earth_temp": "C",
     "earth_rh": "%",
     "earth_p": "hPa",
 }
 REFERENCE_INDS: frozenset[str] = frozenset(
-    {"iss_cabin_p", "iss_cabin_temp", "iss_ppco2", "earth_temp", "earth_rh", "earth_p"}
+    {"iss_cabin_p", "iss_cabin_temp", "iss_ppco2", "iss_ppco2_node3", "earth_temp", "earth_rh",
+     "earth_p"}
 )
 DERIVED: dict[str, str] = {"cabin_ppco2": "mmHg"}
 
