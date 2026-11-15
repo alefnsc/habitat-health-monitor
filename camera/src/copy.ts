@@ -44,6 +44,8 @@ export const COPY: Record<string, string> = {
   "exercise.overhead_press": "Overhead press",
   "exercise.row": "Row",
   "exercise.needed": "Pick the exercise first.",
+  "crew.pick": "Pick the crew",
+  "crew.needed": "Pick the crew first.",
   "exercise.note": "The exercise is the one picked before the set. It is not detected from the video.",
   "result.exercise": "Exercise: {label}",
   "set.unsent": "Some reps have not been sent yet.",
