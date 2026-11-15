@@ -34,11 +34,30 @@ export function unitLabel(unit: string): string {
 const fill = (t: string, v: Record<string, string | number>) =>
   Object.entries(v).reduce((s, [k, x]) => s.split(`{${k}}`).join(String(x)), t);
 
+type Lag = { lag_h: number; n: number; rho: number | null; low: number | null; high: number | null };
+
+function lagsOf(s: Signal | SignalSnapshot): Lag[] {
+  const lags = "detail" in s ? s.detail.lags : undefined;
+  return Array.isArray(lags) ? (lags as Lag[]) : [];
+}
+
+/** How many points a card is worked out from: for a pair read at several lags, the pairs across all of them. */
+export function pointCount(s: Signal): number {
+  const lags = lagsOf(s);
+  return s.kind === "lagged_pair" && lags.length ? lags.reduce((a, l) => a + l.n, 0) : s.method.n;
+}
+
 /** The card's headline sentence. */
 export function headline(s: Signal | SignalSnapshot): string {
   const t = COPY[s.headline_key] ?? COPY["signals.nodata"];
   const v = s.value;
-  const n = "method" in s ? s.method.n : 0;
+  const n = "method" in s ? pointCount(s) : 0;
+  const lags = lagsOf(s);
+  // A pair read at several lags has no single value: each lag carries its own (lagLines), none is picked.
+  if (!v && lags.length && (s.headline_key === "signals.pair.rho" || s.headline_key === "signals.pair.few")) {
+    const hs = lags.map((l) => l.lag_h);
+    return fill(COPY["signals.pair.lagged"], { from: Math.min(...hs), to: Math.max(...hs), n });
+  }
   if (s.headline_key === "signals.ttl.reaches" && v) {
     const ind = s.inputs[0]?.ind;
     const unit = unitLabel((ind && (UNITS as Record<string, string>)[ind]) || "");
@@ -61,16 +80,18 @@ export function limitLines(s: Signal | SignalSnapshot): string[] {
 
 /** One line per lag for cabin_vs_earth (no lag is picked as the best one). */
 export function lagLines(s: Signal): string[] {
-  const lags = (s.detail.lags ?? []) as { lag_h: number; n: number; rho: number | null; low: number | null; high: number | null }[];
-  return lags.map((l) =>
+  return lagsOf(s).map((l) =>
     l.rho === null || l.low === null || l.high === null
       ? fill(COPY["signals.pair.lagFew"], { h: l.lag_h, n: l.n })
       : fill(COPY["signals.pair.lag"], { h: l.lag_h, n: l.n, rho: fmt(l.rho), low: fmt(l.low), high: fmt(l.high) }),
   );
 }
 
-export function notableCount(body: SignalsBody | null): number {
-  return (body?.signals ?? []).filter((s) => s.state === "notable").length;
+/** Notable signals, real and replay counted apart: the two are never pooled into one number. */
+export function notableCounts(body: SignalsBody | null): { real: number; replay: number } {
+  const notable = (body?.signals ?? []).filter((s) => s.state === "notable");
+  const replay = notable.filter((s) => s.replay).length;
+  return { real: notable.length - replay, replay };
 }
 
 /** The open self-check prompt this signal opened, if any. */
@@ -83,4 +104,13 @@ export function selfCheckFor(prompts: Prompt[], s: Signal): Prompt | undefined {
 /** Numbers of a series for a sparkline, in order; [time or rep, value] pairs from the hub. */
 export function sparkValues(s: Signal): number[] {
   return s.series.map((p) => p[1]).filter((x) => Number.isFinite(x));
+}
+
+/** The side-by-side table: key, x, y (and the lag for cabin_vs_earth). A missing value stays an empty cell. */
+export function pairRows(s: Signal): string[][] {
+  return s.pairs.map((row) => row.map((c, i) => {
+    if (i === 0) return String(c).slice(0, 16);
+    if (typeof c !== "number" || !Number.isFinite(c)) return "";
+    return i === 3 ? String(c) : fmt(c);
+  }));
 }

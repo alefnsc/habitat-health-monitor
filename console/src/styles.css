@@ -151,3 +151,7 @@ svg.linkstrip text.lt { fill: var(--text); font-size: 26px; font-weight: 650; }
 .spark svg { width: 100%; height: 100%; display: block; }
 .spark polyline { fill: none; stroke: var(--muted); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
 .pchip-link { color: inherit; text-decoration: none; display: contents; }
+.chip.replay { border: 1px dashed var(--muted); }
+.signal table.pairs { width: 100%; border-collapse: collapse; font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+.signal table.pairs th, .signal table.pairs td { text-align: right; padding: 1px 4px; border-bottom: 1px solid var(--line); }
+.signal table.pairs th:first-child, .signal table.pairs td:first-child { text-align: left; }
