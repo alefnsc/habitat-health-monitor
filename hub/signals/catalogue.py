@@ -64,6 +64,10 @@ CATALOGUE: tuple[Spec, ...] = (
          can_trigger=True, limits=(RING,)),
     Spec("spo2_baseline", "baseline", "night_value", "spo2", 14 * D, None, 7, 0.0, True,
          can_trigger=True, side="low", limits=(RING,)),
+    # slice 3: ISS Live stored as readings
+    # 30-minute blocks: ISS Live pushes a value only when it changes (team owner, 2026-11-15).
+    Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 30 * MIN, 10, 0.75, False,
+         limits=(INDEPENDENCE, ISS)),
 )  # fmt: skip
 
 BY_ID: dict[str, Spec] = {s.id: s for s in CATALOGUE}
