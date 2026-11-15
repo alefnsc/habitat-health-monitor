@@ -194,3 +194,78 @@ def test_the_key_rule_is_shared_with_the_catalogue_builder():
     import build_catalog as bc
 
     assert fdc.personal_key is bc.personal_key
+
+
+@pytest.mark.parametrize(
+    "change",
+    [
+        {"foodCategory": {"description": "Fast Foods"}},
+        {"foodCategory": {"description": "Restaurant Foods"}},
+        {"description": "Cereals ready-to-eat, KELLOGG'S, Test flakes"},
+        {"description": "McDONALD'S, Test burger"},
+    ],
+)
+def test_brand_named_records_are_refused(data, change):
+    items, cat = data
+    old = cat.read_text(encoding="utf-8")
+    with respx.mock() as router:
+        router.get(FOOD).mock(return_value=httpx.Response(200, json={**FOOD_BODY, **change}))
+        with pytest.raises(SystemExit, match="brand"):
+            fdc.main(add_args(items, cat), env=ENV)
+    assert cat.read_text(encoding="utf-8") == old
+
+
+def test_the_usda_programme_note_is_not_a_brand(data):
+    items, cat = data
+    body = {
+        **FOOD_BODY,
+        "description": "Test lentils, dry (Includes foods for USDA's Food Distribution Program)",
+    }
+    with respx.mock() as router:
+        router.get(FOOD).mock(return_value=httpx.Response(200, json=body))
+        assert fdc.main(add_args(items, cat), env=ENV, today="2026-11-15") == 0
+
+
+def test_a_brand_named_display_name_is_refused(data):
+    items, cat = data
+    with respx.mock() as router:
+        router.get(FOOD).mock(return_value=httpx.Response(200, json=FOOD_BODY))
+        with pytest.raises(SystemExit, match="brand"):
+            fdc.main(add_args(items, cat, "--name", "ACME lentils"), env=ENV)
+
+
+def test_search_hides_brand_named_hits(capsys):
+    hits = {
+        "foods": [
+            {
+                "fdcId": 1,
+                "dataType": "SR Legacy",
+                "description": "Test oats, dry",
+                "foodCategory": "Cereal Grains",
+            },
+            {
+                "fdcId": 2,
+                "dataType": "SR Legacy",
+                "description": "Test burger",
+                "foodCategory": "Fast Foods",
+            },
+            {"fdcId": 3, "dataType": "SR Legacy", "description": "Cereals, QUAKER, Test oats"},
+        ]
+    }
+    with respx.mock() as router:
+        router.post(SEARCH).mock(return_value=httpx.Response(200, json=hits))
+        fdc.main(["search", "oats"], env=ENV)
+    out = capsys.readouterr().out
+    assert "Test oats, dry" in out
+    assert "Test burger" not in out and "QUAKER" not in out
+    assert "2 brand-named hits hidden" in out
+
+
+def test_the_committed_catalogue_passes_the_brand_rule():
+    cat = json.loads((REPO / "data/food/catalog.json").read_text(encoding="utf-8"))
+    flagged = [
+        i["id"]
+        for i in cat["items"]
+        if fdc.brand_reason(i["fdc_description"]) or fdc.brand_reason(i["name"])
+    ]
+    assert flagged == []

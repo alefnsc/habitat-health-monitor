@@ -17,6 +17,7 @@ import argparse
 import csv
 import json
 import os
+import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,6 +38,27 @@ FIELDS = [
     "id", "fdc_id", "fdc_dataset", "name", "category", "serving_g", "serving_label", "serving_source",
     "fluid_ml_per_serving", "fluid_basis", "note",
 ]  # fmt: skip
+
+
+# Rule R5: no company or brand name in the catalogue. SR Legacy holds brand-named records in two ways: whole
+# categories of chain and restaurant foods, and brand names written in capitals ("..., KELLOGG'S, ...").
+BRAND_CATEGORIES = frozenset({"Fast Foods", "Restaurant Foods"})
+CAPS_RUN = re.compile(r"[A-Z]{3,}")
+NOT_BRANDS = frozenset({"USDA"})  # "(Includes foods for USDA's Food Distribution Program)"
+
+
+def food_category(food: Mapping) -> str | None:
+    """foodCategory is an object in a food record and a string in a search hit."""
+    c = food.get("foodCategory")
+    return c.get("description") if isinstance(c, Mapping) else c
+
+
+def brand_reason(text: str, category: str | None = None) -> str | None:
+    """Why a description or name looks brand-named, or None."""
+    if category in BRAND_CATEGORIES:
+        return f"category {category}"
+    caps = [w for w in CAPS_RUN.findall(text) if w not in NOT_BRANDS]
+    return f"capitalised name {caps[0]}" if caps else None
 
 
 def dump_catalog(cat: Mapping) -> str:
@@ -88,6 +110,13 @@ def add(args: argparse.Namespace, key: str, today: str) -> int:
     if meta["dataset"] not in bc.DATASETS:
         raise SystemExit(
             f"FDC id {args.fdc_id} is not a Foundation or SR Legacy food; only generic foods are used"
+        )
+    reason = brand_reason(meta["description"], food_category(src.food(args.fdc_id)))
+    if reason is None and args.name:
+        reason = brand_reason(args.name)
+    if reason:
+        raise SystemExit(
+            f"FDC id {args.fdc_id} looks brand-named ({reason}); only generic foods without brand names are used"
         )
     if args.serving_g is None or args.serving_label is None:
         print(
@@ -153,10 +182,16 @@ def main(
     )
     if args.cmd == "search":
         names = {"SR Legacy": "sr_legacy", "Foundation": "foundation"}
+        hidden = 0
         for f in search(key, args.words, args.limit):
+            if brand_reason(f.get("description") or "", food_category(f)):
+                hidden += 1
+                continue
             print(
                 f"{f.get('fdcId')}\t{names.get(f.get('dataType'), f.get('dataType'))}\t{f.get('description')}"
             )
+        if hidden:
+            print(f"({hidden} brand-named hits hidden)")
         return 0
     return add(args, key, today or datetime.now(UTC).date().isoformat())
 
