@@ -1,0 +1,35 @@
+1
+00:00:00,000 --> 00:00:01,500
+Habitat Health Monitor.
+
+2
+00:00:01,600 --> 00:00:04,200
+A camera tracks each lift on the bench,
+
+3
+00:00:04,300 --> 00:00:07,600
+and turns every rep into work, in joules.
+
+4
+00:00:07,700 --> 00:00:11,200
+Sensors reach the hub over USB and Wi-Fi.
+
+5
+00:00:11,300 --> 00:00:14,500
+One hub judges every reading, offline.
+
+6
+00:00:14,600 --> 00:00:18,300
+The panel shows food energy, training work and mass.
+
+7
+00:00:18,400 --> 00:00:21,500
+Cabin readings are judged against NASA's own limits.
+
+8
+00:00:21,600 --> 00:00:25,400
+Earth sees it later, over a simulated Mars link.
+
+9
+00:00:25,500 --> 00:00:29,000
+An educational prototype, not a medical device.
