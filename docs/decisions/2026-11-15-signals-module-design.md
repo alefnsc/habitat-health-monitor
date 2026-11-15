@@ -1,4 +1,4 @@
-# Cross-reference and predictive signals module — design (D45, number to confirm at merge)
+# Cross-reference and predictive signals module — design (D45)
 
 Status: design sections 1–6 approved by the team owner, 2026-11-15 (UTC−03:00). This is **post-event** work. It
 does not change the build submitted to NASA Space Apps on 2026-11-15, and nothing here is implemented yet.
@@ -386,9 +386,7 @@ Each slice is its own PR, after the event, from `main`.
 - Correcting the tilt witness's 200 ms debounce lag. That is its own follow-up (gap analysis, "after the event"),
   and `lift_tilt_agreement` uses its own baseline, so the constant offset cancels out.
 
-## 13. Open points for the plan
+## 13. Open points for the team owner's review
 
-- The unit of each ISS Live item, checked in slice 3 before conversion.
-- The Earth-weather provider, picked and recorded in `DATA_SOURCES.md` in slice 3.
-- The decision number (D45 here). The sensor-modules spec is being written in parallel and may take the same number,
-  so it is settled at merge.
+- The unit of each ISS Live item, which decides the conversion in slice 3.
+- The Earth-weather provider, to be recorded in `DATA_SOURCES.md`.
