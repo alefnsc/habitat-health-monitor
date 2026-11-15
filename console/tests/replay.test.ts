@@ -6,6 +6,9 @@ import { createReplayPlayer, replayBanner } from "../src/replay/player";
 import { mountReplayApp } from "../src/replay/app";
 import { escalationSteps } from "../src/model/guidance";
 
+// uPlot needs a canvas and matchMedia, which jsdom does not have; these tests do not draw the panel's charts.
+vi.mock("uplot", () => ({ default: class { static tzDate(d: Date) { return d; } destroy() {} } }));
+
 const file = () => parseReplayFile(JSON.parse(JSON.stringify(sample)));
 
 describe("replay adapt", () => {
@@ -91,9 +94,10 @@ describe("replay mode", () => {
     const fetchImpl = vi.fn(async (u: string) => (urls.push(u), new Response(JSON.stringify(sample))));
     vi.stubGlobal("fetch", fetchImpl);
     document.body.innerHTML = '<div id="app"></div>';
+    location.hash = "#/status";
     const root = document.getElementById("app")!;
     await mountReplayApp(root, { base: "/habitat-health-monitor/console/", fetchImpl });
-    expect(urls).toEqual(["/habitat-health-monitor/console/replay.json"]);
+    expect(urls).toEqual(["/habitat-health-monitor/console/replay.json", "/habitat-health-monitor/console/exercise-day.jsonl"]);
     expect(root.textContent).toContain("Replay of a recorded session");
     expect(root.querySelector('[data-tile="hr"]')).not.toBeNull();
     for (const s of ["entry", "history", "lanes", "exercise", "food", "nasa", "prompts", "body"]) {
@@ -101,7 +105,7 @@ describe("replay mode", () => {
       window.dispatchEvent(new Event("hashchange"));
       expect(root.querySelector("#screen")!.textContent).toBe("Not available in the replay.");
     }
-    expect(urls).toHaveLength(1);
+    expect(urls).toHaveLength(2);
     expect(ws).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });

@@ -179,3 +179,21 @@ colours in the lanes, NASA and banner code switch to these variables.
   connection time, which made the chip read "1 h ago" while readings arrived every 5 s.
 - **Lane sources.** Lane sources on the panel are compact, with the kind label once plus every requirement ID, for
   example "NASA-STD-3001 [V2 6012] [V2 6013]". The full references stay on the Lanes screen.
+
+## 12. Replay build (2026-11-15, after the merge; for the team owner's review in the PR)
+
+The public replay (`npm run build:replay`) opens on the panel too, so a judge sees the frame from the video. The
+cards are the same; `console/src/views/panel/source.ts` is the seam between them and their data:
+
+- **Live** reads the hub endpoints of section 4, as before.
+- **Replay** (`console/src/replay/panel.ts`) reads the recorded ground replay at the replay clock (t0 + position):
+  cabin readings and the one cabin alert at their measured time, so the alert's packet reaches Earth when the ground
+  receiver recorded it, and the link state from the beacons. Every lane keeps its source tag, "Replay (recorded)".
+- **The lift cards** read the synthetic exercise replay (`data/replay/exercise-day.jsonl`, 8 camera reps, 10 kg),
+  copied next to `replay.json`. It is a separate recording, so its set is placed one minute before the cabin
+  recording, and the card says so.
+- **Feeds the replay does not carry** say so: weigh-ins, food, space weather, ISS Live and the dose estimate. The
+  cabin chip reads "Replay (recorded)", never "live", and the clock shows the recorded UTC time.
+
+The status board, the replay banner and the Play, Pause and Restart controls are unchanged; the board stays in the
+navigation.

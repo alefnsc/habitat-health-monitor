@@ -22,7 +22,7 @@ describe("panel screen routing", () => {
     expect(screenFromHash("#/nope")).toBe("panel");
     expect(screenFromHash("#/lanes")).toBe("lanes");
   });
-  test("the replay build keeps its status board as the default", () => {
+  test("a caller can name another fallback screen", () => {
     expect(screenFromHash("", "status")).toBe("status");
     expect(screenFromHash("#/panel", "status")).toBe("panel");
   });

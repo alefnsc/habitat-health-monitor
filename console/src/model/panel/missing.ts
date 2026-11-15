@@ -8,7 +8,7 @@ const FILLER: Partial<Record<Ind, "ring" | "cabinNode" | "manual">> = {
 };
 
 /** "Not on this bench: heart rate, SpO2, sleep (ring import); …", or null when nothing is missing. */
-export function missingLine(empty: Ind[]): string | null {
+export function missingLine(empty: Ind[], lead: string = COPY["panel.notOnBench"]): string | null {
   const groups = new Map<string, string[]>();
   for (const ind of empty) {
     const f = FILLER[ind] ?? "manual";
@@ -16,5 +16,5 @@ export function missingLine(empty: Ind[]): string | null {
   }
   if (!groups.size) return null;
   const parts = [...groups].map(([f, names]) => `${names.join(", ")} (${COPY[`panel.fill.${f}`]})`);
-  return `${COPY["panel.notOnBench"]} ${parts.join("; ")}.`;
+  return `${lead} ${parts.join("; ")}.`;
 }

@@ -289,6 +289,12 @@ export const COPY: Record<string, string> = {
   "panel.state.unreachable": "Link simulator not running: light time from its config file",
   "panel.mars": "Mars",
   "panel.earth": "Earth",
+  // The panel in the replay build: replay wording where the live wording would point at a hub.
+  "panel.replaySet": "Synthetic set from the exercise replay file, shown one minute before the cabin recording.",
+  "panel.windowReplay": "Recorded session",
+  "panel.notInReplay": "Not in this replay:",
+  "panel.notInReplayShort": "not in this replay",
+  "panel.massNoneReplay": "No weigh-ins in this replay.",
 };
 
 export type CopyKey = keyof typeof COPY;
