@@ -40,6 +40,16 @@ The pod rides on the weight, so the node runs on its own cells and nothing on th
 - Only **adult** team members handle it. If the glass breaks, follow `docs/safety-checklist.md`.
 - The neodymium magnet is glued to the outside of the box and sticks the pod to the steel weight. It can pinch fingers.
 
+## Boot number
+
+Every reading carries the node's boot number; the hub keys readings on `(node, boot, seq)`. On the bench
+(2026-11-15) the number went 4, 7, 9, 8, 10, 11, 1, 2 within an hour, because the EEPROM emulation erases its sector
+and writes it back on every boot and that write failed or was cut on the pack. The library now keeps the number as an
+append-only log in that sector (`firmware/libraries/HabitatNode/src/BootLog.h`, decision D42): one 8-byte write per
+boot, no erase until 512 boots have passed, and a torn write still yields a higher number next time. The first boot
+after flashing this version is 2. The hub stores a repeated number that carries a different sample under a `clash`
+number instead of dropping it. In serial-only mode (no `secrets.h`, the Wokwi twin) `boot` stays the constant 1.
+
 ## Set-up check
 
 1. Mount the pod so the switch **reads 0** with the weight at rest. Check the live `tilt` value with `curl -s 'http://<hub>:8000/api/readings?ind=tilt&limit=5'` (newest 5 rows, oldest first; `val` is the state), or read the node's serial monitor, which prints a `# pub tilt <val> ...` line for each reading it publishes.

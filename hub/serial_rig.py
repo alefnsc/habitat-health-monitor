@@ -30,7 +30,9 @@ def open_port(url: str, baud: int) -> serial.Serial:
 
 
 def new_stats() -> dict[str, int]:
-    return dict.fromkeys(("lines", "stored", "rejected", "comments", "acks", "reconnects"), 0)
+    keys = ("lines", "stored", "duplicates", "clashes", "rejected", "comments", "acks",
+            "reconnects")  # fmt: skip
+    return dict.fromkeys(keys, 0)
 
 
 def handle_line(ingestor: Ingestor, line: bytes, stats: dict[str, int]) -> IngestResult | None:
@@ -59,10 +61,14 @@ def handle_line(ingestor: Ingestor, line: bytes, stats: dict[str, int]) -> Inges
     res = ingestor.ingest_reading(
         raw, channel="serial", max_bytes=MAX_LINE, expected_node=SERIAL_NODES
     )
-    if res.reason is None:
-        stats["stored"] += 1
-    else:
+    if res.reason is not None:
         stats["rejected"] += 1
+    elif res.duplicate:
+        stats["duplicates"] += 1
+    else:
+        stats["stored"] += 1
+        if res.clash:
+            stats["clashes"] += 1
     return res
 
 
@@ -184,7 +190,9 @@ class RigLink:
             if not line:
                 continue
             local: dict[str, int] = new_stats()
-            handle_line(self.ingestor, line, local)
+            res = handle_line(self.ingestor, line, local)
+            if res is not None and res.stored is not None and self.nodes is not None:
+                self.nodes.record(res.stored.node, res)
             with self._lock:
                 for k, v in local.items():
                     self._stats[k] += v

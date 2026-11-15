@@ -2,6 +2,7 @@ import { loadLandmarker, openCamera, openFile, detectOnce, track, type FrameSamp
 import { LANDMARK, type Landmark } from "../../vendor/ground-truth/demo/src/pose/landmarks";
 import { calibrateKnownLength, calibrateStature, type CalResult } from "./calibrate";
 import { COPY } from "./copy";
+import { addTap } from "./controls";
 import { canUseCamera, recordingProblem } from "./pose";
 import { mountSet } from "./setview";
 
@@ -43,18 +44,20 @@ export function mountCamera(root: HTMLElement): PageState {
   const fileIn = h("input", { type: "file", accept: "video/*", id: "file" });
   const fileLabel = h("label", { for: "file", text: `${COPY["source.file"]} ` });
   const ready = async () => (landmarker ??= await loadLandmarker());
+  // The dot follows the right wrist in the preview and while a set records.
+  const moveDot = (s: FrameSample) => {
+    const w = s.landmarks?.[LANDMARK.RIGHT_WRIST];
+    dot.hidden = !w;
+    if (w) {
+      dot.style.left = `${w.x * 100}%`;
+      dot.style.top = `${w.y * 100}%`;
+    }
+  };
   const startPreview = async () => {
     const lm = await ready();
     preview?.stop();
     if (recordingProblem(video)) status.textContent = recordingProblem(video) ?? "";
-    preview = track(video, lm, (s) => {
-      const w = s.landmarks?.[LANDMARK.RIGHT_WRIST];
-      dot.hidden = !w;
-      if (w) {
-        dot.style.left = `${w.x * 100}%`;
-        dot.style.top = `${w.y * 100}%`;
-      }
-    }, (e) => (status.textContent = String(e)));
+    preview = track(video, lm, moveDot, (e) => (status.textContent = String(e)));
   };
   camBtn.addEventListener("click", async () => {
     const ok = canUseCamera({ isSecureContext: window.isSecureContext, navigator });
@@ -72,8 +75,14 @@ export function mountCamera(root: HTMLElement): PageState {
   const heightIn = h("input", { id: "stature", type: "number", step: "0.01", value: "1.75" });
   const freeze = h("button", { type: "button", text: COPY["calib.freeze"] });
   const scaleCbs: ((m: number) => void)[] = [];
+  let tapsArmed = false; // taps count only on a frame frozen for calibration
   const showScale = (r: CalResult) => {
-    if (r.ok) { scale = r.metersPerUnit; scaleCbs.forEach((cb) => cb(r.metersPerUnit)); scaleOut.textContent = `${COPY["calib.result"]}: ${r.metersPerUnit.toFixed(3)} ${COPY["calib.unit"]}${r.note ? ` (${r.note})` : ""}`; }
+    if (r.ok) {
+      scale = r.metersPerUnit; scaleCbs.forEach((cb) => cb(r.metersPerUnit)); scaleOut.textContent = `${COPY["calib.result"]}: ${r.metersPerUnit.toFixed(3)} ${COPY["calib.unit"]}${r.note ? ` (${r.note})` : ""}`;
+      // Back to the live preview: no need to press "Use the camera" again. The scale is kept.
+      tapsArmed = false;
+      if (source) { video.play().catch(() => {}); void startPreview(); }
+    }
     else { scaleOut.textContent = r.error; }
   };
   freeze.addEventListener("click", () => {
@@ -81,12 +90,14 @@ export function mountCamera(root: HTMLElement): PageState {
     if (landmarker) frozen = detectOnce(video, landmarker);
     video.pause();
     taps.length = 0;
+    tapsArmed = true;
     scaleOut.textContent = COPY["calib.tapA"];
   });
   stage.addEventListener("click", (ev) => {
-    if (!video.paused) return;
+    if (!video.paused || !tapsArmed) return;
     const r = stage.getBoundingClientRect();
-    taps.push({ x: (ev.clientX - r.left) / r.width, y: (ev.clientY - r.top) / r.height });
+    const next = addTap(taps, { x: (ev.clientX - r.left) / r.width, y: (ev.clientY - r.top) / r.height });
+    taps.splice(0, taps.length, ...next);
     scaleOut.textContent = taps.length === 1 ? COPY["calib.tapB"] : "";
   });
   const useKnown = h("button", { type: "button", text: COPY["calib.useKnown"] });
@@ -96,6 +107,9 @@ export function mountCamera(root: HTMLElement): PageState {
   });
   const useStature = h("button", { type: "button", text: COPY["calib.useStature"] });
   useStature.addEventListener("click", () => showScale(calibrateStature(Number(heightIn.value), frozen)));
+  // Source and calibration controls are locked while a set records: a freeze or a source swap mid-set makes a gap.
+  const lockables = [camBtn, fileIn, freeze, useKnown, useStature];
+  const setLocked = (on: boolean) => lockables.forEach((b) => (on ? b.setAttribute("disabled", "") : b.removeAttribute("disabled")));
 
   root.replaceChildren(
     h("div", { class: "banner", text: COPY["page.banner"] }),
@@ -114,10 +128,12 @@ export function mountCamera(root: HTMLElement): PageState {
       if (!landmarker) return null;
       preview?.stop();
       preview = null;
+      tapsArmed = false;
+      setLocked(true);
       void video.play();
-      return track(video, landmarker, onSample, onError);
+      return track(video, landmarker, (s) => { moveDot(s); onSample(s); }, onError);
     },
-    resumePreview: () => void startPreview(),
+    resumePreview: () => { setLocked(false); void startPreview(); },
     setSetHost: () => {},
     onScale: (cb) => scaleCbs.push(cb),
     video, getSource: () => source, getScale: () => scale, getLandmarker: () => landmarker };

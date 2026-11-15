@@ -3,9 +3,10 @@ import type { PageState } from "./main";
 import { COPY } from "./copy";
 import { createRecorder, recordingProblem } from "./pose";
 import { ENVIRONMENT_MENU, EXERCISE_MENU, analyseRecording, exerciseCaption, gNoteText, inputProblemText, parseExercise, resultView, toRepMessages, type Exercise } from "./reps";
+import { parseCrew } from "./controls";
 import { createSequencer } from "./seq";
 import { createSetState } from "./set";
-import { endSession, framesForSet, postRep, postRepsWithRetry, startSession, unloadGuard, type CrewId } from "./session";
+import { endSession, framesForSet, postRep, postRepsWithRetry, startSession, unloadGuard } from "./session";
 
 function h<K extends keyof HTMLElementTagNameMap>(tag: K, attrs: Record<string, string> = {}, ...kids: (Node | string)[]): HTMLElementTagNameMap[K] {
   const n = document.createElement(tag);
@@ -21,7 +22,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
   window.addEventListener("beforeunload", unloadGuard(() => pendingReps));
   page.onScale((m) => setState.setScale(m));
 
-  const crew = h("select", { id: "crew" });
+  const crew = h("select", { id: "crew" }, h("option", { value: "", text: COPY["crew.pick"], selected: "", disabled: "" }));
   for (const [id, label] of [["crew-a", "Crew A"], ["crew-b", "Crew B"], ["crew-c", "Crew C"]]) crew.append(h("option", { value: id, text: label }));
   // No default pick: a forgotten choice must not label the set.
   const exSel = h("select", { id: "exercise" }, h("option", { value: "", text: COPY["exercise.pick"], selected: "", disabled: "" }));
@@ -49,6 +50,8 @@ export function mountSet(host: HTMLElement, page: PageState): void {
 
   start.addEventListener("click", async () => {
     msg.textContent = "";
+    const pickedCrew = parseCrew(crew.value);
+    if (!pickedCrew) { msg.textContent = COPY["crew.needed"]; return; }
     const picked = parseExercise(exSel.value);
     if (!picked) { msg.textContent = COPY["exercise.needed"]; return; }
     const ns = setState.nextSet();
@@ -58,7 +61,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     if (ns.needsCalibration) { msg.textContent = "Calibrate the scale first."; return; }
     if (problem) { msg.textContent = problem; return; }
     try {
-      const s = await startSession({ mass_kg: massKg, g, crew: crew.value as CrewId, exercise: picked });
+      const s = await startSession({ mass_kg: massKg, g, crew: pickedCrew, exercise: picked });
       sessionId = s.session;
       exercise = picked;
       sessionOut.textContent = s.session;
@@ -70,6 +73,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     tracker = page.record((s) => recorder.push(s), (e) => (msg.textContent = String(e)));
     start.setAttribute("disabled", "");
     exSel.setAttribute("disabled", "");
+    crew.setAttribute("disabled", "");
     stop.removeAttribute("disabled");
   });
 
@@ -78,6 +82,7 @@ export function mountSet(host: HTMLElement, page: PageState): void {
     stop.setAttribute("disabled", "");
     start.removeAttribute("disabled");
     exSel.removeAttribute("disabled");
+    crew.removeAttribute("disabled");
     if (!sessionId) return;
     const id = sessionId;
     void endSession(id).catch(() => {});
