@@ -72,7 +72,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
     mass.update({ weighIns, food, training, sessions: set.sessions });
     if (rows !== undefined) {
       lanesAt = Date.now();
-      vitals.update({ rows, win, iss });
+      vitals.update({ rows, win, iss, latest: status?.results ?? null });
     }
     rad.update({ ref, weather });
     link.update(linkState);

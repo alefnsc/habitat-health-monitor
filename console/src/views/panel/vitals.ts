@@ -1,10 +1,11 @@
 import uPlot from "uplot";
 import { COPY } from "../../copy";
-import type { Ind, IssCabin, StoredReading } from "../../contract";
+import type { Ind, IssCabin, StatusEntry, StoredReading } from "../../contract";
 import { el } from "../../dom";
-import { formatValue } from "../../format";
+import { devLabel, formatAge, formatValue, statusClass, statusLabel } from "../../format";
 import { LANES, laneRules, type LaneSpec } from "../../model/lanes";
 import { bandSentence, compactSource } from "../../model/panel/bands";
+import { latestEntry } from "../../model/panel/latest";
 import { missingLine } from "../../model/panel/missing";
 import { RULES } from "../../model/rules";
 import { laneOptions, prepareReadings } from "../lanes";
@@ -18,6 +19,8 @@ export interface VitalsData {
   rows: Record<string, StoredReading[]> | null;
   win: [number, number];
   iss: IssCabin | null;
+  /** Latest status entries, for lanes whose window is empty (a delayed cloud sync can be days old). */
+  latest?: StatusEntry[] | null;
 }
 
 function issNow(iss: IssCabin | null, ind: Ind): string | null {
@@ -39,7 +42,11 @@ export function vitalsCard(src: PanelClock = liveSource): { node: HTMLElement; u
       return;
     }
     const shown = PANEL_LANES.filter((s) => (d.rows![s.key] ?? []).length > 0);
-    const empty = PANEL_LANES.filter((s) => !shown.includes(s)).map((s) => s.ind as Ind);
+    // A lane with nothing in the window still shows its newest reading, with its source and age, before it counts as missing.
+    const older = PANEL_LANES.filter((s) => !shown.includes(s))
+      .map((s) => ({ spec: s, e: latestEntry(d.latest, s.ind as Ind) }))
+      .filter((x): x is { spec: LaneSpec; e: StatusEntry } => x.e !== null);
+    const empty = PANEL_LANES.filter((s) => !shown.includes(s) && !older.some((o) => o.spec === s)).map((s) => s.ind as Ind);
     const rows: HTMLElement[] = [];
     const pending: { box: HTMLElement; p: ReturnType<typeof prepareReadings>; last: boolean }[] = [];
     shown.forEach((spec, i) => {
@@ -58,6 +65,16 @@ export function vitalsCard(src: PanelClock = liveSource): { node: HTMLElement; u
         box));
       pending.push({ box, p, last: i === shown.length - 1 });
     });
+    for (const { spec, e } of older) {
+      const cls = statusClass(e.status, e.q);
+      const age = formatAge((src.now() - Date.parse(e.measured_at)) / 1000);
+      rows.push(el("div", { class: "vlane older", "data-lane": spec.key },
+        el("div", {},
+          el("div", { class: "name", text: spec.label }),
+          el("div", {}, el("span", { class: `val st-${cls}`, text: formatValue(e.ind, e.val, e.unit) }), " ", pill(cls, statusLabel(e.status, e.q))),
+          el("div", { class: "src", text: [compactSource(laneRules(RULES, spec.ind as Ind, spec.window)), devLabel(e.dev)].join(" · ") })),
+        el("div", { class: "why", text: `${COPY["panel.olderThanWindow"]} ${age}.` })));
+    }
     const parts: HTMLElement[] = [...rows];
     const miss = missingLine(empty, src.replay ? COPY["panel.notInReplay"] : undefined);
     if (miss) parts.push(el("p", { class: "note", text: miss }));
