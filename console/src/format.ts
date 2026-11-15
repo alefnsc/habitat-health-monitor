@@ -81,8 +81,9 @@ export function hhmmUtc(tS: number): string {
   return `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
 }
 
-/** Axis stamp: "13:05" for windows up to 36 hours, "11-14" (UTC month-day) for longer ones. */
+/** Axis stamp: "13:05:30" for windows up to 10 minutes, "13:05" up to 36 hours, "11-14" (UTC month-day) beyond. */
 export function axisStamp(tS: number, spanS: number): string {
+  if (spanS <= 600) return `${hhmmUtc(tS)}:${String(new Date(tS * 1000).getUTCSeconds()).padStart(2, "0")}`;
   if (spanS <= 36 * 3600) return hhmmUtc(tS);
   const d = new Date(tS * 1000);
   return `${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;

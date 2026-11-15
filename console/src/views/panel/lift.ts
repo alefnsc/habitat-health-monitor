@@ -5,6 +5,7 @@ import { formatTimeUtc } from "../../format";
 import { formatTrainingWork as formatWork } from "../../model/exercise";
 import { placesWork } from "../../model/panel/places";
 import { card } from "./common";
+import { liveSource, type PanelClock } from "./source";
 
 export interface LiftData {
   session: Session | null;
@@ -15,7 +16,7 @@ const cameraReps = (body: RepsBody | null): StoredRep[] =>
   (body?.pairs ?? []).map((p) => p.camera).filter((c): c is StoredRep => !!c && Number.isFinite(c.work_j));
 
 /** Card 1: the latest camera set, one bar per rep. */
-export function liftCard(): { node: HTMLElement; update: (d: LiftData) => void } {
+export function liftCard(src: PanelClock = liveSource): { node: HTMLElement; update: (d: LiftData) => void } {
   const c = card("p-lift", "1", COPY["panel.lift"]);
   const update = ({ session, reps }: LiftData) => {
     const cams = cameraReps(reps);
@@ -25,7 +26,8 @@ export function liftCard(): { node: HTMLElement; update: (d: LiftData) => void }
       return;
     }
     const ex = session.exercise ? COPY[`panel.ex.${session.exercise}`] : COPY["panel.liftSet"];
-    c.sub.textContent = `${ex} · ${COPY["panel.liftMass"]} ${session.mass_kg} kg · ${formatTimeUtc(session.started_at)}`;
+    c.sub.textContent = `${ex} · ${COPY["panel.liftMass"]} ${session.mass_kg} kg · ${formatTimeUtc(session.started_at)}`
+      + (src.replay ? ` · ${COPY["src.replay"]}` : "");
     const total = cams.reduce((s, r) => s + r.work_j, 0);
     const top = Math.max(...cams.map((r) => r.work_j), 1e-9);
     const bars = el("div", { class: "bars", role: "img", "aria-label": `${cams.length} ${COPY["lanes.reps"]}` });
@@ -40,13 +42,14 @@ export function liftCard(): { node: HTMLElement; update: (d: LiftData) => void }
         el("span", { class: "kv", text: `${cams.length} ${COPY["lanes.reps"]} · ${COPY["badge.camera"]}` })),
       bars, xs,
       el("p", { class: "note", text: `${COPY["panel.liftNote"]} ${COPY["work.note"]}` }),
+      ...(src.replay ? [el("p", { class: "note", text: COPY["panel.replaySet"] })] : []),
     );
   };
   return { node: c.node, update };
 }
 
 /** Card 2: the latest rep's work estimate at Earth, Moon, Mars and space-station gravity. */
-export function placesCard(): { node: HTMLElement; update: (d: LiftData) => void } {
+export function placesCard(src: PanelClock = liveSource): { node: HTMLElement; update: (d: LiftData) => void } {
   const c = card("p-places", "2", COPY["panel.places"]);
   const update = ({ reps }: LiftData) => {
     const last = cameraReps(reps).at(-1) ?? null;
@@ -56,7 +59,7 @@ export function placesCard(): { node: HTMLElement; update: (d: LiftData) => void
       c.body.replaceChildren(el("p", { class: "kv", text: COPY["panel.liftNone"] }), el("p", { class: "note", text: COPY["panel.placesNote"] }));
       return;
     }
-    c.sub.textContent = `${COPY["panel.rep"]} ${last.rep} · ${COPY["badge.camera"]}`;
+    c.sub.textContent = `${COPY["panel.rep"]} ${last.rep} · ${COPY["badge.camera"]}` + (src.replay ? ` · ${COPY["src.replay"]}` : "");
     const top = Math.max(...rows.map((r) => r.j), 1e-9);
     const list = rows.map((r) => el("div", { class: "place" },
       el("div", {}, el("div", { text: COPY[`panel.place.${r.key}`] }), el("div", { class: "g", text: `${r.g} m/s²` })),

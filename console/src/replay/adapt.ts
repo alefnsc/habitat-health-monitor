@@ -27,7 +27,7 @@ export function parseReplayFile(json: unknown): ReplayFile {
   return o as ReplayFile;
 }
 
-function entryOf(p: Record<string, unknown>): StatusEntry {
+export function entryOf(p: Record<string, unknown>): StatusEntry {
   const ruleId = (p.rule_id as string | null) ?? null;
   const status = p.status as StatusEntry["status"];
   return {
