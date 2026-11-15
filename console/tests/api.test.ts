@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
-  ApiError, buildUrl, getExerciseDay, getFoodCatalog, getFoodDay, getFoodReferences, getPrompts, getStatus,
+  ApiError, buildUrl, getExerciseDay, getFoodCatalog, getFoodDay, getFoodReferences, getPrompts, getReadings, getStatus,
   postFoodLog, postReading,
 } from "../src/api";
 import type { ReadingMessage } from "../src/contract";
@@ -91,6 +91,12 @@ describe("api", () => {
     expect([0, 1, 2, 3].map(urlOf)).toEqual([
       "/api/prompts", "/api/prompts?crew=crew-a", "/api/prompts?crew=crew-a&status=all", "/api/prompts?status=open",
     ]);
+  });
+
+  test("test_readings_bucket_url", async () => {
+    fetchMock.mockImplementation(async () => json([]));
+    await getReadings("cabin_temp", { since: "2026-11-14T12:00:00.000Z", limit: 5000, bucket_s: 600 });
+    expect(urlOf()).toBe("/api/readings?ind=cabin_temp&since=2026-11-14T12%3A00%3A00.000Z&limit=5000&bucket_s=600");
   });
 
   test("test_food_urls", async () => {

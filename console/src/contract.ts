@@ -134,6 +134,7 @@ export type StoredReading = ReadingMessage & {
   measured_at: string;
   received_at: string;
   derived_from: number | null;
+  mean_1h?: number | null; // with bucket_s, for an indicator judged on a 1-hour mean: the hub's mean at this row
 };
 
 export interface PostResult {
