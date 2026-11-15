@@ -1,6 +1,7 @@
 import type { CrewId, RepsBody, Session, StoredReading } from "../contract";
 import { currentCrew, onCrewChange } from "../crew";
 import { el } from "../dom";
+import { laneCrew, pickSession } from "../model/panel/pick";
 import { linkCard } from "./panel/link";
 import { liftCard, placesCard } from "./panel/lift";
 import { massCard } from "./panel/mass";
@@ -23,13 +24,13 @@ async function latestSet(src: PanelSource, crew: CrewId | undefined): Promise<{ 
   const sessions = await soft(src.sessions());
   // Camera sessions started without a crew still belong on every crew's panel.
   const mine = (sessions ?? []).filter((s) => crew === undefined || s.crew === crew || s.crew === null);
-  const session = mine[0] ?? null;
+  const session = pickSession(mine);
   const reps = session ? await soft(src.reps(session.session)) : null;
   return { sessions: mine, session, reps };
 }
 
 async function laneRows(src: PanelSource, sinceIso: string, crew: CrewId | undefined): Promise<Record<string, StoredReading[]> | null> {
-  const all = await Promise.all(PANEL_LANES.map((s) => soft(src.readings(s.ind!, { since: sinceIso, limit: LANE_LIMIT, crew }))));
+  const all = await Promise.all(PANEL_LANES.map((s) => soft(src.readings(s.ind!, { since: sinceIso, limit: LANE_LIMIT, crew: laneCrew(s.ind!, crew) }))));
   if (all.every((r) => r === null)) return null;
   return Object.fromEntries(PANEL_LANES.map((s, i) => [s.key, all[i] ?? []]));
 }
