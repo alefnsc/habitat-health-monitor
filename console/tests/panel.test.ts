@@ -79,8 +79,9 @@ describe("Mars link packets", () => {
   test("each alert travels from Mars (0) to Earth (1), then leaves the line", () => {
     expect(packetsInFlight([1000, 7000, -20_000], 13_000, 12_000, "contact")).toEqual([1, 0.5]);
   });
-  test("in a blackout new alerts wait at Mars", () => {
+  test("in a blackout or with no link simulator, alerts wait at Mars", () => {
     expect(packetsInFlight([1000], 2000, 12_000, "blackout")).toEqual([0]);
+    expect(packetsInFlight([1000], 2000, 12_000, "unreachable")).toEqual([0]);
   });
 });
 

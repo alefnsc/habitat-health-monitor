@@ -38,7 +38,8 @@ export function topBar(): { node: HTMLElement; update: (d: TopData) => void; dis
     chips.replaceChildren(
       chip(cabin?.online ? "ok" : "act", COPY["panel.chipCabin"],
         cabin ? `${cabin.online ? COPY["panel.live"] : COPY["panel.offline"]} · ${age(cabinAt ?? cabin.last_seen)}` : COPY["panel.noData"]),
-      chip(last ? "ok" : "", COPY["panel.chipCamera"], last ? age(last.started_at) : COPY["panel.noSet"]),
+      chip(last && Date.now() - Date.parse(last.started_at) < 3600_000 ? "ok" : "", COPY["panel.chipCamera"],
+        last ? age(last.started_at) : COPY["panel.noSet"]),
       chip(d.weather ? (sw?.cls === "greyed" ? "" : sw!.cls) : "", COPY["panel.chipWeather"],
         d.weather ? (d.weather.status === "ok" && !d.weather.stale ? `${COPY["panel.quiet"]} · DONKI` : sw!.title) : COPY["panel.noData"]),
       chip(d.link?.state === "contact" ? "ok" : d.link?.state === "blackout" ? "act" : "",

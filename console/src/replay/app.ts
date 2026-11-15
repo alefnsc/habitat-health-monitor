@@ -29,7 +29,7 @@ export async function mountReplayApp(root: HTMLElement, o: { base: string; fetch
   }
 
   const buttons = new Map<string, HTMLButtonElement>();
-  for (const s of SCREENS) {
+  for (const s of SCREENS.filter((x) => x !== "panel")) { // the panel needs a live hub
     const b = el("button", { type: "button", text: COPY[`nav.${s}`] });
     b.addEventListener("click", () => { location.hash = `#/${s}`; });
     buttons.set(s, b);
