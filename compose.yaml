@@ -15,9 +15,11 @@
 
 name: habitat
 
-# One image for every service but the broker; only the hub services build it.
+# One image for every service but the broker. Each service names the build, so any subset can be
+# started on its own; the builds after the first come from the cache.
 x-app: &app
   image: habitat-health-monitor:local
+  build: .
   restart: unless-stopped
   volumes:
     - var:/app/var
@@ -58,7 +60,6 @@ services:
 
   hub: &hub
     <<: *app
-    build: .
     command: ["python", "-m", "hub"]
     env_file:
       - path: .env
