@@ -81,6 +81,7 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 - Licence: CC0 1.0; credit USDA FoodData Central.
 - Committed file: `data/food/catalog.json` (generic foods only, built by `tools/food/build_catalog.py` from `data/food/items.csv`). The file is labelled synthetic: database values for generic foods, not NASA menu items and not measurements of the item eaten.
 - Access date: 2026-11-14 (catalogue generated 2026-11-14). Auth: none for the bulk download.
+- API route (D44, added 2026-11-15): `POST https://api.nal.usda.gov/fdc/v1/foods/search` (data types Foundation and SR Legacy only) and `GET https://api.nal.usda.gov/fdc/v1/food/{fdc_id}`, used only at import time by `python -m tools.food.fdc search|add`. Auth: a personal api.data.gov key sent in the `X-Api-Key` header, never in the URL; the shared demonstration key is refused. The key is read from the team's Azure Key Vault with the `az` CLI by `python -m tools.vault run -- ...`, which hands it only to that one command's environment; the vault and secret names live in the git-ignored `.env`. A food added this way carries `fdc_id`, `fdc_dataset`, `fdc_description`, `values_via: "FDC API"` and `accessed_at`. No Branded record is added. The running hub never calls the API.
 - Use: nutrient values for the food log.
 - Without it: no catalogue, no food screen.
 

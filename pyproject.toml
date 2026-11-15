@@ -20,17 +20,18 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "ruff", "respx", "pytest-asyncio"]
+dev = ["pytest", "ruff", "respx", "pytest-asyncio", "segno"]
 analysis = ["matplotlib", "numpy"]
 pi = ["smbus2"]  # cabin node on a Raspberry Pi (MIT)
 cloud = ["upstash-redis"]  # public ground segment (MIT)
+labels = ["segno"]  # printable food pack QR labels, tools/food/qr_labels.py (BSD-3-Clause)
 
 [tool.setuptools.packages.find]
 where = [".", "ground"]
 include = ["hub*", "linksim*", "receiver*", "nodes*"]
 
 [tool.pytest.ini_options]
-testpaths = ["hub/tests", "nodes/cabin_pi/tests", "nodes/ring/tests", "linksim/tests", "tools/food/tests", "ground/receiver/tests"]
+testpaths = ["hub/tests", "nodes/cabin_pi/tests", "nodes/ring/tests", "linksim/tests", "tools/food/tests", "tools/tests", "ground/receiver/tests"]
 pythonpath = ["ground"]
 markers = ["broker: needs a live Mosquitto on 127.0.0.1:1883"]
 asyncio_default_fixture_loop_scope = "function"

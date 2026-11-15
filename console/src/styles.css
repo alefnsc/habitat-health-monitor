@@ -139,3 +139,8 @@ svg.linkstrip text.lt { fill: var(--text); font-size: 26px; font-weight: 650; }
   .vlane { grid-template-columns: 1fr; }
   .place { grid-template-columns: 90px 1fr 64px; }
 }
+
+/* Pack scanner on the food screen (D44) */
+.food-scan { margin: 0.5rem 0; }
+.food-scan-video { display: block; width: min(100%, 320px); margin-top: 0.5rem; border-radius: 6px; }
+.food-scan-video[hidden] { display: none; }

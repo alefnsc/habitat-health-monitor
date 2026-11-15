@@ -7,6 +7,8 @@ Generic foods in the style of long-shelf-life space food. These are not NASA men
 - Check: `python tools/food/check_against_bulk.py --catalog data/food/catalog.json --bulk-dir <SR Legacy CSV folder>` prints "all equal" when the catalogue matches the bulk files.
 - Serving sizes are FDC portions or marked "team-chosen" in the `serving_source` column. Fluid per serving is a team-chosen convention (1 cup = 240 mL), never computed from grams.
 - Not reported by the source means null, shown as "not reported", never as 0.
+- Adding a food (D44): `python -m tools.vault run -- python -m tools.food.fdc search "<words>"`, then `... fdc add <fdc_id> --id <slug> --category <c> --serving-g <g> --serving-label "<text>"`. Foundation and SR Legacy only. `add` appends one row here and one item to the catalogue; the other items do not change. Without `--serving-g` it lists the FDC portions. A demo hub loads the new food after a restart.
+- Pack labels (D44): `python tools/food/qr_labels.py --catalog data/food/catalog.json --out var/food-labels.html` prints one QR code per item with the text `hhm-food:<item-id>`. The food screen's "Scan pack" button, or the typed code, picks that food; the crew still logs the meal.
 
 ## Text for the submission
 
