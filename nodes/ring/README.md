@@ -48,12 +48,13 @@ python -m nodes.ring replay var/ring/pulls.jsonl
 
 ## One-time setup (team owner only)
 
-1. Register a developer application on the ring vendor's developer portal (link in `DATA_SOURCES.md`). Give it the
-   redirect URI `http://127.0.0.1:8799/callback`. If the portal refuses it, try `http://localhost:8799/callback`, and
-   set `RING_REDIRECT_URI` to match exactly.
+1. Register a developer application on the ring vendor's developer portal (link in `DATA_SOURCES.md`). Give it
+   exactly **one** redirect URI, `http://localhost:8799/callback`, and set `RING_REDIRECT_URI` to the same value.
+   Do not use `127.0.0.1`: the vendor's load balancer answers 403 to any request that carries it.
 2. Copy the client id and secret into `.env`, which is git-ignored, along with the three URLs from
    `DATA_SOURCES.md`.
-3. Run `python -m nodes.ring auth`, sign in, and allow `heartrate`, `spo2` and `daily` on the consent page.
+3. Run `python -m nodes.ring auth --use-registered-redirect`, sign in, and allow `heartrate`, `spo2` and `daily` on
+   the consent page.
 4. Run `python -m nodes.ring pull --dry-run` and check the counts. Then pull for real with the hub running.
 
 ### If sign-in fails
@@ -61,11 +62,15 @@ python -m nodes.ring replay var/ring/pulls.jsonl
 - `auth` asks for the client id (echoed) and the secret (hidden) when `.env` lacks them, and saves them at mode 600.
 - `port … is in use`: another program holds the callback port. `auth` stops before the browser opens, so no code
   can reach that program. Register a free port and set `RING_REDIRECT_URI` to match.
-- The vendor's page says `400 invalid_request` before sign-in: the redirect URI sent does not match the app's
-  registration character for character. With exactly one registered redirect, `auth --use-registered-redirect`
-  sends none, and the vendor uses the registered one. The listener still waits on `RING_REDIRECT_URI`.
-- `no redirect within 300 s`: the browser never came back to `RING_REDIRECT_URI`. Check the address it ended on;
-  it is the redirect the portal really holds.
+- The vendor's page says `400 invalid_request` before sign-in: the authorize URL hands sign-in to a newer identity
+  server and never forwards a `redirect_uri`. It answered 400 to every `redirect_uri` tried on 2026-11-15. Use
+  `auth --use-registered-redirect`: it sends none, so the app's one registered redirect is used. The listener still
+  waits on `RING_REDIRECT_URI`, so register the same value there.
+- A `403 Forbidden` page from the vendor: the request carried `127.0.0.1`, which the vendor's load balancer blocks.
+  Register `localhost` instead (step 1).
+- `no redirect within 300 s`: the browser never came back to `RING_REDIRECT_URI`. Run
+  `auth --use-registered-redirect --paste` and paste the address the browser ends on. That address holds the code
+  even when the page does not load.
 
 ## Tests
 
