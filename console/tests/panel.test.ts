@@ -22,7 +22,7 @@ describe("panel screen routing", () => {
     expect(screenFromHash("#/nope")).toBe("panel");
     expect(screenFromHash("#/lanes")).toBe("lanes");
   });
-  test("the replay build keeps its status board as the default", () => {
+  test("a caller can name another fallback screen", () => {
     expect(screenFromHash("", "status")).toBe("status");
     expect(screenFromHash("#/panel", "status")).toBe("panel");
   });
@@ -139,6 +139,12 @@ describe("panel helpers", () => {
     const t = Date.parse("2026-11-14T00:00:00Z") / 1000;
     expect(axisStamp(t, 6 * 3600)).toBe("00:00");
     expect(axisStamp(t, 7 * 86400)).toBe("11-14");
+  });
+  test("a window of minutes (a short recorded replay) gets seconds, so ticks do not repeat", () => {
+    const t = Date.parse("2026-11-14T13:29:15Z") / 1000;
+    expect(axisStamp(t, 193)).toBe("13:29:15");
+    expect(axisStamp(t, 600)).toBe("13:29:15");
+    expect(axisStamp(t, 601)).toBe("13:29");
   });
 });
 

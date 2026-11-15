@@ -3,6 +3,7 @@ import type { IssReference, SpaceWeather } from "../../contract";
 import { el } from "../../dom";
 import { doseBar, weatherBanner } from "../../model/nasa";
 import { card } from "./common";
+import { liveSource, type PanelClock } from "./source";
 
 export interface RadiationData {
   ref: IssReference | null;
@@ -10,7 +11,7 @@ export interface RadiationData {
 }
 
 /** Radiation: career effective-dose estimate against the NASA limit, and the DONKI space-weather state. */
-export function radiationCard(): { node: HTMLElement; update: (d: RadiationData) => void } {
+export function radiationCard(src: PanelClock = liveSource): { node: HTMLElement; update: (d: RadiationData) => void } {
   const c = card("p-rad", "", COPY["panel.radiation"]);
   c.sub.textContent = COPY["panel.radSources"];
   const update = (d: RadiationData) => {
@@ -24,10 +25,10 @@ export function radiationCard(): { node: HTMLElement; update: (d: RadiationData)
         el("div", { class: "note", text: `${COPY["nasa.career"]} · ${dose.markers.map((m) => m.label).join(" · ")}` }),
       );
     } else {
-      parts.push(el("p", { class: "note", text: dose ? dose.effectiveText : COPY["panel.noData"] }));
+      parts.push(el("p", { class: "note", text: dose ? dose.effectiveText : COPY[src.replay ? "replay.unavailable" : "panel.noData"] }));
     }
     if (d.weather) {
-      const b = weatherBanner(d.weather, Date.now());
+      const b = weatherBanner(d.weather, src.now());
       parts.push(el("div", { class: "note", text: d.weather.status === "ok" && !d.weather.stale ? b.cachedText : b.title }));
     }
     c.body.replaceChildren(...parts);

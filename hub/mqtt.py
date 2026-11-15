@@ -28,6 +28,8 @@ class NodeState:
     node: str
     online: bool
     last_seen: str | None
+    duplicates: int = 0  # messages that repeated a stored sample (retries), dropped
+    clashes: int = 0  # readings stored under a key an earlier, different sample held
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -71,6 +73,16 @@ class NodeRegistry:
         self._fire()
         return True
 
+    def record(self, node: str, res: IngestResult) -> None:
+        """Count a duplicate or a key clash for the node that sent the message."""
+        st = self._nodes.get(node)
+        if st is None:
+            return
+        if res.duplicate:
+            st.duplicates += 1
+        elif res.clash:
+            st.clashes += 1
+
     def snapshot(self) -> list[NodeState]:
         return [NodeState(**asdict(s)) for _, s in sorted(self._nodes.items())]
 
@@ -90,14 +102,18 @@ def route_message(
     now = nodes.clock()
     if kind == "r":
         nodes.seen(node, now)
-        return ingestor.ingest_reading(
+        res = ingestor.ingest_reading(
             payload, channel="mqtt", max_bytes=MAX_MQTT_BYTES, expected_node=node
         )
+        nodes.record(node, res)
+        return res
     if kind == "rep":
         nodes.seen(node, now)
-        return ingestor.ingest_rep(
+        res = ingestor.ingest_rep(
             payload, channel="mqtt", max_bytes=MAX_MQTT_BYTES, expected_node=node
         )
+        nodes.record(node, res)
+        return res
     if kind == "status":
         text = payload.decode("utf-8", "replace").strip()
         if text in ("online", "offline"):

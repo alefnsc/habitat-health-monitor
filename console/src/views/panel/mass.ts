@@ -8,6 +8,7 @@ import { EXERCISES, exercisesDone } from "../../model/panel/exercises";
 import { weighTrend } from "../../model/panel/trend";
 import { color } from "../../palette";
 import { card } from "./common";
+import { liveSource, type PanelClock } from "./source";
 
 export interface MassData {
   weighIns: StoredReading[] | null;
@@ -17,7 +18,7 @@ export interface MassData {
 }
 
 /** Card 3: logged weigh-ins with their trend, food energy and training work side by side, today's exercises. */
-export function massCard(): { node: HTMLElement; update: (d: MassData) => void; dispose: () => void } {
+export function massCard(src: PanelClock = liveSource): { node: HTMLElement; update: (d: MassData) => void; dispose: () => void } {
   const c = card("p-mass", "3", COPY["panel.mass"]);
   let plot: uPlot | null = null;
   const chartBox = el("div");
@@ -29,14 +30,14 @@ export function massCard(): { node: HTMLElement; update: (d: MassData) => void; 
     const { fit } = weighTrend(pts);
     const parts: (HTMLElement | null)[] = [el("div", { class: "kv", text: COPY["panel.massTitle"] })];
     if (!pts.length) {
-      parts.push(el("p", { class: "note", text: COPY["panel.massNone"] }));
+      parts.push(el("p", { class: "note", text: COPY[src.replay ? "panel.massNoneReplay" : "panel.massNone"] }));
     } else {
       parts.push(chartBox);
       parts.push(el("p", { class: "note", text: fit
         ? `${COPY["panel.trendSlope"].replace("{s}", `${fit.kgPerWeek >= 0 ? "+" : "−"}${Math.abs(fit.kgPerWeek).toFixed(2)}`)}. ${COPY["panel.trendNote"]}`
         : COPY["panel.trendNeeds"] }));
     }
-    const done = exercisesDone(d.sessions ?? [], Date.now());
+    const done = exercisesDone(d.sessions ?? [], src.now());
     const side = el("div", { class: "side" },
       el("div", {}, el("div", { class: "lbl", text: `${COPY["food.energyTitle"]} · ${COPY["food.dayTitle"]}` }),
         el("div", { class: "val", text: d.food ? foodEnergyLogged(d.food) : COPY["status.none"] })),

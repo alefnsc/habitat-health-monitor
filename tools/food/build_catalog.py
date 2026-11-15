@@ -91,11 +91,17 @@ def read_items(path: Path) -> list[ItemRow]:
                 raise BuildError(f"{r['id']}: serving_g must be above 0")
             rows.append(
                 ItemRow(
-                    id=r["id"], fdc_id=int(r["fdc_id"]), fdc_dataset=r["fdc_dataset"],
-                    name=r["name"], category=r["category"], serving_g=serving,
-                    serving_label=r["serving_label"], serving_source=r["serving_source"],
+                    id=r["id"],
+                    fdc_id=int(r["fdc_id"]),
+                    fdc_dataset=r["fdc_dataset"],
+                    name=r["name"],
+                    category=r["category"],
+                    serving_g=serving,
+                    serving_label=r["serving_label"],
+                    serving_source=r["serving_source"],
                     fluid_ml_per_serving=float(r["fluid_ml_per_serving"]),
-                    fluid_basis=r["fluid_basis"], note=r["note"],
+                    fluid_basis=r["fluid_basis"],
+                    note=r["note"],
                 )
             )
     ids = [r.id for r in rows]
@@ -188,10 +194,17 @@ class ApiSource:
                 out[nid] = float(amt) if amt is not None else None
         return out
 
+    def food(self, fdc_id: int) -> dict:
+        """The whole FDC food record (portions included)."""
+        return self._fetch(fdc_id)
+
     def meta(self, fdc_id: int) -> dict:
         d = self._fetch(fdc_id)
         names = {"SR Legacy": "sr_legacy", "Foundation": "foundation"}
-        return {"description": d.get("description", ""), "dataset": names.get(d.get("dataType"), "other")}
+        return {
+            "description": d.get("description", ""),
+            "dataset": names.get(d.get("dataType"), "other"),
+        }
 
 
 def build_item(row: ItemRow, nutrients: Mapping[int, float | None], meta: Mapping) -> dict:
@@ -275,6 +288,16 @@ def _report(cat: dict) -> str:
     return "\n".join(lines)
 
 
+def personal_key(env: Mapping[str, str], hint: str) -> str:
+    """A personal FDC key from USDA_FDC_API_KEY (or FDC_API_KEY); DEMO_KEY is refused."""
+    key = env.get("USDA_FDC_API_KEY") or env.get("FDC_API_KEY")
+    if not key or key == "DEMO_KEY":
+        raise SystemExit(
+            f"set USDA_FDC_API_KEY to a personal key (DEMO_KEY is not allowed), {hint}"
+        )
+    return key
+
+
 def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None) -> int:
     env = os.environ if env is None else env
     argv = list(sys.argv[1:] if argv is None else argv)
@@ -289,20 +312,18 @@ def main(argv: Sequence[str] | None = None, env: Mapping[str, str] | None = None
         raise SystemExit("choose exactly one of --bulk-dir (repeatable) or --api")
     try:
         if args.api:
-            key = env.get("USDA_FDC_API_KEY") or env.get("FDC_API_KEY")
-            if not key or key == "DEMO_KEY":
-                raise SystemExit(
-                    "set USDA_FDC_API_KEY to a personal key (DEMO_KEY is not allowed), "
-                    "or use --bulk-dir"
-                )
-            source: NutrientSource = ApiSource(key)
+            source: NutrientSource = ApiSource(personal_key(env, "or use --bulk-dir"))
         else:
             source = BulkSource(args.bulk_dir)
         warnings: list[str] = []
         generator = "python tools/food/build_catalog.py " + " ".join(argv)
         cat = build_catalog(
-            read_items(args.items), source, datetime.now(UTC), generator=generator,
-            fdc_release=args.fdc_release, warnings=warnings,
+            read_items(args.items),
+            source,
+            datetime.now(UTC),
+            generator=generator,
+            fdc_release=args.fdc_release,
+            warnings=warnings,
         )
     except BuildError as e:
         raise SystemExit(f"build failed: {e}") from None

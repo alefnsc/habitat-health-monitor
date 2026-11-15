@@ -3,27 +3,39 @@
 #if defined(ARDUINO_ARCH_ESP32)
 #include <Preferences.h>
 #else
-#include <EEPROM.h>
+#include "BootLog.h"
+extern "C" uint32_t _EEPROM_start;  // the core's EEPROM sector; nothing else on these nodes uses it
 #endif
 
 namespace habitat {
 
+#if !defined(ARDUINO_ARCH_ESP32)
+namespace {
+// The EEPROM sector of the flash layout, driven as raw NOR flash (BootLog.h says why).
+struct Esp8266Sector {
+  uint32_t base = reinterpret_cast<uint32_t>(&_EEPROM_start) - 0x40200000u;
+  bool read(uint32_t off, void* buf, uint32_t len) {
+    return ESP.flashRead(base + off, static_cast<uint32_t*>(buf), len);
+  }
+  bool program(uint32_t off, const void* buf, uint32_t len) {
+    return ESP.flashWrite(base + off, static_cast<const uint32_t*>(buf), len);
+  }
+  bool erase() { return ESP.flashEraseSector(base / BootLog::kSectorBytes); }
+};
+}  // namespace
+#endif
+
 uint32_t bumpBootCounter() {
   uint32_t n = 0;
 #if defined(ARDUINO_ARCH_ESP32)
-  Preferences prefs;
+  Preferences prefs;  // NVS is journaled: a power loss keeps the old value, never blanks it
   prefs.begin("habitat", false);
   n = prefs.getUInt("boot", 0) + 1;
   prefs.putUInt("boot", n);
   prefs.end();
 #else
-  EEPROM.begin(8);
-  EEPROM.get(0, n);
-  if (n == 0xFFFFFFFFu) n = 0;  // erased flash: first ever boot
-  n += 1;
-  EEPROM.put(0, n);
-  EEPROM.commit();  // one flash write per boot, never per sample
-  EEPROM.end();
+  Esp8266Sector sector;
+  n = BootLog::bump(sector);  // one 8-byte program per boot; no erase until the sector is full
 #endif
   return n;
 }

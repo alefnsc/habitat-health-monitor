@@ -44,7 +44,8 @@ A run of that version showed:
   - a NodeMCU on 4 × Ni-MH AA cells into VIN, on the weight;
   - Wi-Fi/MQTT to the hub's broker;
   - one reading on every debounced change (200 ms) and a heartbeat every 10 s.
-- **Twin:** the same lines, on the serial monitor.
+- **Twin:** the same lines, on the serial monitor, always with `"boot":1`: serial-only mode has no `HabitatNode`
+  and no flash log (D42), and the hub never reads this mode.
 
 ## Open it on wokwi.com
 

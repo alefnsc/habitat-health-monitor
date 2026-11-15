@@ -45,6 +45,15 @@ def test_reset_garbage_dropped(ing):
     assert (st["rejected"], st["stored"]) == (2, 1)
 
 
+def test_stats_count_duplicates_and_clashes(ing, clock):
+    st = new_stats()
+    handle_line(ing, line(seq=1), st)
+    handle_line(ing, line(seq=1), st)  # the same line again
+    clock.advance(600)
+    handle_line(ing, line(seq=1, val=50.0), st)  # a repeated boot number, a different sample
+    assert (st["stored"], st["duplicates"], st["clashes"], st["rejected"]) == (2, 1, 1, 0)
+
+
 def test_comment_line(ing):
     st = new_stats()
     assert handle_line(ing, b"# cal offset=8423\n", st) is None
@@ -73,15 +82,21 @@ def test_wrong_node_and_too_long(ing):
 def test_loop_port_stream(ing, settings, monkeypatch):
     port = open_port("loop://", 100_000_000)  # loop:// emulates baud timing
     monkeypatch.setattr(sr, "open_port", lambda url, baud: port)
-    link = RigLink(replace(settings, serial_port="loop://"), ing)
+    nodes = NodeRegistry(ing.clock)
+    link = RigLink(replace(settings, serial_port="loop://"), ing, nodes)
     t = time.perf_counter()
     link.start()
-    feeder = threading.Thread(target=lambda: [port.write(line(seq=i + 1)) for i in range(800)])
+    feeder = threading.Thread(
+        target=lambda: [port.write(line(seq=i + 1)) for i in range(800)] and port.write(line(seq=1))
+    )
     feeder.start()  # the loop:// queue is bounded, so it is fed while RigLink reads
-    while link.stats()["lines"] < 800 and time.perf_counter() - t < 5:
+    while link.stats()["lines"] < 801 and time.perf_counter() - t < 5:
         time.sleep(0.01)
     link.stop()
     assert link.stats()["stored"] == 800 and time.perf_counter() - t < 2
+    assert link.stats()["duplicates"] == 1  # the 801st line repeats the first one
+    by_node = {n.node: n for n in nodes.snapshot()}
+    assert (by_node["exercise-1"].duplicates, by_node["exercise-1"].clashes) == (1, 0)
 
 
 class FlakyPort:

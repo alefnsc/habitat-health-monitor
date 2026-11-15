@@ -12,7 +12,7 @@ from typing import Literal
 
 from hub.contract import Reading, Rep
 from hub.results import AssessmentResult
-from hub.timeutil import to_iso
+from hub.timeutil import parse_iso, to_iso
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS readings (
@@ -21,10 +21,9 @@ CREATE TABLE IF NOT EXISTS readings (
   ind TEXT NOT NULL, val REAL NOT NULL, unit TEXT NOT NULL, src TEXT NOT NULL, dev TEXT NOT NULL,
   q TEXT NOT NULL, crew TEXT, code TEXT,
   measured_at TEXT NOT NULL, received_at TEXT NOT NULL,
-  derived_from INTEGER REFERENCES readings(id)
+  derived_from INTEGER REFERENCES readings(id),
+  clash INTEGER NOT NULL DEFAULT 0
 );
-CREATE UNIQUE INDEX IF NOT EXISTS readings_key ON readings(node, boot, seq)
-  WHERE derived_from IS NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS readings_derived ON readings(derived_from)
   WHERE derived_from IS NOT NULL;
 CREATE INDEX IF NOT EXISTS readings_ind_time ON readings(ind, measured_at);
@@ -64,9 +63,21 @@ CREATE TABLE IF NOT EXISTS outbox (
 );
 """
 
+# The reading key. `clash` counts the earlier rows that already held (node, boot, seq) when a
+# different sample arrived under it (a node whose boot counter repeated, bench 2026-11-15); it is
+# 0 for nearly every row. Created after _migrate so that old databases have the column first.
+_READINGS_KEY = (
+    "CREATE UNIQUE INDEX IF NOT EXISTS readings_key ON readings(node, boot, seq, clash)"
+    " WHERE derived_from IS NULL"
+)
+# A retried sample lands within network jitter of the first one's measured_at (the node
+# re-formats age_ms, so measured_at holds still); a repeated boot number needs a reboot first,
+# which puts its samples seconds or more apart.
+RETRY_WINDOW = timedelta(seconds=10)
+
 _R_COLS = (
     "id, node, boot, seq, age_ms, ind, val, unit, src, dev, q, crew, code, "
-    "measured_at, received_at, derived_from"
+    "measured_at, received_at, derived_from, clash"
 )
 # measured_at as integer epoch milliseconds; to_iso always writes YYYY-MM-DDTHH:MM:SS.mmmZ.
 _MS = "(CAST(strftime('%s', measured_at) AS INTEGER) * 1000 + CAST(substr(measured_at, 21, 3) AS INTEGER))"
@@ -84,6 +95,7 @@ _ADDED_COLS = (
     ("reps", "work_ecc_j", "REAL"), ("reps", "t_con_ms", "INTEGER"),
     ("reps", "t_ecc_ms", "INTEGER"), ("reps", "t_turn_ms", "INTEGER"),
     ("reps", "exercise", "TEXT"), ("sessions", "exercise", "TEXT"),
+    ("readings", "clash", "INTEGER NOT NULL DEFAULT 0"),
 )  # fmt: skip
 
 
@@ -92,6 +104,11 @@ def _migrate(conn: sqlite3.Connection) -> None:
         have = {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
         if name not in have:
             conn.execute(f"ALTER TABLE {table} ADD COLUMN {name} {kind}")
+    # The key gained `clash` after the 2026-11-15 bench: rebuild the three-column index once.
+    key = [row[2] for row in conn.execute("PRAGMA index_info(readings_key)")]
+    if key == ["node", "boot", "seq"]:
+        conn.execute("DROP INDEX readings_key")
+    conn.execute(_READINGS_KEY)
 
 
 @dataclass(frozen=True)
@@ -113,6 +130,7 @@ class StoredReading:
     measured_at: str
     received_at: str
     derived_from: int | None
+    clash: int = 0
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -176,8 +194,15 @@ def _reading_row(row: tuple) -> StoredReading:
         id=row[0], v=1, node=row[1], boot=row[2], seq=row[3], age_ms=row[4], ind=row[5],
         val=row[6], unit=row[7], src=row[8], dev=row[9], q=tuple(json.loads(row[10])),
         crew=row[11], code=row[12], measured_at=row[13], received_at=row[14],
-        derived_from=row[15],
+        derived_from=row[15], clash=row[16],
     )  # fmt: skip
+
+
+def _same_sample(row: StoredReading, r: Reading, measured: str) -> bool:
+    """The same sample delivered again: same indicator and value, measured within RETRY_WINDOW."""
+    if row.ind != r.ind or row.val != r.val:
+        return False
+    return abs(parse_iso(row.measured_at) - parse_iso(measured)) <= RETRY_WINDOW
 
 
 def _rep_row(row: tuple) -> StoredRep:
@@ -212,39 +237,68 @@ class Store:
     # readings
 
     def insert_reading(
-        self, r: Reading, received_at: datetime, *, derived_from: int | None = None
+        self,
+        r: Reading,
+        received_at: datetime,
+        *,
+        derived_from: int | None = None,
+        allow_clash: bool = False,
     ) -> tuple[StoredReading, bool]:
+        """(row, True) when stored; (the row that holds the key, False) when the key is taken.
+
+        With allow_clash a taken key is compared with the rows that hold it: a retry of the same
+        sample is the duplicate it always was, but a different sample is stored under the next
+        `clash` number instead of being dropped (a node whose boot counter repeated).
+        """
         measured = to_iso(received_at - timedelta(milliseconds=r.age_ms))
         with self.lock:
             try:
-                cur = self.conn.execute(
-                    "INSERT INTO readings (node, boot, seq, age_ms, ind, val, unit, src, dev, q,"
-                    " crew, code, measured_at, received_at, derived_from)"
-                    " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (
-                        r.node, r.boot, r.seq, r.age_ms, r.ind, r.val, r.unit, r.src, r.dev,
-                        json.dumps(list(r.q)), r.crew, r.code, measured, to_iso(received_at),
-                        derived_from,
-                    ),
-                )  # fmt: skip
-                self.conn.commit()
-                row = self.conn.execute(
-                    f"SELECT {_R_COLS} FROM readings WHERE id=?", (cur.lastrowid,)
-                ).fetchone()
-                return _reading_row(row), True
+                return self._insert_row(r, measured, received_at, derived_from, 0), True
             except sqlite3.IntegrityError:
                 self.conn.rollback()
-                if derived_from is not None:
-                    row = self.conn.execute(
-                        f"SELECT {_R_COLS} FROM readings WHERE derived_from=?", (derived_from,)
-                    ).fetchone()
-                else:
-                    row = self.conn.execute(
-                        f"SELECT {_R_COLS} FROM readings"
-                        " WHERE node=? AND boot=? AND seq=? AND derived_from IS NULL",
-                        (r.node, r.boot, r.seq),
-                    ).fetchone()
+            if derived_from is not None:
+                row = self.conn.execute(
+                    f"SELECT {_R_COLS} FROM readings WHERE derived_from=?", (derived_from,)
+                ).fetchone()
                 return _reading_row(row), False
+            twins = [
+                _reading_row(x)
+                for x in self.conn.execute(
+                    f"SELECT {_R_COLS} FROM readings"
+                    " WHERE node=? AND boot=? AND seq=? AND derived_from IS NULL ORDER BY clash",
+                    (r.node, r.boot, r.seq),
+                ).fetchall()
+            ]
+            if not allow_clash:
+                return twins[0], False
+            for twin in twins:
+                if _same_sample(twin, r, measured):
+                    return twin, False
+            try:
+                return self._insert_row(r, measured, received_at, None, twins[-1].clash + 1), True
+            except sqlite3.IntegrityError:  # only a second writer could take the number: not silent
+                self.conn.rollback()
+                raise
+
+    def _insert_row(
+        self, r: Reading, measured: str, received_at: datetime, derived_from: int | None, clash: int
+    ) -> StoredReading:
+        """One INSERT under the caller's lock; raises sqlite3.IntegrityError when the key is taken."""
+        cur = self.conn.execute(
+            "INSERT INTO readings (node, boot, seq, age_ms, ind, val, unit, src, dev, q,"
+            " crew, code, measured_at, received_at, derived_from, clash)"
+            " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                r.node, r.boot, r.seq, r.age_ms, r.ind, r.val, r.unit, r.src, r.dev,
+                json.dumps(list(r.q)), r.crew, r.code, measured, to_iso(received_at),
+                derived_from, clash,
+            ),
+        )  # fmt: skip
+        self.conn.commit()
+        row = self.conn.execute(
+            f"SELECT {_R_COLS} FROM readings WHERE id=?", (cur.lastrowid,)
+        ).fetchone()
+        return _reading_row(row)
 
     def get_reading(self, id: int) -> StoredReading | None:
         with self.lock:

@@ -194,6 +194,17 @@ export const COPY: Record<string, string> = {
   "food.addItem": "Add to meal",
   "food.removeItem": "Remove",
   "food.logMeal": "Log meal",
+  "food.scanPack": "Scan pack",
+  "food.scanStop": "Stop scanning",
+  "food.packCode": "Pack code",
+  "food.useCode": "Use code",
+  "food.scanLooking": "Hold the QR code on the pack in front of the camera.",
+  "food.scanUnknown": "This code is not a food in the catalogue.",
+  "food.scanCatalogLoading": "The food list is still loading. Try the code again in a moment.",
+  "food.scanUnavailable": "Scanning is not available in this browser. Type the code printed under the QR code.",
+  "food.scanCameraError": "The camera could not be opened: ",
+  "food.scanPicked": "Picked from the pack: ",
+  "food.scanNext": "Set the servings, then add it to the meal.",
   "food.mealLogged": "Meal logged",
   "food.mealEmpty": "Add at least one item first.",
   "food.notReportedNote": "Not reported by the source: ",
@@ -291,6 +302,12 @@ export const COPY: Record<string, string> = {
   "panel.state.unreachable": "Link simulator not running: light time from its config file",
   "panel.mars": "Mars",
   "panel.earth": "Earth",
+  // The panel in the replay build: replay wording where the live wording would point at a hub.
+  "panel.replaySet": "Synthetic set from the exercise replay file, shown one minute before the cabin recording.",
+  "panel.windowReplay": "Recorded session",
+  "panel.notInReplay": "Not in this replay:",
+  "panel.notInReplayShort": "not in this replay",
+  "panel.massNoneReplay": "No weigh-ins in this replay.",
 };
 
 export type CopyKey = keyof typeof COPY;
