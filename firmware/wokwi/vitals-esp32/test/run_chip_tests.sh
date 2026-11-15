@@ -13,7 +13,7 @@ sed -n '/^\/\/ BEGIN PURE$/,/^\/\/ END PURE$/p' "$twin/../../vitals-esp32/vitals
 for chip in max30102 mlx90614; do
   cc -std=c11 -D_DEFAULT_SOURCE -Wall -Wextra -Werror -I "$here/stub" -c "$twin/$chip.chip.c" -o "$out/$chip.o"  # M_PI on glibc
 done
-c++ -std=c++17 -Wall -Werror -I "$here/stub" -I "$here" -I "$SF" -include "$here/stub/Arduino.h" \
+c++ -std=c++17 -Wall -Werror -I "$here/stub" -I "$here" -isystem "$SF" -include "$here/stub/Arduino.h" \
   "$here/test_max30102.cpp" "$here/host_runtime.cpp" "$SF/spo2_algorithm.cpp" "$out/max30102.o" -o "$out/t_max"
 c++ -std=c++17 -Wall -Wno-unused-function -Werror -I "$here/stub" -I "$here" -I "$out" \
   "$here/test_mlx90614.cpp" "$here/host_runtime.cpp" "$out/mlx90614.o" -o "$out/t_mlx"
