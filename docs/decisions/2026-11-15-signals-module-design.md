@@ -1,6 +1,6 @@
 # Cross-reference and predictive signals module — design (D45)
 
-Status: design sections 1–6 approved by the team owner, 2026-11-15 (UTC−03:00). This is **post-event** work. It
+Status: design sections 1–6 and the written spec approved by the team owner, 2026-11-15 (UTC−03:00). This is **post-event** work. It
 does not change the build submitted to NASA Space Apps on 2026-11-15, and nothing here is implemented yet.
 
 The team owner's request: "cross-reference and predictive signals module on habitat based on food, health, ring
