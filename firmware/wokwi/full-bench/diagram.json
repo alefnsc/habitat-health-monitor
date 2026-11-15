@@ -200,6 +200,40 @@
       "attrs": {
         "text": "Simulated parts are labelled. Readings are estimates. Educational prototype, not a medical device."
       }
+    },
+    {
+      "type": "chip-bmp280",
+      "id": "baro",
+      "top": 250,
+      "left": 60,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_baro",
+      "top": 330,
+      "left": -60,
+      "attrs": {
+        "text": "BMP280 (simulated chip, I2C 0x76): 3.3V, A4 SDA, A5 SCL → cabin_p hPa (node cabin-1). Never 5V."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_baro_esp",
+      "top": -40,
+      "left": 900,
+      "attrs": {
+        "text": "tilt-1 also carries a BMP280 on D2/D1 → cabin_p (drawn, not simulated here)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_cabin2",
+      "top": 330,
+      "left": 900,
+      "attrs": {
+        "text": "cabin-2: a second ESP32 on the bench with a BMP280 on GPIO21/GPIO22 → cabin_p over Wi-Fi/MQTT (drawn, not simulated here)"
+      }
     }
   ],
   "connections": [
@@ -299,6 +333,30 @@
       "hub:GND",
       "uno:GND.3",
       "black",
+      []
+    ],
+    [
+      "baro:VCC",
+      "uno:3.3V",
+      "red",
+      []
+    ],
+    [
+      "baro:GND",
+      "uno:GND.2",
+      "black",
+      []
+    ],
+    [
+      "baro:SDA",
+      "uno:A4",
+      "green",
+      []
+    ],
+    [
+      "baro:SCL",
+      "uno:A5",
+      "yellow",
       []
     ]
   ],

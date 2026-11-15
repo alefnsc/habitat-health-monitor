@@ -18,8 +18,9 @@
 // Build flags (D40 defaults: only the DHT11 and the buzzer are wired). A module that is not wired is
 // compiled out, so a floating pin never publishes numbers (a floating HX711 DOUT reads as "ready"):
 //   ENABLE_DHT=1  ENABLE_HX711=0  ENABLE_SERVO=0  ENABLE_NTC=0  ENABLE_KY039=0
-//   ENABLE_BMP280=1 when bmp280_lite.h sits next to this file (the repository sketch folder; the
-//   Wokwi twins have no such file and no BMP280 part, so they build without it). A module that does
+//   ENABLE_BMP280=1 when bmp280_lite.h sits next to this file (the repository sketch folder, and the
+//   full-bench Wokwi twin with its simulated BMP280 chip; the uno-rig twin has no copy and builds
+//   without it). A module that does
 //   not answer is reported once ("# bmp280 missing") and every other channel goes on.
 //   BUZZER_PASSIVE=1 (the bench buzzer is passive, driven with tone(); 0 for an active one)  DHT_TYPE=DHT11
 //   arduino-cli compile --fqbn arduino:avr:uno --build-property "build.extra_flags=-DENABLE_HX711=1" ...
