@@ -219,10 +219,14 @@ def test_bmp280_pressure_line_accepted_over_serial(ing):
     assert handle_line(ing, line, st).reason is None
     assert check_capture(
         [
-            '{"v":1,"node":"cabin-1","boot":8,"seq":601,"age_ms":0,"ind":"cabin_temp","val":25.2,'
-            '"unit":"C","src":"hobby","dev":"DHT11","q":["ok"]}',
-            '{"v":1,"node":"cabin-1","boot":8,"seq":602,"age_ms":0,"ind":"cabin_rh","val":52,'
-            '"unit":"%","src":"hobby","dev":"DHT11","q":["ok"]}',
+            (
+                '{"v":1,"node":"cabin-1","boot":8,"seq":601,"age_ms":0,"ind":"cabin_temp","val":25.2,'
+                '"unit":"C","src":"hobby","dev":"DHT11","q":["ok"]}'
+            ),
+            (
+                '{"v":1,"node":"cabin-1","boot":8,"seq":602,"age_ms":0,"ind":"cabin_rh","val":52,'
+                '"unit":"%","src":"hobby","dev":"DHT11","q":["ok"]}'
+            ),
             line.decode().strip(),
         ]
     ) == {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh"), ("cabin-1", "cabin_p")}
