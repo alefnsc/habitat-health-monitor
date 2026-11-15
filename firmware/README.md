@@ -182,3 +182,20 @@ firmware/vitals-esp32/test/run_host_tests.sh              # pure logic: lines, c
 firmware/wokwi/vitals-esp32/test/run_chip_tests.sh        # native tests of the two simulated Wokwi chips
 firmware/wokwi/vitals-esp32/check_sync.sh                 # the Wokwi copy must equal vitals-esp32.ino
 ```
+
+## BMP280 cabin pressure (one module per board)
+
+Each board publishes `cabin_p` in hPa with dev `BMP280`, every 5 s on the UNO and every 10 s on the ESP boards.
+The driver is `firmware/bmp280/bmp280_lite.h` (register level, no library). Run `firmware/bmp280/sync.sh`
+after editing it; `firmware/bmp280/check_sync.sh` checks the copies. The BMP280 temperature is not published:
+`cabin_temp` stays with the DHT11. The module is 3.3 V only (the chip's limit is 3.6 V): never 5 V or VIN.
+
+| Board | Node | VCC | GND | SDA | SCL | CSB, SDO |
+|---|---|---|---|---|---|---|
+| UNO R3 | cabin-1 | 3.3V pin | GND | A4 | A5 | open (0x76) |
+| NodeMCU ESP8266 | tilt-1 | 3V3 | GND | D2 (GPIO4) | D1 (GPIO5) | open (0x76) |
+| ESP32 DevKit | cabin-2 | 3V3 | GND | GPIO21 | GPIO22 | open (0x76) |
+
+On the UNO the sketch switches off the AVR's internal 5 V pull-ups after `Wire.begin()`, so the bus is pulled
+to 3.3 V only by the module's 10 kOhm resistors. A level shifter is the proper fix for a permanent build.
+Wire with the board unplugged. Never connect the tilt-1 battery pack and USB at the same time.
