@@ -119,7 +119,9 @@ export const COPY: Record<string, string> = {
   "lanes.keyAct": "outside the limit",
   "lanes.empty": "No readings in this window.",
   "lanes.mean1h": "1-hour mean",
-  "lanes.meanNote": "Thin line: each reading. Bold line: the 1-hour mean, which is what the limit applies to",
+  "lanes.meanNote": "Thin line: the readings. Bold line: the 1-hour mean, which is what the limit applies to",
+  "lanes.step": "Each lane keeps the first, last, lowest and highest reading of every {s}, so no peak drops out.",
+  "lanes.cut": "The hub sent its maximum number of readings, so the start of this window is missing.",
   "lanes.reps": "reps",
   "lanes.workSource": "Camera estimate per set, no limit band",
 

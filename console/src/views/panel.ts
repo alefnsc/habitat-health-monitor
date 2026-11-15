@@ -14,8 +14,9 @@ import { PANEL_LANES, vitalsCard } from "./panel/vitals";
 // leaves that card at "No data" and the others alone. The panel only reads from the hub.
 const REFRESH_MS = 10_000;
 const LANES_REFRESH_MS = 30_000; // the lane readings are the heavy request: refetch them less often
-const LANE_HOURS = 6;
-const LANE_LIMIT = 5000;
+export const LANE_HOURS = 6;
+export const LANE_BUCKET_S = 60; // a few stored readings per minute, so a fast sensor cannot cut the window
+export const LANE_LIMIT = 5000;
 const MASS_DAYS = 30;
 
 const soft = <T>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
@@ -30,7 +31,9 @@ async function latestSet(src: PanelSource, crew: CrewId | undefined): Promise<{ 
 }
 
 async function laneRows(src: PanelSource, sinceIso: string, crew: CrewId | undefined): Promise<Record<string, StoredReading[]> | null> {
-  const all = await Promise.all(PANEL_LANES.map((s) => soft(src.readings(s.ind!, { since: sinceIso, limit: LANE_LIMIT, crew: laneCrew(s.ind!, crew) }))));
+  const all = await Promise.all(PANEL_LANES.map((s) => soft(src.readings(s.ind!, {
+    since: sinceIso, limit: LANE_LIMIT, crew: laneCrew(s.ind!, crew), bucket_s: LANE_BUCKET_S,
+  }))));
   if (all.every((r) => r === null)) return null;
   return Object.fromEntries(PANEL_LANES.map((s, i) => [s.key, all[i] ?? []]));
 }
