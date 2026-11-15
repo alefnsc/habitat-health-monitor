@@ -5501,3 +5501,21 @@ gh pr create --draft --base main --title "feat(console): D45 signals screen and 
 - Always run pytest with `-m 'not broker'`: the broker tests talk to a real Mosquitto, never the bench broker.
 - The replay file is generated; regenerate it with the command in Task 4, never edit it by hand. Its test compares the
   committed bytes with the generator.
+
+## Addendum: changes made while implementing slices 1–3 (2026-11-15)
+
+Slices 1–3 are open as draft PRs alefnsc/habitat-health-monitor#43, #44 and #45. An adversarial review (5 lenses,
+3 skeptics per finding, 16 of 28 findings confirmed) led to these changes. Later slices must follow them where they
+differ from the code blocks above.
+
+- **Weather provider:** an open hourly weather API (named in `DATA_SOURCES.md`), not INMET: no token. The adapter is
+  `nodes/weather/hourly_api.py`, and its URL comes from `WEATHER_API_URL` in `.env`. It replaces Task 9's INMET
+  steps. The past hours are weather-model values, so Task 15's `signals.limit.earthReference` copy should read
+  "Earth reference, outdoor (weather model), not the bench itself". The API's licence asks for a credit next to
+  displayed data: where it goes on the `cabin_vs_earth` card is the team owner's call at Task 16.
+- **ISS:** Node 3 ppCO2 is stored as its own indicator `iss_ppco2_node3`. `iss_ppco2` and `iss_ppco2_6h` are the
+  US Lab only. Task 15's `signals.limit.issTelemetry` copy should read "ISS public telemetry: the US Lab ppCO2
+  item". `REFERENCE_INDS` has seven indicators.
+- **Nights** (`hub/signals/inputs.py`): nights and nightly SpO2 come from the ring only (`dev RING`).
+  `rest_hr_14n` keeps the last 14 local nights.
+- **Tests:** `nodes/weather/tests` is in pytest `testpaths`. Weather tests use invented coordinates.
