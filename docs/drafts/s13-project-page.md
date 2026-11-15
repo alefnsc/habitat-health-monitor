@@ -47,7 +47,7 @@ Nutrition is a supporting domain under the hostile closed environment hazard: fo
 
 ### What benefits does it have?
 
-A crew sees, in one place, whether each reading is inside its band, why, and who to tell. The same screen works without any link, and Earth sees the same data later with the delay made visible.
+A crew sees, in one place, whether each reading is inside its band, why, and who to tell. The same screen works without any link, and Earth sees the cabin and space-weather data later, with the delay made visible.
 
 ### Scientific validity
 
