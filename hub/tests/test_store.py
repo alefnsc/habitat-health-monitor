@@ -241,3 +241,119 @@ def test_old_tables_get_exercise_columns(tmp_path):
         assert "exercise" in cols
     row, _ = s2.insert_rep(parse_rep(rep_msg(exercise="curl")), T0)
     assert row.exercise == "curl"
+
+
+# Repeated boot numbers (bench 2026-11-15, validacao-2026-11-15/relatorio-sensores-painel.md, gap 1):
+# a node whose boot counter repeats reuses (node, boot, seq) for a different sample.
+
+
+def tilt(seq: int, val: float, boot: int = 9, age_ms: int = 2):
+    return rd(msg(node="tilt-1", boot=boot, seq=seq, age_ms=age_ms, ind="tilt", val=val,
+                  unit="state", dev="KY017"))  # fmt: skip
+
+
+def test_clash_stores_a_different_sample_under_the_same_key(tmp_path):
+    s = make(tmp_path)
+    a, _ = s.insert_reading(tilt(1, 1), T0)
+    b, new = s.insert_reading(tilt(1, 0), T0 + timedelta(minutes=44), allow_clash=True)
+    assert new and b.id != a.id and (a.clash, b.clash) == (0, 1)
+    assert [r.val for r in s.readings("tilt")] == [1.0, 0.0]
+
+
+def test_clash_same_value_far_apart_is_a_new_sample(tmp_path):
+    s = make(tmp_path)
+    s.insert_reading(tilt(1, 1), T0)
+    b, new = s.insert_reading(tilt(1, 1), T0 + timedelta(minutes=44), allow_clash=True)
+    assert new and b.clash == 1
+
+
+def test_same_value_past_the_window_is_a_new_sample(tmp_path):
+    s = make(tmp_path)
+    s.insert_reading(tilt(1, 1), T0)
+    b, new = s.insert_reading(tilt(1, 1), T0 + timedelta(seconds=11), allow_clash=True)
+    assert new and b.clash == 1
+
+
+def test_node_retry_with_recomputed_age_is_a_duplicate(tmp_path):
+    # HabitatNode re-formats an unacknowledged reading with a fresh age_ms: same measured_at.
+    s = make(tmp_path)
+    a, _ = s.insert_reading(tilt(1, 1, age_ms=2), T0)
+    b, new = s.insert_reading(tilt(1, 1, age_ms=3002), T0 + timedelta(seconds=3), allow_clash=True)
+    assert not new and b.id == a.id and s.count("readings") == 1
+
+
+def test_retry_jitter_inside_the_window_is_a_duplicate(tmp_path):
+    s = make(tmp_path)
+    a, _ = s.insert_reading(tilt(1, 1), T0)
+    b, new = s.insert_reading(tilt(1, 1), T0 + timedelta(seconds=9), allow_clash=True)
+    assert not new and b.id == a.id
+
+
+def test_same_key_different_value_close_in_time_is_a_clash(tmp_path):
+    s = make(tmp_path)
+    s.insert_reading(tilt(1, 1), T0)
+    b, new = s.insert_reading(tilt(1, 0), T0 + timedelta(seconds=3), allow_clash=True)
+    assert new and b.clash == 1
+
+
+def test_retry_of_a_clash_row_dedupes_against_it(tmp_path):
+    s = make(tmp_path)
+    s.insert_reading(tilt(1, 1), T0)
+    b, _ = s.insert_reading(tilt(1, 0), T0 + timedelta(minutes=44), allow_clash=True)
+    c, new = s.insert_reading(
+        tilt(1, 0, age_ms=1002), T0 + timedelta(minutes=44, seconds=1), allow_clash=True
+    )
+    assert not new and c.id == b.id and s.count("readings") == 2
+
+
+def test_third_life_of_a_key_gets_clash_2(tmp_path):
+    s = make(tmp_path)
+    s.insert_reading(tilt(1, 1), T0)
+    s.insert_reading(tilt(1, 1), T0 + timedelta(hours=1), allow_clash=True)
+    c, new = s.insert_reading(tilt(1, 1), T0 + timedelta(hours=2), allow_clash=True)
+    assert new and c.clash == 2 and s.count("readings") == 3
+
+
+def test_without_allow_clash_the_first_row_wins(tmp_path):
+    s = make(tmp_path)
+    a, _ = s.insert_reading(tilt(1, 1), T0)
+    b, new = s.insert_reading(tilt(1, 0), T0 + timedelta(minutes=44))
+    assert not new and b.id == a.id and s.count("readings") == 1
+
+
+def test_clash_is_in_the_api_dict(tmp_path):
+    s = make(tmp_path)
+    a, _ = s.insert_reading(tilt(1, 1), T0)
+    assert a.to_dict()["clash"] == 0 and s.get_reading(a.id).clash == 0
+
+
+def test_old_readings_table_gets_clash_column_and_wider_key(tmp_path):
+    p = tmp_path / "old.db"
+    c = sqlite3.connect(p)
+    c.executescript(
+        "CREATE TABLE readings (id INTEGER PRIMARY KEY AUTOINCREMENT, node TEXT NOT NULL,"
+        " boot INTEGER NOT NULL, seq INTEGER NOT NULL, age_ms INTEGER NOT NULL, ind TEXT NOT NULL,"
+        " val REAL NOT NULL, unit TEXT NOT NULL, src TEXT NOT NULL, dev TEXT NOT NULL,"
+        " q TEXT NOT NULL, crew TEXT, code TEXT, measured_at TEXT NOT NULL,"
+        " received_at TEXT NOT NULL, derived_from INTEGER REFERENCES readings(id));"
+        "CREATE UNIQUE INDEX readings_key ON readings(node, boot, seq) WHERE derived_from IS NULL;"
+        "INSERT INTO readings (node, boot, seq, age_ms, ind, val, unit, src, dev, q, measured_at,"
+        " received_at) VALUES ('tilt-1', 9, 1, 2, 'tilt', 1, 'state', 'hobby', 'KY017',"
+        " '[\"ok\"]', '2026-11-15T13:33:29.000Z', '2026-11-15T13:33:29.002Z');"
+    )
+    c.commit()
+    c.close()
+    s = Store(p)
+    cols = {row[1] for row in s.conn.execute("PRAGMA table_info(readings)")}
+    assert "clash" in cols
+    key = [r[2] for r in s.conn.execute("PRAGMA index_info(readings_key)")]
+    assert key == ["node", "boot", "seq", "clash"]
+    assert s.readings("tilt")[0].clash == 0
+    b, new = s.insert_reading(tilt(1, 0), T0 + timedelta(minutes=44), allow_clash=True)
+    assert new and b.clash == 1
+    s.close()
+    s2 = Store(p)  # a second open must not fail or rebuild: the migration is idempotent
+    assert s2.count("readings") == 2
+    _, dup = s2.insert_reading(tilt(1, 0, age_ms=1002), T0 + timedelta(minutes=44, seconds=1),
+                               allow_clash=True)  # fmt: skip
+    assert not dup
