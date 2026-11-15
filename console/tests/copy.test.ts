@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { COPY, DISCLAIMER } from "../src/copy";
 import {
   ruleBrand, ruleCalories, ruleCameraWording, ruleDiagnosis, ruleEnergyBalance, ruleMealPlan, ruleNonEnglish,
-  ruleTreatmentDose, stringLiterals,
+  rulePrediction, ruleTreatmentDose, stringLiterals,
 } from "./honesty";
 
 const ROOT = join(__dirname, "..");
@@ -55,6 +55,18 @@ const bad = (rule: (s: string) => boolean, items: Walked[] = ALL) =>
   items.filter((w) => rule(w.text)).map((w) => `${w.where}: ${w.text}`);
 
 describe("honesty lint", () => {
+  test("test_signals_wording (D45)", () => {
+    for (const s of ["predicted rise", "Forecast", "heart risk", "It will reach"]) expect(rulePrediction(s)).toBe(true);
+    for (const s of ["Logged trend extended, arithmetic only, not a prediction", "At this rate", "willing"]) {
+      expect(rulePrediction(s)).toBe(false);
+    }
+    const signalTexts = ALL.filter((w) => w.where.startsWith("COPY.signals.") || w.where === "src/views/signals.ts"
+      || w.where === "COPY.panel.chipSignals" || w.where === "COPY.panel.signalsNotable");
+    expect(signalTexts.length).toBeGreaterThan(60);
+    expect(bad(rulePrediction, signalTexts)).toEqual([]);
+    expect(bad(ruleCameraWording, signalTexts)).toEqual([]);
+  });
+
   test("self-check: rules catch the fixed samples", () => {
     for (const s of ["300 kcal", "Calories burned", "calorie"]) expect(ruleCalories(s)).toBe(true);
     for (const s of ["Calibrate the scale", "Work is mechanical work in joules, not food energy."]) {

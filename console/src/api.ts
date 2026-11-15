@@ -1,7 +1,7 @@
 import type {
   CrewId, ExerciseDay, FoodCatalog, FoodDay, FoodReferences, Ind, IssCabin, IssReference, LinkState, MealRequest,
-  MealResult, PostResult, Prompt, PromptAnswer, PromptAnswerResult, ReadingMessage, RepsBody, Session, SpaceWeather,
-  StatusBody, StoredReading,
+  MealResult, PostResult, Prompt, PromptAnswer, PromptAnswerResult, ReadingMessage, RepsBody, Session, SignalsBody,
+  SpaceWeather, StatusBody, StoredReading,
 } from "./contract";
 
 export class ApiError extends Error {
@@ -150,6 +150,10 @@ export async function postFoodLog(req: MealRequest): Promise<MealResult> {
 
 export async function getFoodDay(crew?: CrewId, at?: string): Promise<FoodDay> {
   return guard("/api/food/day", await get("/api/food/day", { crew, at }), (o) => typeof o.totals === "object" && o.totals !== null);
+}
+
+export async function getSignals(crew?: CrewId, at?: string): Promise<SignalsBody> {
+  return guard("/api/signals", await get("/api/signals", { crew, at }), (o) => Array.isArray(o.signals));
 }
 
 export async function getExerciseDay(crew?: CrewId, at?: string): Promise<ExerciseDay> {
