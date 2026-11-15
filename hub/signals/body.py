@@ -33,8 +33,9 @@ def nightly(
     elif ind == "sleep_h":
         out = {n.day: (n.end, n.sleep_h) for n in nights}
     else:  # a nightly reading timed at the night's end (spo2), matched to that night
-        rows = I.same_mode(I.ok_rows(ctx.store, ind, ctx.at - I.DAY * days, ctx.at, crew),
-                           replay)  # fmt: skip
+        rows = I.same_mode(
+            I.ring_rows(I.ok_rows(ctx.store, ind, ctx.at - I.DAY * days, ctx.at, crew)), replay
+        )
         night_days = {n.day for n in nights}
         for t, v in I.points(rows):
             d = t.astimezone(ctx.tz).date()
@@ -84,6 +85,9 @@ def baseline(ctx: Ctx, spec: Spec, crew: str | None) -> Signal:
 
 def night_trend(ctx: Ctx, spec: Spec, crew: str | None) -> Signal:
     values, used, replay = nightly(ctx, spec.source, spec.ind or "", crew, spec.window.days)
+    # A 14 x 24 h window touches 15 local dates; keep the last 14 so "14 nights" means 14.
+    today = ctx.at.astimezone(ctx.tz).date()
+    values = {d: v for d, v in values.items() if (today - d).days < spec.window.days}
     start = ctx.at - spec.window
     ends = sorted(values.values())
     common = {"inputs": I.describe(used, ctx.at), "replay": replay, "series": I.series_out(ends)}
