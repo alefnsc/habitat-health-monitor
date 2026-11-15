@@ -34,7 +34,9 @@ export function unitLabel(unit: string): string {
 const fill = (t: string, v: Record<string, string | number>) =>
   Object.entries(v).reduce((s, [k, x]) => s.split(`{${k}}`).join(String(x)), t);
 
-type Lag = { lag_h: number; n: number; rho: number | null; low: number | null; high: number | null };
+// `key` is the hub's own wording for the lag (signals.pair.lag | lagFew | lagNoSpread), when it sends one.
+type Lag = { lag_h: number; n: number; rho: number | null; low: number | null; high: number | null; key?: string };
+const PAIR_HEADLINES = new Set(["signals.pair.rho", "signals.pair.few", "signals.pair.noSpread"]);
 
 function lagsOf(s: Signal | SignalSnapshot): Lag[] {
   const lags = "detail" in s ? s.detail.lags : undefined;
@@ -54,7 +56,7 @@ export function headline(s: Signal | SignalSnapshot): string {
   const n = "method" in s ? pointCount(s) : 0;
   const lags = lagsOf(s);
   // A pair read at several lags has no single value: each lag carries its own (lagLines), none is picked.
-  if (!v && lags.length && (s.headline_key === "signals.pair.rho" || s.headline_key === "signals.pair.few")) {
+  if (!v && lags.length && PAIR_HEADLINES.has(s.headline_key)) {
     const hs = lags.map((l) => l.lag_h);
     return fill(COPY["signals.pair.lagged"], { from: Math.min(...hs), to: Math.max(...hs), n });
   }
@@ -80,11 +82,13 @@ export function limitLines(s: Signal | SignalSnapshot): string[] {
 
 /** One line per lag for cabin_vs_earth (no lag is picked as the best one). */
 export function lagLines(s: Signal): string[] {
-  return lagsOf(s).map((l) =>
-    l.rho === null || l.low === null || l.high === null
-      ? fill(COPY["signals.pair.lagFew"], { h: l.lag_h, n: l.n })
-      : fill(COPY["signals.pair.lag"], { h: l.lag_h, n: l.n, rho: fmt(l.rho), low: fmt(l.low), high: fmt(l.high) }),
-  );
+  return lagsOf(s).map((l) => {
+    if (l.rho === null || l.low === null || l.high === null) {
+      const key = l.key === "signals.pair.lagNoSpread" ? l.key : "signals.pair.lagFew";
+      return fill(COPY[key], { h: l.lag_h, n: l.n });
+    }
+    return fill(COPY["signals.pair.lag"], { h: l.lag_h, n: l.n, rho: fmt(l.rho), low: fmt(l.low), high: fmt(l.high) });
+  });
 }
 
 /** Notable signals, real and replay counted apart: the two are never pooled into one number. */

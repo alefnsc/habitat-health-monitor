@@ -369,6 +369,8 @@ export const COPY: Record<string, string> = {
   "signals.pair.rho": "Side by side: rank correlation {est} (interval {low} to {high}), {n} pairs. Association in your own data, not cause.",
   "signals.pair.lag": "{h} h later: {n} pairs, rank correlation {rho} (interval {low} to {high}).",
   "signals.pair.lagFew": "{h} h later: {n} pairs, too few to say anything.",
+  "signals.pair.noSpread": "Side by side: {n} pairs, but one side never changes, so there is nothing to rank.",
+  "signals.pair.lagNoSpread": "{h} h later: {n} pairs, but one side never changes.",
   "signals.pair.noBest": "No lag is picked as the best one.",
   "signals.pair.lagged": "Side by side at {from} to {to} h lags: {n} pairs across the lags; see each lag below. Association in your own data, not cause.",
   "signals.pairs.title": "The pairs, side by side ({n})",
@@ -417,6 +419,7 @@ export const COPY: Record<string, string> = {
   "signals.per.h": "hour",
   "signals.per.day": "day",
   "signals.per.rep": "rep",
+  "signals.per.week": "week",
 };
 
 export type CopyKey = keyof typeof COPY;

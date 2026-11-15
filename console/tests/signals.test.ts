@@ -390,3 +390,25 @@ describe("panel signals request", () => {
     dispose();
   });
 });
+
+describe("hub keys from slice 4 (D45 integration)", () => {
+  test("a pair with no spread on one side says so, at one lag or several", () => {
+    const flat = sig({ id: "last_meal_vs_sleep", kind: "lagged_pair", value: null, headline_key: "signals.pair.noSpread",
+      method: { ...sig().method, n: 22 } });
+    expect(headline(flat)).toBe("Side by side: 22 pairs, but one side never changes, so there is nothing to rank.");
+    const lagged = sig({ id: "cabin_vs_earth", kind: "lagged_pair", crew: null, value: null, headline_key: "signals.pair.noSpread",
+      detail: { lags: [{ lag_h: 0, n: 30, rho: null, low: null, high: null, key: "signals.pair.lagNoSpread" },
+        { lag_h: 1, n: 5, rho: null, low: null, high: null, key: "signals.pair.lagFew" }] } });
+    expect(headline(lagged)).toContain("Side by side at 0 to 1 h lags");
+    expect(lagLines(lagged)).toEqual([
+      "0 h later: 30 pairs, but one side never changes.",
+      "1 h later: 5 pairs, too few to say anything.",
+    ]);
+  });
+
+  test("a weekly slope reads per week", () => {
+    const mass = sig({ id: "body_mass_30d", kind: "trend", headline_key: "signals.trend.down",
+      value: { estimate: -0.35, low: -0.5, high: -0.2, unit: "kg", per: "week" } });
+    expect(headline(mass)).toBe("Trend down: −0.35 kg per week (interval −0.50 to −0.20).");
+  });
+});
