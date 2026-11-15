@@ -44,8 +44,10 @@
 - [x] **8. Docs.** README "Run with Docker"; `docs/pi-setup.md` "Another way: Docker"; `docs/deploy-public.md`
   step 13 (compose linksim with the public uplink, same consent rules).
 - [x] **9. Spec and plan** (this file).
-- [ ] **10. Draft PR and CI.** Push `feat/docker-stack`, open the draft PR, and wait for every CI job. Fix on the
-  branch if one fails, at most three rounds.
+- [x] **10. Draft PR and CI.** Push `feat/docker-stack`, open the draft PR, and wait for every CI job. Fix on the
+  branch if one fails, at most three rounds. Draft #39. First round all green at `d76022c`: `docker` 56 s
+  (50 `sim-1` readings, receiver stored 3), `docker-arm64` 2 min 48 s (`aarch64`), and `python`, `web` ×3 and
+  `firmware` unchanged.
 
 ## Not in this plan
 
