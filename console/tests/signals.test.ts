@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest";
 import type { Prompt, Signal, SignalsBody } from "../src/contract";
 import { fmt, groupOf, headline, lagLines, limitLines, missingLines, notableCount, selfCheckFor } from "../src/model/signals";
 import { renderSignalsBody } from "../src/views/signals";
+import { topBar } from "../src/views/panel/topbar";
 
 const NOW = Date.parse("2026-11-20T10:00:00Z");
 
@@ -115,5 +116,20 @@ describe("signals screen", () => {
     }
     expect((root.textContent ?? "").split(credit).length - 1).toBe(1);
     expect(root.querySelector('[data-signal="cabin_vs_earth"] a')).toBeNull();
+  });
+});
+
+describe("panel top bar signals chip", () => {
+  test("shows the notable count live, and nothing in the replay", () => {
+    const live = topBar({ replay: false, now: () => NOW });
+    live.update({ status: null, sessions: null, weather: null, link: null,
+      signals: { crew: null, at: "x", signals: [sig({ state: "notable" })] } });
+    expect(live.node.textContent).toContain("Signals 1 notable");
+    expect(live.node.querySelector('a[href="#/signals"]')).not.toBeNull();
+    live.dispose();
+    const replay = topBar({ replay: true, now: () => NOW });
+    replay.update({ status: null, sessions: null, weather: null, link: null });
+    expect(replay.node.textContent).not.toContain("Signals");
+    replay.dispose();
   });
 });

@@ -65,8 +65,9 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
       lanesDue ? laneRows(src, new Date(win[0] * 1000).toISOString(), crew) : Promise.resolve(undefined),
       soft(src.issCabin()), soft(src.issReference()),
     ]);
+    const signals = src.signals ? await soft(src.signals(crew)) : undefined;
     if (disposed || mine !== token) return;
-    top.update({ status, sessions: set.sessions, weather, link: linkState });
+    top.update({ status, sessions: set.sessions, weather, link: linkState, signals });
     lift.update(set);
     places.update(set);
     mass.update({ weighIns, food, training, sessions: set.sessions });

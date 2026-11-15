@@ -1,9 +1,10 @@
 import { COPY } from "../../copy";
-import type { LinkState, Session, SpaceWeather, StatusBody } from "../../contract";
+import type { LinkState, Session, SignalsBody, SpaceWeather, StatusBody } from "../../contract";
 import { el } from "../../dom";
 import { formatAge } from "../../format";
 import { formatLightTime } from "../../model/guidance";
 import { weatherBanner } from "../../model/nasa";
+import { notableCount } from "../../model/signals";
 import { liveSource, type PanelClock } from "./source";
 
 export interface TopData {
@@ -11,6 +12,8 @@ export interface TopData {
   sessions: Session[] | null;
   weather: SpaceWeather | null;
   link: LinkState | null;
+  /** D45: undefined when the source has no signals (replay); null when the request failed. */
+  signals?: SignalsBody | null;
 }
 
 function chip(dot: string, label: string, value: string): HTMLElement {
@@ -49,6 +52,13 @@ export function topBar(src: PanelClock = liveSource): { node: HTMLElement; updat
       chip(d.link?.state === "contact" ? "ok" : d.link?.state === "blackout" ? "act" : "",
         COPY["panel.chipLink"], d.link ? formatLightTime(d.link.light_time_s, 1) : missing),
     );
+    if (d.signals !== undefined) {
+      const n = notableCount(d.signals);
+      const link = el("a", { href: "#/signals", class: "pchip-link" },
+        chip(n > 0 ? "watch" : "", COPY["panel.chipSignals"],
+          d.signals ? COPY["panel.signalsNotable"].replace("{n}", String(n)) : missing));
+      chips.append(link);
+    }
   };
   return { node, update, dispose: () => clearInterval(t) };
 }
