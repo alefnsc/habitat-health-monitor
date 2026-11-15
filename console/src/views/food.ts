@@ -1,13 +1,13 @@
 import { ApiError, getExerciseDay, getFoodCatalog, getFoodDay, getFoodReferences, postFoodLog } from "../api";
 import { COPY } from "../copy";
-import type { ExerciseDay, FoodCatalog, FoodDay, FoodReferences, IntakeInd } from "../contract";
+import type { CrewId, ExerciseDay, FoodCatalog, FoodDay, FoodReferences, IntakeInd } from "../contract";
 import { INTAKE_INDS } from "../contract";
-import { currentCrew, onCrewChange } from "../crew";
+import { CREW, currentCrew, onCrewChange } from "../crew";
 import { el } from "../dom";
 import { sourceKindLabel, statusClass } from "../format";
 import { formatTrainingWork } from "../model/exercise";
 import {
-  NUTRIENT_LABEL, buildMealRequest, formatNutrient, mealPreview, reportedBy, validSelection, type Selection,
+  NUTRIENT_LABEL, buildMealRequest, formatNutrient, mealLine, mealPreview, reportedBy, validSelection, type Selection,
 } from "../model/food";
 import { packScanner } from "./scan";
 
@@ -82,6 +82,10 @@ export function renderFood(root: HTMLElement): () => void {
   const trainBox = el("section");
   const draft = el("ul");
   const draftSums = el("p", { class: "footnote" });
+  // No crew-less meals: the hub never counts one for any crew. Starts on the crew being viewed, if any.
+  const crewPick = el("select", { id: "food-crew" }, el("option", { value: "", text: COPY["crew.pick"], disabled: true }));
+  for (const c of CREW) crewPick.append(el("option", { value: c.id, text: c.label }));
+  crewPick.value = currentCrew() ?? "";
   const picker = el("select", { id: "food-item" });
   const servings = el("input", { id: "food-servings", type: "number", min: 0.5, max: 20, step: 0.5, value: 1 });
   const add = el("button", { type: "button", text: COPY["food.addItem"] });
@@ -97,6 +101,7 @@ export function renderFood(root: HTMLElement): () => void {
     el("p", { class: "footnote", text: COPY["food.disclaimer"] }),
     err,
     el("section", {}, el("h3", { text: COPY["food.logTitle"] }),
+      el("label", { for: "food-crew", text: `${COPY["food.crew"]} ` }), crewPick, " ",
       el("label", { for: "food-item", text: `${COPY["food.pickItem"]} ` }), picker, " ",
       el("label", { for: "food-servings", text: `${COPY["food.servings"]} ` }), servings, " ", add, scanner.node, draft, draftSums, log, notice),
     el("h3", { text: COPY["food.dayTitle"] }), dayBox,
@@ -129,7 +134,7 @@ export function renderFood(root: HTMLElement): () => void {
       const day = await getFoodDay(crew);
       if (disposed) return;
       const mealsList = el("ul");
-      for (const m of day.meals) mealsList.append(el("li", { text: `${m.eaten_at}: ${m.items.map((i) => `${i.food_id} x ${i.servings}`).join(", ")}` }));
+      for (const m of day.meals) mealsList.append(el("li", { text: mealLine(catalog, m) }));
       const parts: (Node | null)[] = [
         day.crew === null ? el("p", { class: "footnote", text: COPY["food.allCrewNote"] }) : null,
         totalsTable(day),
@@ -175,12 +180,17 @@ export function renderFood(root: HTMLElement): () => void {
   });
   log.addEventListener("click", async () => {
     err.textContent = "";
+    const crew = (crewPick.value || null) as CrewId | null;
+    if (crew === null) {
+      notice.textContent = COPY["crew.needed"];
+      return;
+    }
     if (!validSelection(sel)) {
       notice.textContent = COPY["food.mealEmpty"];
       return;
     }
     try {
-      const r = await postFoodLog(buildMealRequest(currentCrew(), sel));
+      const r = await postFoodLog(buildMealRequest(crew, sel));
       sel.length = 0;
       showDraft();
       notice.textContent = COPY["food.mealLogged"] + (r.not_reported.length ? `. ${COPY["food.notReportedNote"]}${r.not_reported.map((i) => NUTRIENT_LABEL[i as IntakeInd]).join(", ")}` : "");
@@ -189,7 +199,8 @@ export function renderFood(root: HTMLElement): () => void {
       err.textContent = msg(e);
     }
   });
-  const off = onCrewChange(() => {
+  const off = onCrewChange((id) => {
+    crewPick.value = id ?? "";
     void loadDay();
     void loadTraining();
   });

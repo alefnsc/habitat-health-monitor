@@ -1,6 +1,7 @@
 import { COPY } from "../copy";
-import type { CrewId, FoodCatalog, FoodItem, IntakeInd, MealRequest, NutrientTotal } from "../contract";
+import type { CrewId, FoodCatalog, FoodDay, FoodItem, IntakeInd, MealRequest, NutrientTotal } from "../contract";
 import { INTAKE_INDS } from "../contract";
+import { formatTimeUtc } from "../format";
 
 export const NUTRIENT_LABEL: Record<IntakeInd, string> = {
   intake_kcal: "Food energy",
@@ -46,8 +47,14 @@ export function validSelection(sel: Selection): boolean {
   return sel.length > 0 && sel.length <= 20 && sel.every((s) => s.servings > 0 && s.servings <= 20);
 }
 
-export function buildMealRequest(crew: CrewId | null, sel: Selection): MealRequest {
+export function buildMealRequest(crew: CrewId, sel: Selection): MealRequest {
   return { crew, items: sel.map((s) => ({ food_id: s.food_id, servings: s.servings })) };
+}
+
+/** One logged meal for the list: UTC clock time, then each food by its catalogue name (the id only when the name is unknown). */
+export function mealLine(catalog: FoodCatalog | null, meal: Pick<FoodDay["meals"][number], "eaten_at" | "items">): string {
+  const name = (id: string) => catalog?.items.find((i) => i.id === id)?.name ?? id;
+  return `${formatTimeUtc(meal.eaten_at)}: ${meal.items.map((i) => `${name(i.food_id)} x ${i.servings}`).join(", ")}`;
 }
 
 const KEY: Record<IntakeInd, keyof FoodItem["per100g"] | "fluid"> = {
