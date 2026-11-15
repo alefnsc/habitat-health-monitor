@@ -1,0 +1,288 @@
+{
+  "version": 1,
+  "author": "Habitat Health Monitor team",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-arduino-uno",
+      "id": "uno",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": -125,
+      "left": 150,
+      "attrs": {
+        "temperature": "24",
+        "humidity": "40"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzzer",
+      "top": -60,
+      "left": 380,
+      "attrs": {
+        "volume": "0.1"
+      }
+    },
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 1000,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-slide-switch",
+      "id": "tilt_sw",
+      "top": 40,
+      "left": 1200,
+      "attrs": {}
+    },
+    {
+      "type": "chip-nimh-pack",
+      "id": "pack",
+      "top": 290,
+      "left": 1000,
+      "attrs": {}
+    },
+    {
+      "type": "chip-rpi3-hub",
+      "id": "hub",
+      "top": 100,
+      "left": 560,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-text",
+      "id": "title",
+      "top": -230,
+      "left": -60,
+      "attrs": {
+        "text": "Habitat Health Monitor – full bench circuit (simulated): two microcontrollers and a hub. Simulated parts are labelled."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_uno",
+      "top": -20,
+      "left": -60,
+      "attrs": {
+        "text": "Arduino UNO R3: runs firmware/exercise-uno here (with wokwi_twin.h)"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_dht",
+      "top": -160,
+      "left": 60,
+      "attrs": {
+        "text": "DHT11 stand-in (simulated) DHT22: D2 → cabin_temp, cabin_rh (node cabin-1), estimate"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_buzzer",
+      "top": -95,
+      "left": 360,
+      "attrs": {
+        "text": "Alarm buzzer (passive): D8 ← hub command"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_esp",
+      "top": -60,
+      "left": 900,
+      "attrs": {
+        "text": "tilt-1 node: ESP32 stands in for the NodeMCU (simulated). Drawn here, runs in its own twin: https://wokwi.com/projects/480680478751478785"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_switch",
+      "top": 0,
+      "left": 1160,
+      "attrs": {
+        "text": "KY-017 stand-in (simulated): pin 1 = + (3V3), middle = S (D5 / GPIO14), pin 3 = − (GND). Slide right = tilted."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_pack",
+      "top": 262,
+      "left": 960,
+      "attrs": {
+        "text": "4×AA Ni-MH pack (drawing only, 4.8–5.6 V): + → VIN, − → GND"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_hub",
+      "top": 40,
+      "left": 330,
+      "attrs": {
+        "text": "Raspberry Pi 3 Model B hub (drawing only): Mosquitto, hub, console. Wokwi has no Pi 3."
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_header",
+      "top": 230,
+      "left": 400,
+      "attrs": {
+        "text": "40-pin header: EMPTY: nothing wired here"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_power",
+      "top": 252,
+      "left": 400,
+      "attrs": {
+        "text": "Pi power: micro-USB 5 V 2.5 A in. microSD: Raspberry Pi OS 64-bit"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_usb",
+      "top": 150,
+      "left": 300,
+      "attrs": {
+        "text": "USB cable, Pi USB-A ↔ UNO USB-B: USB serial 250000 → /dev/ttyACM0"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "label_wifi",
+      "top": 190,
+      "left": 400,
+      "attrs": {
+        "text": "- - - Wi-Fi 2.4 GHz → MQTT :1883 (Mosquitto on the Pi) - - -"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "flow_1",
+      "top": 380,
+      "left": -60,
+      "attrs": {
+        "text": "Data flow: UNO → USB serial → hub → NASA-STD-3001 rules → crew console"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "flow_2",
+      "top": 402,
+      "left": -60,
+      "attrs": {
+        "text": "tilt-1 → Wi-Fi → MQTT → hub. Hub → simulated Mars link (light-time delay, blackouts) → Earth page"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "rules_1",
+      "top": 436,
+      "left": -60,
+      "attrs": {
+        "text": "Rules: nothing on the Pi header; never the cell pack and USB at once; mercury pod sealed, adults only"
+      }
+    },
+    {
+      "type": "wokwi-text",
+      "id": "rules_2",
+      "top": 458,
+      "left": -60,
+      "attrs": {
+        "text": "Simulated parts are labelled. Readings are estimates. Educational prototype, not a medical device."
+      }
+    }
+  ],
+  "connections": [
+    [
+      "dht:VCC",
+      "uno:5V",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "dht:GND",
+      "uno:GND.1",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "dht:SDA",
+      "uno:2",
+      "green",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "buzzer:2",
+      "uno:8",
+      "purple",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "buzzer:1",
+      "uno:GND.2",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "tilt_sw:1",
+      "esp:3V3",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "tilt_sw:2",
+      "esp:D14",
+      "yellow",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "tilt_sw:3",
+      "esp:GND.1",
+      "black",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pack:+",
+      "esp:VIN",
+      "red",
+      [
+        "v0"
+      ]
+    ],
+    [
+      "pack:-",
+      "esp:GND.2",
+      "black",
+      [
+        "v0"
+      ]
+    ]
+  ],
+  "dependencies": {}
+}
