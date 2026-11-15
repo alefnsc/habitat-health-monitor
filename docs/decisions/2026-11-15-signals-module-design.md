@@ -399,3 +399,11 @@ Both open points are settled by the team owner:
   credit link next to the displayed data, against the vendor-free console text. INMET needs a token that the team
   owner requests; the station code stays in `.env` like the location. The plan's Task 9 checks INMET's API against
   the live server first, because no official manual was found online.
+
+**Later on 2026-11-15 (supersedes the provider line above and two details of §4.2):**
+- The team owner chose an **open hourly weather API** (named in `DATA_SOURCES.md`) so that no token is needed. It
+  replaces INMET. Its past hours are weather-model values, labelled so. Its licence asks for a credit next to
+  displayed data; placing that credit on the console card is decided with the console slice.
+- The **Node 3 ppCO2** item is stored as its own indicator, `iss_ppco2_node3`. `iss_ppco2` is the US Lab only. One
+  series of both modules (about 2.4 vs 2.95 mmHg) would move with the update mix alone.
+- **Nights** come from the ring only; a self-reported `sleep_h` is not a night.
