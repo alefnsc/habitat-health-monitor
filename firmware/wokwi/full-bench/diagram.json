@@ -126,7 +126,7 @@
       "top": 40,
       "left": 330,
       "attrs": {
-        "text": "Raspberry Pi 3 Model B hub (drawing only): Mosquitto, hub, console. Wokwi has no Pi 3."
+        "text": "Raspberry Pi 3 Model B hub (circuit abstraction): Wokwi has no Pi 3, so this chip does the hub's job on the UNO link: it reads cabin-1, judges it against NASA-STD-3001 and logs it; its alert control sends the alarm. Mosquitto, console and Mars link run on the real Pi."
       }
     },
     {
@@ -153,7 +153,7 @@
       "top": 150,
       "left": 300,
       "attrs": {
-        "text": "USB cable, Pi USB-A ↔ UNO USB-B: USB serial 250000 → /dev/ttyACM0"
+        "text": "USB cable, Pi USB-A ↔ UNO USB-B: USB serial 250000 → /dev/ttyACM0. Drawn as the UNO's UART (TX D1 → hub RX blue, hub TX → RX D0 orange), which the UNO's USB bridge feeds."
       }
     },
     {
@@ -282,6 +282,24 @@
       [
         "v0"
       ]
+    ],
+    [
+      "uno:1",
+      "hub:RX",
+      "blue",
+      []
+    ],
+    [
+      "hub:TX",
+      "uno:0",
+      "orange",
+      []
+    ],
+    [
+      "hub:GND",
+      "uno:GND.3",
+      "black",
+      []
     ]
   ],
   "dependencies": {}

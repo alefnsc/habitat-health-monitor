@@ -1,11 +1,22 @@
 {
-  "name": "Raspberry Pi 3 Model B hub (drawing only)",
+  "name": "Raspberry Pi 3 Model B hub (circuit abstraction)",
   "author": "Habitat Health Monitor team",
   "pins": [
-    "USB_A",
+    "RX",
+    "TX",
+    "GND",
     "PWR_IN",
     "MICROSD",
     "HEADER_EMPTY"
   ],
-  "controls": []
+  "controls": [
+    {
+      "id": "alert",
+      "label": "Space-weather alert (as the hub's DONKI actuator)",
+      "type": "range",
+      "min": 0,
+      "max": 1,
+      "step": 1
+    }
+  ]
 }
