@@ -244,6 +244,8 @@ export const COPY: Record<string, string> = {
   "panel.quiet": "quiet",
   "panel.lift": "Lift",
   "panel.liftNone": "No set yet. Start a set on the camera page.",
+  "panel.tiltLine": "Tilt switch (tilt-1): seen on {seen} of {n} reps, turnaround inside the tilt on {inside}.",
+  "panel.tiltOffset": "Median offset {ms} ms (the 200 ms debounce makes it read late).",
   "panel.liftNote": "Camera estimate of the work done on the load in each rep, in joules.",
   "panel.liftMass": "load",
   "panel.liftSet": "set",

@@ -45,7 +45,9 @@ export function massCard(src: PanelClock = liveSource): { node: HTMLElement; upd
         el("div", { class: "val", text: d.training?.camera_work_j != null ? formatTrainingWork(d.training.camera_work_j) : COPY["status.none"] })));
     const checks = el("ul", { class: "checks" }, ...EXERCISES.map((e) => el("li", { class: done.includes(e) ? "done" : "" },
       `${done.includes(e) ? "✓" : "○"} ${COPY[`panel.ex.${e}`]}`)));
+    const excluded = d.training?.excluded_reps ?? 0;
     c.body.replaceChildren(...parts.filter((p): p is HTMLElement => !!p), side,
+      ...(excluded > 0 ? [el("p", { class: "note", text: `${COPY["food.trainExcluded"]}${excluded}` })] : []),
       el("p", { class: "note", text: `${COPY["panel.sideNote"]} ${COPY["work.note"]}` }),
       el("div", { class: "kv", style: "margin-top:8px", text: COPY["panel.exercisesToday"] }), checks);
     if (!pts.length) return;
