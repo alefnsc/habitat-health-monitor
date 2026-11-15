@@ -19,6 +19,7 @@ log = logging.getLogger("hub.commands")
 
 CMDS = ("servo", "alarm", "cal", "tare")
 RIG_NODE = "exercise-1"
+SERIAL_NODES: frozenset[str] = frozenset({RIG_NODE, "cabin-1"})  # D40: one UNO, one USB link
 
 
 @dataclass(frozen=True)
@@ -76,13 +77,18 @@ def encode_command(c: Command) -> bytes:
     return json.dumps(d, separators=(",", ":")).encode("utf-8") + b"\n"
 
 
+def command_topic(node: str) -> str:
+    """MQTT topic for a command to `node`. The hub bridges only the rig's topic to the serial link."""
+    return f"habitat/v1/cmd/{RIG_NODE if node in SERIAL_NODES else node}"
+
+
 class CommandRouter:
     def __init__(self, rig: RigLink | None, publisher: MqttPublisher | None) -> None:
         self.rig, self.publisher = rig, publisher
 
     def send(self, node: str, cmd: Command) -> None:
         try:
-            if node == RIG_NODE:
+            if node in SERIAL_NODES:
                 if self.rig is None:
                     log.warning("no rig link, dropped %s for %s", cmd.cmd, node)
                     return
@@ -93,7 +99,7 @@ class CommandRouter:
                 return
             retain = cmd.cmd in ("servo", "alarm")
             self.publisher.publish(
-                f"habitat/v1/cmd/{node}", encode_command(cmd).strip(), qos=1, retain=retain
+                command_topic(node), encode_command(cmd).strip(), qos=1, retain=retain
             )
         except Exception:
             log.exception("command %s to %s failed", cmd.cmd, node)
@@ -123,7 +129,7 @@ def main() -> None:
     client.loop_start()
     retain = cmd.cmd in ("servo", "alarm")
     client.publish(
-        f"habitat/v1/cmd/{a.node}", encode_command(cmd).strip(), qos=1, retain=retain
+        command_topic(a.node), encode_command(cmd).strip(), qos=1, retain=retain
     ).wait_for_publish()
     client.loop_stop()
     client.disconnect()
