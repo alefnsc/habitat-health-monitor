@@ -58,3 +58,12 @@ def test_safety_checklist_has_mercury_and_magnet_rules() -> None:
     assert "13. **Neodymium magnets" in text
     low = text.lower()
     assert "hazardous-waste" in low and "no vacuum" in low and "under 18" in low
+
+
+def test_boot_counter_is_an_append_only_flash_log() -> None:
+    # Bench 2026-11-15: the EEPROM emulation's erase-then-write per boot lost or reverted the
+    # count (boots 4, 7, 9, 8, 10, 11, 1, 2). The ESP8266 branch now uses BootLog.h.
+    cpp = (FW / "libraries/HabitatNode/src/HabitatNode.cpp").read_text()
+    assert "BootLog::bump" in cpp and "#include <EEPROM.h>" not in cpp
+    assert (FW / "libraries/HabitatNode/src/BootLog.h").is_file()
+    assert "test_boot.cpp" in (DIR / "test/run_host_tests.sh").read_text()

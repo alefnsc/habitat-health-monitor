@@ -28,6 +28,10 @@ log = logging.getLogger("hub.ingest")
 CREW_SCOPED = BODY_INDS | INTAKE_INDS
 # Streams that are stored but never assessed, outboxed or pushed one by one.
 QUIET_INDS = frozenset({"load_raw"})
+# Channels fed by hardware nodes, whose (node, boot, seq) key can repeat when a boot counter does
+# (tilt-1, bench 2026-11-15). A repeated key with a different sample is stored under a `clash`
+# number there; software producers (http, prompt, internal) keep exact idempotency.
+NODE_CHANNELS = frozenset({"mqtt", "serial"})
 
 
 @dataclass
@@ -37,6 +41,7 @@ class IngestResult:
     reason: str | None
     results: list[StatusEntry] = field(default_factory=list)
     derived: list[StoredReading] = field(default_factory=list)
+    clash: bool = False  # stored, but under a key an earlier, different sample already held
 
 
 class Ingestor:
@@ -129,9 +134,18 @@ class Ingestor:
             crew = self.crew_for(r.node)
             if crew:
                 r = replace(r, crew=crew)
-        stored, new = self.store.insert_reading(r, now)
+        stored, new = self.store.insert_reading(r, now, allow_clash=channel in NODE_CHANNELS)
         if not new:
+            log.info(
+                "duplicate channel=%s node=%s boot=%s seq=%s id=%s",
+                channel, r.node, r.boot, r.seq, stored.id,
+            )  # fmt: skip
             return IngestResult(stored, True, None)
+        if stored.clash:
+            log.warning(
+                "key clash channel=%s node=%s boot=%s seq=%s clash=%s id=%s measured_at=%s",
+                channel, r.node, r.boot, r.seq, stored.clash, stored.id, stored.measured_at,
+            )  # fmt: skip
         rows = [stored]
         derived: list[StoredReading] = []
         if self.deriver is not None and stored.ind == "cabin_co2":
@@ -168,4 +182,4 @@ class Ingestor:
                     cb(row)
                 except Exception:
                     log.exception("listener failed")
-        return IngestResult(stored, False, None, entries, derived)
+        return IngestResult(stored, False, None, entries, derived, clash=stored.clash > 0)

@@ -80,7 +80,7 @@ def test_get_history(client, clock):
     assert [r["val"] for r in rows] == [95, 100]
     for k in ("id", "measured_at", "received_at", "src", "dev", "q", "crew", "derived_from"):
         assert k in rows[0]
-    assert rows[0]["derived_from"] is None
+    assert rows[0]["derived_from"] is None and rows[0]["clash"] == 0
 
 
 def test_get_since_and_crew(client, clock):

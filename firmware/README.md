@@ -141,9 +141,11 @@ H=firmware/libraries/HabitatNode
 AJ="$HOME/Documents/Arduino/libraries/ArduinoJson/src"   # ~/Arduino/libraries on the Pi
 c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_ring.cpp -o firmware/build/test_ring && firmware/build/test_ring
 c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test/test_format.cpp -o firmware/build/test_format && firmware/build/test_format
+c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_boot.cpp -o firmware/build/test_boot && firmware/build/test_boot
 ```
 
-Each prints `ok`.
+Each prints `ok`. `test_boot` runs the boot counter (`BootLog.h`, an append-only log in one flash sector) against a NOR
+flash model with torn and refused writes; the tilt node's `run_host_tests.sh` runs it too.
 
 UNO I/O board (`exercise-uno`) host tests, builds and the Wokwi twin:
 
@@ -161,7 +163,7 @@ Every optional channel defaults to 0 except the DHT11 (D40); turn one on only wh
 tilt-1 node and its Wokwi twin:
 
 ```
-firmware/tilt-esp8266/test/run_host_tests.sh            # pure logic: tilt debounce, heartbeat, serial line
+firmware/tilt-esp8266/test/run_host_tests.sh            # pure logic: tilt debounce, heartbeat, serial line, boot log
 arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
 arduino-cli compile --fqbn esp32:esp32:esp32 --library firmware/libraries/HabitatNode firmware/tilt-esp8266   # the Wokwi stand-in
 firmware/wokwi/tilt-esp32/check_sync.sh

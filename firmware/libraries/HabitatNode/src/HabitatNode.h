@@ -20,6 +20,7 @@
 
 namespace habitat {
 // Reads, increments and persists the boot counter. First ever boot returns 1.
+// ESP8266: an append-only flash log (BootLog.h); ESP32: Preferences (NVS).
 uint32_t bumpBootCounter();
 }  // namespace habitat
 

@@ -1,4 +1,5 @@
 import json
+import logging
 import random
 
 import pytest
@@ -165,3 +166,51 @@ def test_derived_in_pipeline(ing, store, events, clock):
     assert [e.ind for e in res.results] == ["cabin_co2", "cabin_ppco2"]
     assert [t for t, _ in events] == ["assessment", "assessment"]
     assert store.count("outbox") == 3
+
+
+# Repeated boot numbers (bench 2026-11-15, validacao-2026-11-15/relatorio-sensores-painel.md, gap 1).
+
+
+def tilt(seq, val, boot=9, age_ms=2):
+    return msg(node="tilt-1", boot=boot, seq=seq, age_ms=age_ms, ind="tilt", val=val,
+               unit="state", dev="KY017")  # fmt: skip
+
+
+def test_repeated_boot_number_is_stored_with_a_clash_warning(ing, store, events, clock, caplog):
+    ing.ingest_reading(tilt(1, 1), channel="mqtt")
+    clock.advance(44 * 60)
+    events.clear()
+    with caplog.at_level(logging.WARNING, logger="hub.ingest"):
+        res = ing.ingest_reading(tilt(1, 0), channel="mqtt")
+    assert res.reason is None and not res.duplicate and res.clash
+    assert res.stored.clash == 1 and res.stored.val == 0.0
+    assert [e.ind for e in res.results] == ["tilt"] and events[0][0] == "assessment"
+    assert store.count("readings") == 2 and store.count("outbox") == 2
+    assert "clash channel=mqtt node=tilt-1 boot=9 seq=1" in caplog.text
+
+
+def test_node_retry_is_a_quiet_duplicate_with_a_log_line(ing, store, events, clock, caplog):
+    ing.ingest_reading(tilt(1, 1, age_ms=2), channel="mqtt")
+    clock.advance(3)
+    events.clear()
+    with caplog.at_level(logging.INFO, logger="hub.ingest"):
+        res = ing.ingest_reading(tilt(1, 1, age_ms=3002), channel="mqtt")
+    assert res.duplicate and not res.clash and res.results == [] and events == []
+    assert store.count("readings") == 1 and store.count("outbox") == 1
+    assert "duplicate channel=mqtt node=tilt-1 boot=9 seq=1" in caplog.text
+
+
+def test_http_key_reuse_stays_a_duplicate(ing, store, clock):
+    # Software producers pick their keys for idempotency; only node channels widen the key.
+    ing.ingest_reading(temp(), channel="http")
+    clock.advance(44 * 60)
+    res = ing.ingest_reading({**temp(), "val": 23.0}, channel="http")
+    assert res.duplicate and not res.clash and store.count("readings") == 1
+
+
+def test_serial_channel_widens_the_key(ing, store, clock):
+    line = msg(node="cabin-1", boot=14, seq=1, ind="cabin_temp", unit="C", val=25.3, dev="DHT11")
+    ing.ingest_reading(line, channel="serial")
+    clock.advance(600)
+    res = ing.ingest_reading({**line, "val": 24.9}, channel="serial")
+    assert res.clash and res.stored.clash == 1 and store.count("readings") == 2

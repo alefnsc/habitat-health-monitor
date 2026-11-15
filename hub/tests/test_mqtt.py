@@ -101,5 +101,28 @@ def test_status_includes_nodes(settings, clock):
                   json.dumps(msg()).encode())  # fmt: skip
     with TestClient(app) as c:
         assert c.get("/api/status").json()["nodes"] == [
-            {"node": "cabin-1", "online": True, "last_seen": "2026-11-14T12:00:00.000Z"}
+            {
+                "node": "cabin-1",
+                "online": True,
+                "last_seen": "2026-11-14T12:00:00.000Z",
+                "duplicates": 0,
+                "clashes": 0,
+            }
         ]
+
+
+def tilt_raw(seq, val, age_ms=2):
+    m = msg(node="tilt-1", boot=9, seq=seq, age_ms=age_ms, ind="tilt", val=val, unit="state",
+            dev="KY017")  # fmt: skip
+    return json.dumps(m).encode()
+
+
+def test_registry_counts_duplicates_and_clashes(rig, clock):
+    store, ing, nodes = rig
+    route_message(ing, nodes, "habitat/v1/r/tilt-1", tilt_raw(1, 1))
+    clock.advance(3)
+    route_message(ing, nodes, "habitat/v1/r/tilt-1", tilt_raw(1, 1, age_ms=3002))  # node retry
+    clock.advance(44 * 60)
+    route_message(ing, nodes, "habitat/v1/r/tilt-1", tilt_raw(1, 0))  # repeated boot number
+    (n,) = nodes.snapshot()
+    assert (n.duplicates, n.clashes) == (1, 1) and store.count("readings") == 2
