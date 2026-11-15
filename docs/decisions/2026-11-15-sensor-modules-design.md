@@ -1,7 +1,7 @@
 # Pluggable sensor modules and board configuration — design (D46)
 
-Status: design sections approved one by one by the team owner, 2026-11-15 (UTC−03:00); the written spec is waiting
-for the owner's review. This is **post-event** work. It does not change the build submitted to NASA Space Apps on
+Status: design sections approved one by one by the team owner, 2026-11-15 (UTC−03:00), and the written spec,
+including the additions listed in §2, approved by the owner the same day. This is **post-event** work. It does not change the build submitted to NASA Space Apps on
 2026-11-15, and nothing here is implemented yet.
 
 The team owner's request: "acoplability of new modules sensors + config board output number etc."
@@ -28,7 +28,7 @@ limits come from (`data/thresholds.json`, with its NASA and clinical sources).
 | Q7 | Descriptors and `hub/contract.py` | The descriptors become the single source; `contract.py` builds its tables from them. |
 | — | Approach | A: registry JSON plus one generator; generated files are committed and CI fails on any difference. Rejected: B, a run-time registry with hand-written firmware and C-parsing parity tests; C, generation at build time with nothing committed, which every `arduino-cli` build, IDE build and Wokwi paste would then depend on. |
 
-Added while writing, after the sections were approved, and so for the owner's review of this file: safety rule S6
+Added while writing, after the sections were approved, and approved with the written spec: safety rule S6
 (logic level, §5.4), the `default` board field (§4.4), commands routed through disabled placements (§6.4), and a
 looser RAM gate for "every placement enabled" builds (§10).
 
