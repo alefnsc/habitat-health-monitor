@@ -174,7 +174,7 @@ colours in the lanes, NASA and banner code switch to these variables.
   names it. That height lets the disclaimer footnote fit in the frame.
 - **Guidance popup.** On the panel, a watch or act alert no longer opens the guidance popup by itself. The panel
   already shows the alert in place: an amber or red lane with its sentence, and a packet on the link. On every other
-  screen the popup opens as before. This needs the team owner's yes.
+  screen the popup opens as before. Approved by the team owner, 2026-11-15 ~13:05.
 - **Cabin chip age.** The cabin chip's age comes from the newest cabin reading. A node's `last_seen` is its
   connection time, which made the chip read "1 h ago" while readings arrived every 5 s.
 - **Lane sources.** Lane sources on the panel are compact, with the kind label once plus every requirement ID, for

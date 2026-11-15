@@ -6,10 +6,15 @@ const FALLBACK: Record<string, string> = {
   series: "#60a5fa", "series-2": "#f472b6",
 };
 
+const cache = new Map<string, string>();
+
 export function color(name: string): string {
+  const hit = cache.get(name);
+  if (hit) return hit;
   const v = typeof getComputedStyle !== "undefined" && typeof document !== "undefined"
     ? getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim()
     : "";
+  if (v) cache.set(name, v); // stylesheet values are fixed for the page's life
   return v || FALLBACK[name] || "#888888";
 }
 

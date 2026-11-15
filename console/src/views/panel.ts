@@ -15,6 +15,7 @@ import { PANEL_LANES, vitalsCard } from "./panel/vitals";
 // The habitat panel (D43): one frame in the video's reading order. Every card loads on its own; a failed request
 // leaves that card at "No data" and the others alone. The panel only reads from the hub.
 const REFRESH_MS = 10_000;
+const LANES_REFRESH_MS = 30_000; // the lane readings are the heavy request: refetch them less often
 const LANE_HOURS = 6;
 const LANE_LIMIT = 5000;
 const MASS_DAYS = 30;
@@ -23,7 +24,8 @@ const soft = <T>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
 
 async function latestSet(crew: CrewId | undefined): Promise<{ sessions: Session[] | null; session: Session | null; reps: RepsBody | null }> {
   const sessions = await soft(getSessions());
-  const mine = (sessions ?? []).filter((s) => crew === undefined || s.crew === crew);
+  // Camera sessions started without a crew still belong on every crew's panel.
+  const mine = (sessions ?? []).filter((s) => crew === undefined || s.crew === crew || s.crew === null);
   const session = mine[0] ?? null;
   const reps = session ? await soft(getReps(session.session)) : null;
   return { sessions: mine, session, reps };
@@ -47,15 +49,18 @@ export function renderPanel(root: HTMLElement): () => void {
 
   let token = 0;
   let disposed = false;
+  let lanesAt = 0;
   const load = async () => {
     const mine = ++token;
     const crew = currentCrew() ?? undefined;
     const nowS = Date.now() / 1000;
     const sinceS = nowS - LANE_HOURS * 3600;
+    const lanesDue = Date.now() - lanesAt >= LANES_REFRESH_MS;
     const [status, set, weather, linkState, weighIns, food, training, rows, iss, ref] = await Promise.all([
       soft(getStatus(crew)), latestSet(crew), soft(getSpaceWeather()), soft(getLink()),
       soft(getReadings("body_mass", { since: new Date((nowS - MASS_DAYS * 86400) * 1000).toISOString(), limit: 500, crew })),
-      soft(getFoodDay(crew)), soft(getExerciseDay(crew)), laneRows(new Date(sinceS * 1000).toISOString(), crew),
+      soft(getFoodDay(crew)), soft(getExerciseDay(crew)),
+      lanesDue ? laneRows(new Date(sinceS * 1000).toISOString(), crew) : Promise.resolve(undefined),
       soft(getIssCabin()), soft(getIssReference()),
     ]);
     if (disposed || mine !== token) return;
@@ -63,13 +68,19 @@ export function renderPanel(root: HTMLElement): () => void {
     lift.update(set);
     places.update(set);
     mass.update({ weighIns, food, training, sessions: set.sessions });
-    vitals.update({ rows, win: [sinceS, nowS], iss });
+    if (rows !== undefined) {
+      lanesAt = Date.now();
+      vitals.update({ rows, win: [sinceS, nowS], iss });
+    }
     rad.update({ ref, weather });
     link.update(linkState);
   };
   void load();
   const timer = setInterval(() => void load(), REFRESH_MS);
-  const offCrew = onCrewChange(() => void load());
+  const offCrew = onCrewChange(() => {
+    lanesAt = 0;
+    void load();
+  });
   return () => {
     disposed = true;
     clearInterval(timer);

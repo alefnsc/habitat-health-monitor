@@ -60,8 +60,12 @@ export function linkCard(): { node: HTMLElement; update: (l: LinkState | null) =
     counts.textContent = `${xs.length} ${COPY["panel.inFlight"]} · ${link.queue_len} ${COPY["panel.queue"]}`;
   };
   let raf = 0;
+  let moving = false;
   const tick = () => {
-    draw();
+    // Redraw per frame only while a packet is on the line (plus one frame to clear it).
+    const busy = !!link && sent.some((t) => Date.now() - t <= holdMs(link!));
+    if (busy || moving) draw();
+    moving = busy;
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
@@ -69,7 +73,10 @@ export function linkCard(): { node: HTMLElement; update: (l: LinkState | null) =
     sent.push(Date.now());
     while (sent.length > 50) sent.shift();
   });
-  const offLink = hubEvents.onLink((l) => (link = l));
+  const offLink = hubEvents.onLink((l) => {
+    link = l;
+    draw();
+  });
   return {
     node: c.node,
     update: (l) => {

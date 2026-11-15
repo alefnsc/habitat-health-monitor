@@ -8,14 +8,14 @@ export function holdMs(link: Pick<LinkState, "light_time_s" | "time_scale">): nu
 
 /**
  * Position of each alert on the line, 0 at Mars and 1 at Earth, newest last. Alerts that already reached Earth
- * leave the line. In a blackout every alert still on the line waits at Mars.
+ * leave the line. In a blackout, or while the link simulator is not running, alerts wait at Mars: nothing is sent.
  */
 export function packetsInFlight(sentAtMs: number[], nowMs: number, hold: number, state: LinkState["state"]): number[] {
   const out: number[] = [];
   for (const t of [...sentAtMs].sort((a, b) => a - b)) {
     const x = hold > 0 ? (nowMs - t) / hold : 1;
     if (x < 0 || x > 1) continue;
-    out.push(state === "blackout" ? 0 : x);
+    out.push(state === "contact" ? x : 0);
   }
   return out;
 }
