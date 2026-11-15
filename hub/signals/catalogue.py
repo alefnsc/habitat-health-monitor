@@ -68,6 +68,11 @@ CATALOGUE: tuple[Spec, ...] = (
     # 30-minute blocks: ISS Live pushes a value only when it changes (team owner, 2026-11-15).
     Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 30 * MIN, 10, 0.75, False,
          limits=(INDEPENDENCE, ISS)),
+    # slice 4: food, body mass, lift and cross-references
+    Spec("body_mass_30d", "trend", "daily_last", "body_mass", 30 * D, None, 10, 0.75, True,
+         limits=(INDEPENDENCE, LOGGED_ONLY)),
+    Spec("water_14d", "trend", "daily_sum", "intake_water_ml", 14 * D, None, 10, 0.75, True,
+         limits=(INDEPENDENCE, LOGGED_ONLY)),
 )  # fmt: skip
 
 BY_ID: dict[str, Spec] = {s.id: s for s in CATALOGUE}
