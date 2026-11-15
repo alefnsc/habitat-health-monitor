@@ -49,6 +49,7 @@ Layout: two microcontrollers and a hub (decision D40, [confirm: hardware member 
 - **Arduino UNO R3** (the bench board; the ATmega328P side of an UNO+WiFi works the same) is the I/O board. It carries a DHT11 (`cabin-1`: cabin temperature and humidity, hobby estimates) and the alarm buzzer, and talks to the hub over USB serial. On an UNO+WiFi the ESP8266 side is unused. Wokwi twin: `firmware/wokwi/uno-rig/`.
 - **NodeMCU (ESP8266)** is the `tilt-1` node: a sealed KY-017 tilt pod on the exercise weight, running on four Ni-MH AA cells (into VIN) and talking over Wi-Fi/MQTT. Wokwi twin, with an ESP32 standing in: `firmware/wokwi/tilt-esp32/`.
 - **Wearable ring** (decision D41): the team owner's own sleep-tracking ring gives `hr` (rest and sleep samples), nightly `spo2` and `sleep_h` as node `ring-1`, device `RING`, through `python -m nodes.ring` (`nodes/ring/README.md`). The habitat core runs offline; ring vitals are a **delayed cloud sync**, always shown with their age and never as live. Replays of recorded pulls are labelled "Replay (recorded)". No sensor that touches a person is cabled to anything.
+- **The whole bench in one Wokwi project:** https://wokwi.com/projects/480768002795017217. The UNO runs its real sketch there; the tilt node and the Pi hub are labelled drawings, because Wokwi runs one microcontroller per project and has no Pi 3. See `firmware/wokwi/full-bench/`.
 
 ## Safety
 

@@ -1,0 +1,11 @@
+{
+  "name": "Raspberry Pi 3 Model B hub (drawing only)",
+  "author": "Habitat Health Monitor team",
+  "pins": [
+    "USB_A",
+    "PWR_IN",
+    "MICROSD",
+    "HEADER_EMPTY"
+  ],
+  "controls": []
+}
