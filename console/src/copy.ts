@@ -295,6 +295,8 @@ export const COPY: Record<string, string> = {
   "panel.oneWay": "one-way",
   "panel.demo": "demo \u00d7{s}: {h} on screen",
   "panel.queue": "queued",
+  "panel.waitingAtMars": "waiting at Mars",
+  "panel.olderThanWindow": "No reading in this window. Latest:",
   "panel.inFlight": "alerts on the way",
   "panel.linkCaption": "An alert reaches the flight surgeon {t} after the habitat raises it. The crew acts first, on board.",
   "panel.state.contact": "In contact",

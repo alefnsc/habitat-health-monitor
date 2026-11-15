@@ -42,7 +42,7 @@ still serves and the MQTT subscriber keeps retrying.
 
 ## Hardware
 
-Circuit diagrams and the bill of materials are in `docs/` (DRAFT [confirm: hardware member to review before submission]).
+Wiring maps (DRAFT [confirm: hardware member to review before submission]): the whole bench as one Wokwi canvas in `firmware/wokwi/full-bench/` (link in `docs/decisions/links.md`), the UNO wiring table in `firmware/wokwi/uno-rig/README.md`, and the NodeMCU wiring and power in `firmware/tilt-esp8266/README.md`. There is no separate bill of materials in the repository yet.
 
 Layout: two microcontrollers and a hub (decision D40, [confirm: hardware member to review before submission]).
 - **Raspberry Pi 3 Model B** is the hub host (Mosquitto, hub, console), with nothing wired to its header. A laptop runs the hub instead if the Pi is not ready. Setup: `docs/pi-setup.md` (not yet run on hardware).
