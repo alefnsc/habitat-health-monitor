@@ -62,10 +62,13 @@ python -m nodes.ring replay var/ring/pulls.jsonl
 - `auth` asks for the client id (echoed) and the secret (hidden) when `.env` lacks them, and saves them at mode 600.
 - `port … is in use`: another program holds the callback port. `auth` stops before the browser opens, so no code
   can reach that program. Register a free port and set `RING_REDIRECT_URI` to match.
-- The vendor's page says `400 invalid_request` before sign-in: the authorize URL hands sign-in to a newer identity
-  server and never forwards a `redirect_uri`. It answered 400 to every `redirect_uri` tried on 2026-11-15. Use
-  `auth --use-registered-redirect`: it sends none, so the app's one registered redirect is used. The listener still
-  waits on `RING_REDIRECT_URI`, so register the same value there.
+- The vendor's page says `400 invalid_request` before sign-in: the redirect URI sent does not match the app's
+  registration character for character. With exactly one registered redirect, `auth --use-registered-redirect`
+  sends none, and the vendor uses the registered one. The listener still waits on `RING_REDIRECT_URI`, so register
+  the same value there.
+- The consent page names a different app, or after Allow the browser lands on another service's callback: the
+  client id in `.env` belongs to that other app. Register a separate app for this importer, and never point
+  another app's redirect at this importer.
 - A `403 Forbidden` page from the vendor: the request carried `127.0.0.1`, which the vendor's load balancer blocks.
   Register `localhost` instead (step 1).
 - `no redirect within 300 s`: the browser never came back to `RING_REDIRECT_URI`. Run
