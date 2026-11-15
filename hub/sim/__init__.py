@@ -29,6 +29,8 @@ def load_replay(path: Path) -> list[ReplayLine]:
         if not raw:
             continue
         d = json.loads(raw)
+        if d.get("kind") not in ("reading", "rep"):
+            continue  # a header such as {"kind": "note", ...} says what the file is
         lines.append(ReplayLine(int(d["t_ms"]), d["kind"], d["msg"]))
     return lines
 
