@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 
-const HUB = "http://127.0.0.1:8000";
+const HUB = process.env.HUB_URL ?? "http://127.0.0.1:8000";
 
 export default defineConfig(({ mode }) => ({
   base: mode === "replay" ? (process.env.CONSOLE_BASE ?? "./") : "./",

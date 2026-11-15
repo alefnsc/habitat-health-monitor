@@ -1,6 +1,7 @@
 import { getStatus } from "../api";
 import { COPY } from "../copy";
 import { el } from "../dom";
+import { chipSource } from "../format";
 import { BOARD_LAYOUT, applySnapshot, buildTiles, type Tile } from "../model/status";
 import { board } from "../state";
 import { CREW, WEARER_NODES, currentCrew, setWearer } from "../crew";
@@ -20,7 +21,7 @@ export function tileElement(t: Tile, showCrewChip: boolean, onClick?: (t: Tile) 
   );
   const chips = el("div", { class: "chips" });
   if (t.srcLabel) chips.append(chip(t.srcLabel));
-  if (t.sourceKindLabel) chips.append(chip(t.sourceKindLabel + (t.sourceRef ? ` ${t.sourceRef}` : "")));
+  if (t.sourceKindLabel) chips.append(chip(chipSource(t.sourceKindLabel, t.sourceRef)));
   if (t.devText) chips.append(chip(t.devText));
   for (const b of t.badges) chips.append(chip(b, "estimate"));
   for (const f of t.flags) chips.append(chip(f, "flag"));

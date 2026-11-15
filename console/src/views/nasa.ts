@@ -84,9 +84,9 @@ export function renderNasa(root: HTMLElement): () => void {
       const d = doseBar(ref.dose);
       host.append(el("h2", { text: COPY["nasa.career"] }), el("p", { text: d.effectiveText }));
       if (d.showBar) {
-        const bar = el("div", { class: `dose-bar ${d.statusCls}`, style: "position:relative;height:18px;background:#26313d;border-radius:4px" });
+        const bar = el("div", { class: `dose-bar ${d.statusCls}`, style: "position:relative;height:18px;background:var(--raised);border-radius:4px" });
         bar.append(el("div", { style: `width:${d.pct}%;height:100%;background:var(--${d.statusCls === "ok" ? "ok" : d.statusCls});border-radius:4px` }));
-        for (const m of d.markers) bar.append(el("div", { title: m.label, style: `position:absolute;left:${m.pct}%;top:0;bottom:0;border-left:2px solid #e6ebf0` }));
+        for (const m of d.markers) bar.append(el("div", { title: m.label, style: `position:absolute;left:${m.pct}%;top:0;bottom:0;border-left:2px solid var(--text)` }));
         host.append(bar, ...d.markers.map((m) => el("div", { class: "footnote", text: m.label })));
       }
       host.append(el("p", { text: d.absorbedText }), el("p", { class: "footnote", text: d.profileText }));

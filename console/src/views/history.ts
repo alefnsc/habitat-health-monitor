@@ -8,6 +8,7 @@ import { sourceKindLabel } from "../format";
 import { defaultWindow, moodSleepSeries, thresholdLines, toSeries, type ThresholdRule } from "../model/history";
 import { board } from "../state";
 import { RULES } from "../model/rules";
+import { color } from "../palette";
 
 export { RULES };
 
@@ -28,8 +29,6 @@ export function indFromHash(hash: string): string {
   return seg && (HISTORY_INDS as string[]).concat(MOOD_SLEEP).includes(seg) ? seg : "hr";
 }
 
-const css = (name: string, fallback: string) =>
-  (typeof getComputedStyle !== "undefined" && getComputedStyle(document.documentElement).getPropertyValue(name).trim()) || fallback;
 
 export function renderHistory(root: HTMLElement): () => void {
   let ind = indFromHash(location.hash);
@@ -51,7 +50,7 @@ export function renderHistory(root: HTMLElement): () => void {
   const width = () => Math.max(320, Math.min(1100, (root.clientWidth || 800) - 8));
   const base = (series: uPlot.Series[], data: uPlot.AlignedData, axes?: uPlot.Axis[]) => {
     plot?.destroy();
-    const stroke = css("--text", "#e6ebf0");
+    const stroke = color("text");
     plot = new uPlot(
       {
         width: width(), height: 320, tzDate: (ts) => uPlot.tzDate(new Date(ts * 1000), "UTC"), series,
@@ -77,10 +76,10 @@ export function renderHistory(root: HTMLElement): () => void {
         if (disposed || loadedFor !== token) return;
         const s = moodSleepSeries(mood, sleep);
         base(
-          [{}, { label: "Mood (1-5)", stroke: "#4aa3ff", width: 2, scale: "mood", spanGaps: true },
-            { label: "Sleep (h)", stroke: "#e6a23c", width: 2, scale: "sleep", spanGaps: true }],
+          [{}, { label: "Mood (1-5)", stroke: color("series"), width: 2, scale: "mood", spanGaps: true },
+            { label: "Sleep (h)", stroke: color("series-2"), width: 2, scale: "sleep", spanGaps: true }],
           [s.x, s.mood, s.sleep],
-          [{ stroke: css("--text", "#e6ebf0") }, { scale: "mood", stroke: "#4aa3ff" }, { scale: "sleep", side: 1, stroke: "#e6a23c" }],
+          [{ stroke: color("text") }, { scale: "mood", stroke: color("series") }, { scale: "sleep", side: 1, stroke: color("series-2") }],
         );
         foot.textContent = COPY["history.moodNote"];
         return;
@@ -102,12 +101,12 @@ export function renderHistory(root: HTMLElement): () => void {
     const { lines, skipped } = thresholdLines(RULES, ind as Ind);
     const series: uPlot.Series[] = [
       {},
-      { label: LABEL[ind], stroke: "#4aa3ff", width: 2, spanGaps: true, points: { show: true } },
-      { label: "Not assessed", stroke: "transparent", width: 0, points: { show: true, stroke: "#9aa6b2", fill: "transparent", width: 1.5, size: 7 } },
+      { label: LABEL[ind], stroke: color("series"), width: 2, spanGaps: true, points: { show: true } },
+      { label: "Not assessed", stroke: "transparent", width: 0, points: { show: true, stroke: color("muted"), fill: "transparent", width: 1.5, size: 7 } },
     ];
     const data: (number | null)[][] = [s.x, s.assessed, s.greyed];
     for (const l of lines) {
-      series.push({ label: l.label, stroke: "#d99a00", width: 1, dash: [6, 4], points: { show: false } });
+      series.push({ label: l.label, stroke: color("watch"), width: 1, dash: [6, 4], points: { show: false } });
       data.push(s.x.map(() => l.y));
     }
     base(series, data as unknown as uPlot.AlignedData);
