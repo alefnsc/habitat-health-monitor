@@ -12,7 +12,7 @@
 
 **Where to work:** post-event only. Start from `origin/main` after PR #37 merges. One branch and one draft PR per slice (six PRs). Never edit the bench's main checkout: the live hub runs from it; work in a separate worktree. Run Python commands from the repo root with the project's venv active; run console commands with `npm --prefix console`. Never merge a PR yourself: the team owner merges.
 
-**How this plan was checked:** every code block and diff below was applied task by task to a copy of `origin/main` at `239924d`, and the full Python suites, ruff, the console typecheck, build and vitest were run after each task. The "expected" outputs are from those runs. Tasks 1–12 were checked after each task in the final run; tasks 13–18 were checked after each task in an earlier run (before two tests were added to Tasks 2 and 10), and the final tree was checked again in full. Hub tests go from 871 to 951 (`-m 'not broker'`) and console tests from 261 to 268, with no new failures; the one failure on both sides is `test_firmware_tilt.py::test_readme_safety_and_no_company_name`, which needs a git checkout (test-gap analysis item 7).
+**How this plan was checked:** every code block and diff below was applied task by task to a copy of `origin/main` at `239924d`, and the full Python suites, ruff, the console typecheck, build and vitest were run after each task. The "expected" outputs are from those runs. Tasks 1–12 were checked after each task in the final run; tasks 13–18 were checked after each task in an earlier run (before two tests were added to Tasks 2 and 10), and the trees after Tasks 6, 15 and 18 were checked again in full after the 2026-11-15 decisions (ISS 30-minute blocks, INMET wording). Hub tests go from 871 to 951 (`-m 'not broker'`) and console tests from 261 to 268, with no new failures; the one failure on both sides is `test_firmware_tilt.py::test_readme_safety_and_no_company_name`, which needs a git checkout (test-gap analysis item 7). Task 9 (INMET) has no run output yet: it needs the token and the live server.
 
 ## Global Constraints
 
@@ -37,7 +37,7 @@ The spec left these open or was silent. Each is small; the team owner may change
 
 1. **Text is keys only.** `limits` and `missing` are copy keys worded in `console/src/copy.ts` (spec §5 spoke of "the hub's `limits` strings"); all text stays where the honesty lint already runs.
 2. **Reference feeds are quiet.** The six `iss_*` and `earth_*` indicators form `REFERENCE_INDS`. Ingest treats them like `load_raw` (stored; not assessed, outboxed or pushed) and `status_body` skips them, so `/api/status`, the link and the public page stay exactly as they are (spec §4.3). No threshold rule exists for them, so no judgement is lost.
-3. **ISS units come from the table the hub already serves** (`hub/nasa/isslive_routes.py`: pressure in mmHg, converted to hPa; temperature in C; ppCO2 in mmHg). The Task 5 gate asks the team owner to confirm it.
+3. **ISS units: confirmed by the team owner (2026-11-15).** The table the hub already serves (`hub/nasa/isslive_routes.py`): pressure in mmHg (the feed mislabels it PSI; the capture reads about 758.6), stored in hPa; temperature in C (about 23.5); both ppCO2 items in mmHg (2.4 and 2.95; the feed's PSIA label cannot be right).
 4. **Replay signals never open a self-check.** Synthetic data does not ask a real crew how they feel. Their state changes are still logged.
 5. **Signal prompts need a snapshot.** `PromptService.create` refuses `signal_cabin` and `signal_body` without a `trigger`, so `POST /api/prompts` cannot make one by hand.
 6. **No prompts screen.** The console has none today (the nav item says "built in a later task"), so the spec's "self-check popup" is a line on the signal's own card: "A self-check is open for this signal." A prompts screen is out of scope.
@@ -47,6 +47,8 @@ The spec left these open or was silent. Each is small; the team owner may change
 10. **`body_mass_30d` uses the global trend rule** (≥ 10 days and 75 % of 30 days, so 23 days with a weigh-in). Fewer weigh-ins give "not enough data". The panel's arithmetic weigh-in line is unchanged.
 11. **Both ISS CO2 items are stored as `iss_ppco2`**, as the spec says; the ISS trend's limit line names "the lab and Node 3 ppCO2 items together".
 12. **The weather importer refuses to fetch** until the provider adapter (Task 9) exists.
+13. **ISS ppCO2 uses 30-minute blocks** (team owner, 2026-11-15): ISS Live pushes a value only when it changes (2 updates in the 13-minute capture), so 10-minute blocks would often be empty. Twelve blocks over 6 h keep n ≥ 10 and 75 % coverage; no value is repeated or filled.
+14. **The provider is INMET automatic stations** (team owner, 2026-11-15), not a weather model: observed, raw, unvalidated hourly data from the nearest public station. Open-Meteo was dropped because its licence asks for a credit link next to the displayed data, against the vendor-free console text. The station's code stays in `.env` like the location.
 
 ## File map
 
@@ -237,7 +239,7 @@ Expected (first error and summary):
 
 ```text
 E   ModuleNotFoundError: No module named 'hub.signals'
-1 error in 0.15s
+1 error in 0.11s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -709,7 +711,7 @@ Expected (first error and summary):
 
 ```text
 E   ModuleNotFoundError: No module named 'hub.signals.engine'
-1 error in 0.07s
+1 error in 0.11s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -1486,7 +1488,7 @@ Expected (first error and summary):
 
 ```text
 E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
-1 failed, 1 warning in 0.38s
+1 failed, 1 warning in 0.40s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -1950,25 +1952,23 @@ gh pr create --draft --base main --title "feat(signals): D45 engine, API and rep
 
 ## Slice 3: reference feeds, ISS storage and the weather importer (PR 3)
 
-Branch `feat/d45-reference-feeds`. Starts with a gate: the team owner confirms the ISS units and picks the weather
-provider (spec §13). Tasks 6–8 do not depend on the provider; Task 9 does.
+Branch `feat/d45-reference-feeds`. The ISS units and the provider (INMET) were decided on 2026-11-15
+(spec §13). Tasks 6–8 can start at once; Task 9 waits for the team owner's INMET token.
 
-### Task 5: Gate: the team owner confirms the ISS units and picks the weather provider
+### Task 5: Decided: ISS units and the weather provider (record only)
 
-This is a checkpoint, not code. Tasks 6–8 can start before it closes; Task 7's units and Task 9 cannot finish
-without it.
+Decided on 2026-11-15; nothing to build. Record it in the slice-3 PR description.
 
-- [ ] **Step 1: Ask the team owner two questions** (spec §13), in the slice-3 PR description or in chat:
-  1. "The hub already serves ISS cabin pressure as mmHg (the feed labels it PSI), temperature as °C and both
-     ppCO2 items as mmHg (`hub/nasa/isslive_routes.py` `UNITS`). Signals will store pressure in hPa from that
-     mmHg value. Confirm, or give the units to use."
-  2. "Which outdoor weather provider should `nodes/weather` use? It must be keyless or use a key in `.env`, serve
-     observed hourly temperature, RH and pressure for a coarse lat/lon, and have terms that allow this use."
-- [ ] **Step 2: Record the answers** in the slice-3 PR description. If the units differ from the table, change
-  `IND_FOR` / `to_hub_unit` in Task 7 and its tests to match, and update the `ISS Live` entry in
-  `DATA_SOURCES.md`.
-- [ ] **Step 3: Read the chosen provider's documentation** before Task 9 (endpoint, parameters, units, rate limits,
-  terms, attribution). Do not guess field names.
+- [ ] **Step 1: Copy these decisions into the slice-3 PR description**:
+  - ISS units confirmed: pressure mmHg → stored hPa (×1.333224), temperature C, both ppCO2 items mmHg. The capture
+    `data/nasa/isslive_capture.jsonl` reads 758.6, 23.3–23.8, 2.44 and 2.95.
+  - `iss_ppco2_6h` uses 30-minute blocks (decision 13); already in Task 6's catalogue.
+  - Outdoor provider: INMET automatic stations (decision 14). The card text stays vendor-free ("Earth reference,
+    outdoor"); INMET is named in `DATA_SOURCES.md` only.
+- [ ] **Step 2: The team owner requests the INMET token.** This is the team owner's own action (an e-mail from their
+  own address to INMET's registration desk, `cadastro.act@inmet.gov.br`, per the INMET.jl README; no official
+  manual page was found on 2026-11-15). The token goes into `.env` as `INMET_TOKEN` and is never committed, logged or
+  pasted into chat. Task 9 waits for it; Tasks 6–8 do not.
 
 ### Task 6: Contract: reference feeds, quiet and off /api/status
 
@@ -2115,7 +2115,7 @@ Expected (first error and summary):
 
 ```text
 E   ImportError: cannot import name 'REFERENCE_INDS' from 'hub.contract' (hub/contract.py)
-1 error in 0.08s
+1 error in 0.09s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -2125,12 +2125,13 @@ Modify `hub/signals/catalogue.py`:
 ```diff
 --- a/hub/signals/catalogue.py
 +++ b/hub/signals/catalogue.py
-@@ -64,6 +64,9 @@
+@@ -64,6 +64,10 @@
           can_trigger=True, limits=(RING,)),
      Spec("spo2_baseline", "baseline", "night_value", "spo2", 14 * D, None, 7, 0.0, True,
           can_trigger=True, side="low", limits=(RING,)),
 +    # slice 3: ISS Live stored as readings
-+    Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 10 * MIN, 10, 0.75, False,
++    # 30-minute blocks: ISS Live pushes a value only when it changes (team owner, 2026-11-15).
++    Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 30 * MIN, 10, 0.75, False,
 +         limits=(INDEPENDENCE, ISS)),
  )  # fmt: skip
  
@@ -2259,7 +2260,7 @@ git commit -m "feat(contract): quiet reference feeds (ISS and Earth) for D45 sig
 
 ### Task 7: ISS Live items stored as readings
 
-Each fresh ISS Live item update becomes one internal reading, at most one per item per minute. Units come from the table the ISS route already serves (confirmed at the Task 5 gate).
+Each fresh ISS Live item update becomes one internal reading, at most one per item per minute. Units come from the table the ISS route already serves, confirmed by the team owner (decision 3).
 
 **Files:**
 - Create: `hub/nasa/iss_store.py`
@@ -2340,7 +2341,7 @@ Expected (first error and summary):
 
 ```text
 E   ModuleNotFoundError: No module named 'hub.nasa.iss_store'
-1 error in 0.09s
+1 error in 0.08s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -2627,7 +2628,7 @@ Expected (first error and summary):
 
 ```text
 E   ModuleNotFoundError: No module named 'nodes.weather.__main__'
-1 error in 0.11s
+1 error in 0.06s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -2875,7 +2876,7 @@ Modify `DATA_SOURCES.md`:
 ```diff
 --- a/DATA_SOURCES.md
 +++ b/DATA_SOURCES.md
-@@ -100,3 +100,15 @@
+@@ -100,3 +100,17 @@
  - Committed file: `data/replay/ring-synthetic-nights.jsonl`, a **synthetic** pull (invented values in the vendor's field layout, labelled so on its first line). Real pulls are saved to `var/ring/pulls.jsonl` (mode 600, git-ignored) and are never committed.
  - Use: delayed cloud sync of vitals. A pull is `src hobby` with its true age; a replay is `src replay`, shown as "Replay (recorded)". The habitat core never calls the cloud; the importer is a separate process that posts to `POST /api/readings`.
  - Without it: the vitals tiles stay empty; the synthetic replay keeps the demo working with no network.
@@ -2887,9 +2888,11 @@ Modify `DATA_SOURCES.md`:
 +- Importer: `python -m nodes.weather pull --hours 48`, a separate process like the ring importer. The habitat hub
 +  never calls the internet.
 +- Location: a coarse grid cell (1 decimal, about 11 km) from `WEATHER_LAT` and `WEATHER_LON` in `.env`
-+  (git-ignored). It is never committed, posted, logged or shown.
-+- Provider: chosen by the team owner at the D45 plan's Task 5 gate. Its name, endpoint, terms and access date go
-+  here when the adapter lands (Task 9). Until then `nodes/weather` refuses to fetch.
++  (git-ignored), used only to pick the nearest station. The cell and the station code are never committed, posted,
++  logged or shown.
++- Provider: INMET (Instituto Nacional de Meteorologia) automatic stations, chosen by the team owner on 2026-11-15.
++  Endpoint, token, fields, terms and access date go here when the adapter lands (D45 plan, Task 9). Until then
++  `nodes/weather` refuses to fetch.
 +- Without it: the "side by side" card says not enough data; nothing else changes.
 ```
 
@@ -2943,23 +2946,40 @@ git add .env.example DATA_SOURCES.md data/replay/signals-synthetic-28d.jsonl hub
 git commit -m "feat(weather): outdoor reference importer (provider seam) and Earth lines in the replay"
 ```
 
-### Task 9: Gate-dependent: the chosen weather provider's adapter
+### Task 9: The INMET station adapter (after the token arrives)
 
-Depends on the Task 5 answer. The provider's own fields decide the parsing, so this task fixes the shape and the
-tests, and the names come from its documentation.
+Needs the token from Task 5. INMET publishes no API manual online (checked 2026-11-15); the facts below come from
+the INMET.jl client (MIT, `JuliaClimate/INMET.jl`) and INMET's portal, and **Step 1 checks every one of them against
+the live server first**. Change the code to match what the server returns, not the other way round.
+
+Facts to check (from INMET.jl and the portal):
+
+| Item | Expected |
+|---|---|
+| Station list | `GET https://apitempo.inmet.gov.br/estacoes/T` (automatic stations), no token; fields `CD_ESTACAO`, `VL_LATITUDE`, `VL_LONGITUDE` |
+| Hourly data | `GET https://apitempo.inmet.gov.br/token/estacao/{YYYY-MM-DD}/{YYYY-MM-DD}/{CD_ESTACAO}/{token}` (INMET.jl builds it with an empty segment, `estacao//`; check which the server accepts) |
+| Time | `DT_MEDICAO` (`2026-11-20`) and `HR_MEDICAO` (`1200`), UTC per the portal |
+| Values | strings: `TEM_INS` (°C), `UMD_INS` (%), `PRE_INS` (station pressure, mbar = hPa) |
+| Missing | `null`; the portal also lists `9999`, `"Null"` and empty fields |
+| Window | the portal keeps the last 90 days of hourly data; the importer asks for 2 days |
 
 **Files:**
-- Create: `nodes/weather/provider_<name>.py` (`<name>`: the provider, lower case; the file name may carry it,
-  console text may not)
-- Create: `nodes/weather/tests/fixtures/<name>-sample.json`
-- Create: `nodes/weather/tests/test_provider.py`
-- Modify: `nodes/weather/provider.py` (`default_provider` returns the adapter)
-- Modify: `DATA_SOURCES.md` (the "Earth weather" entry: name, endpoint, terms, access date)
+- Create: `nodes/weather/provider_inmet.py`
+- Create: `nodes/weather/tests/fixtures/inmet-sample.json`
+- Create: `nodes/weather/tests/test_provider_inmet.py`
+- Modify: `nodes/weather/provider.py` (`default_provider` returns the INMET adapter when `WEATHER_STATION` and `INMET_TOKEN` are set)
+- Modify: `nodes/weather/__main__.py` (a `stations` command: the 3 nearest automatic stations to the coarse cell, printed as code and distance in km only)
+- Modify: `.env.example` (`WEATHER_STATION=` and `INMET_TOKEN=`, empty)
+- Modify: `DATA_SOURCES.md` (the "Earth weather" entry: endpoints, fields, units, missing values, access date, "raw, unvalidated")
 
-- [ ] **Step 1: Record one real response as the fixture**, using the coarse cell, then **delete every location field**
-  (latitude, longitude, elevation, place or station names, time-zone names that name the place) before saving it.
-  Keep only the hourly arrays and their units.
-- [ ] **Step 2: Write the failing test**
+- [ ] **Step 1: Check the live server** with the token in `.env` (never on the command line, where it lands in shell
+  history): fetch the station list and two days of one station, and compare the field names, time format and
+  missing values with the table. Fix the table in this plan's PR if anything differs.
+- [ ] **Step 2: Save one real response as the fixture**, then strip every location field before saving it:
+  `VL_LATITUDE`, `VL_LONGITUDE`, `VL_ALTITUDE`, `DC_NOME`, `UF`, and replace `CD_ESTACAO` with `"X000"`. Keep only the
+  time and value fields. Include at least one hour with a `null` value; if none occurs, set one by hand and say so in
+  the test.
+- [ ] **Step 3: Write the failing tests**
 
 ```python
 import json
@@ -2967,41 +2987,57 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from nodes.weather.mapper import HourRow
-from nodes.weather.provider_NAME import parse  # replace NAME
+from nodes.weather.provider_inmet import parse
 
-FIX = Path(__file__).parent / "fixtures" / "NAME-sample.json"
-
-
-def test_sample_parses_to_hour_rows():
-    rows = parse(json.loads(FIX.read_text()))
-    assert rows and all(isinstance(r, HourRow) and r.t.tzinfo is not None for r in rows)
-    assert [r.t for r in rows] == sorted(r.t for r in rows)
+FIX = Path(__file__).parent / "fixtures" / "inmet-sample.json"
 
 
-def test_missing_values_are_none_not_zero():
-    data = json.loads(FIX.read_text())
-    # blank one value in the provider's own layout, then check it parses to None
-    ...  # write this from the provider's field names, then remove this line
+def rows():
+    return parse(json.loads(FIX.read_text(encoding="utf-8")))
+
+
+def test_sample_parses_to_utc_hour_rows_in_order():
+    rs = rows()
+    assert rs and all(isinstance(r, HourRow) and r.t.tzinfo == UTC for r in rs)
+    assert [r.t for r in rs] == sorted(r.t for r in rs)
+
+
+def test_values_and_units():
+    r = next(r for r in rows() if r.temp_c is not None)
+    assert -90 < r.temp_c < 60 and 0 <= r.rh_pct <= 100 and 850 < r.p_hpa < 1090
+
+
+def test_missing_markers_become_none_never_zero():
+    data = [{"DT_MEDICAO": "2026-11-20", "HR_MEDICAO": "1200", "TEM_INS": None, "UMD_INS": "9999",
+             "PRE_INS": ""}]  # fmt: skip
+    [r] = parse(data)
+    assert r.t == datetime(2026, 11, 20, 12, tzinfo=UTC)
+    assert (r.temp_c, r.rh_pct, r.p_hpa) == (None, None, None)
 
 
 def test_the_fixture_holds_no_location():
-    text = FIX.read_text().lower()
-    for word in ("latitude", "longitude", "lat", "lon", "elevation"):
-        assert f'"{word}"' not in text
+    text = FIX.read_text(encoding="utf-8")
+    for key in ("VL_LATITUDE", "VL_LONGITUDE", "VL_ALTITUDE", "DC_NOME", '"UF"'):
+        assert key not in text
 ```
 
-- [ ] **Step 3: Run it and see it fail** (`python -m pytest -q nodes/weather/tests/test_provider.py`): `ModuleNotFoundError`.
-- [ ] **Step 4: Write the adapter**: a class with `hours(start, end) -> list[HourRow]` over `httpx` (timeout 10 s, a
-  generic `User-Agent` such as `habitat-hub-weather/1` with no personal data), and a pure `parse(data) -> list[HourRow]`
-  that converts units to C, % and hPa and returns observed hours only. Then make `default_provider` return it.
-- [ ] **Step 5: Run the tests**, including `test_the_bench_location_is_in_no_tracked_file`, and see them pass.
-- [ ] **Step 6: Dry run** against the real provider: `python -m nodes.weather pull --hours 6 --dry-run`. It prints
-  counts only, never the location.
-- [ ] **Step 7: Fill the `DATA_SOURCES.md` entry** (name, endpoint, terms, access date) and commit:
+- [ ] **Step 4: Run them and see them fail** (`python -m pytest -q nodes/weather/tests/test_provider_inmet.py`):
+  `ModuleNotFoundError: No module named 'nodes.weather.provider_inmet'`.
+- [ ] **Step 5: Write the adapter**: a pure `parse(data: list[dict]) -> list[HourRow]` (UTC times from `DT_MEDICAO` and
+  `HR_MEDICAO`; `None`, `""`, `"Null"` and `"9999"` → `None`; strings to floats; sorted), and
+  `InmetProvider(station, token, http).hours(start, end)` doing one GET for the dates that cover `[start, end]` and
+  returning only rows in that range. Use `httpx` with a 10 s timeout and a generic `User-Agent` such as
+  `habitat-hub-weather/1`. The token is part of the URL path, so **never log or print the URL**: on an HTTP error, raise
+  with the status code only. Then make `default_provider` return `InmetProvider` when both `.env` values are set.
+- [ ] **Step 6: Run the tests** (the new ones and `nodes/weather/tests`) and see them pass, including
+  `test_the_bench_location_is_in_no_tracked_file`. Extend that test to check the `WEATHER_STATION` and `INMET_TOKEN`
+  values too.
+- [ ] **Step 7: Dry run** against the server: `python -m nodes.weather pull --hours 6 --dry-run` prints counts only.
+- [ ] **Step 8: Fill the `DATA_SOURCES.md` entry** and commit:
 
 ```bash
-git add nodes/weather DATA_SOURCES.md
-git commit -m "feat(weather): adapter for the chosen outdoor weather provider"
+git add nodes/weather .env.example DATA_SOURCES.md
+git commit -m "feat(weather): INMET automatic-station adapter (raw hourly data, token in .env)"
 ```
 
 - [ ] **Open the slice's draft PR** (never merge it; the team owner merges):
@@ -3102,7 +3138,7 @@ Expected (first error and summary):
 
 ```text
 E       KeyError: 'water_14d'
-1 failed in 0.13s
+1 failed in 0.08s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -3167,9 +3203,9 @@ Modify `hub/signals/catalogue.py`:
 ```diff
 --- a/hub/signals/catalogue.py
 +++ b/hub/signals/catalogue.py
-@@ -67,6 +67,11 @@
-     # slice 3: ISS Live stored as readings
-     Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 10 * MIN, 10, 0.75, False,
+@@ -68,6 +68,11 @@
+     # 30-minute blocks: ISS Live pushes a value only when it changes (team owner, 2026-11-15).
+     Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 30 * MIN, 10, 0.75, False,
           limits=(INDEPENDENCE, ISS)),
 +    # slice 4: food, body mass, lift and cross-references
 +    Spec("body_mass_30d", "trend", "daily_last", "body_mass", 30 * D, None, 10, 0.75, True,
@@ -3309,7 +3345,7 @@ Expected (first error and summary):
 
 ```text
 E       KeyError: 'lift_within_set'
-1 failed in 0.07s
+1 failed in 0.09s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -3475,7 +3511,7 @@ Modify `hub/signals/catalogue.py`:
 ```diff
 --- a/hub/signals/catalogue.py
 +++ b/hub/signals/catalogue.py
-@@ -72,6 +72,12 @@
+@@ -73,6 +73,12 @@
           limits=(INDEPENDENCE, LOGGED_ONLY)),
      Spec("water_14d", "trend", "daily_sum", "intake_water_ml", 14 * D, None, 10, 0.75, True,
           limits=(INDEPENDENCE, LOGGED_ONLY)),
@@ -3669,7 +3705,7 @@ Expected (first error and summary):
 
 ```text
 E       KeyError: 'last_meal_vs_sleep'
-1 failed in 0.13s
+1 failed in 0.11s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -3793,7 +3829,7 @@ Modify `hub/signals/catalogue.py`:
 ```diff
 --- a/hub/signals/catalogue.py
 +++ b/hub/signals/catalogue.py
-@@ -78,6 +78,14 @@
+@@ -79,6 +79,14 @@
           limits=(INDEPENDENCE, CAMERA, NOT_FOOD), unit="kg_m"),
      Spec("lift_tilt_agreement", "baseline", "lift_tilt", None, 60 * D, None, 7, 0.0, True,
           side="high", limits=(RIG_CHECK,), unit="ms"),
@@ -3919,7 +3955,7 @@ Expected (first error and summary):
 
 ```text
 E       AssertionError: assert {'cabin_trigg...ost_exercise'} == {'cabin_trigg...signal_cabin'}
-1 failed, 7 passed, 1 warning in 0.61s
+1 failed, 7 passed, 1 warning in 1.14s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -4141,7 +4177,7 @@ Expected (first error and summary):
 
 ```text
 E   ModuleNotFoundError: No module named 'hub.signals.trigger'
-1 error in 0.14s
+1 error in 0.18s
 ```
 
 - [ ] **Step 3: Write the implementation**
@@ -4874,7 +4910,7 @@ Modify `console/src/copy.ts`:
 +  "signals.limit.restOnly": "Heart-rate samples from rest and sleep only, one every 5 minutes.",
 +  "signals.limit.ownData": "Your own data only, over a small number of days.",
 +  "signals.limit.issTelemetry": "ISS public telemetry: the lab and Node 3 ppCO2 items together.",
-+  "signals.limit.earthReference": "Earth reference, outdoor: a coarse grid cell, not the bench itself.",
++  "signals.limit.earthReference": "Earth reference, outdoor: the nearest public weather station's raw hourly data, not quality-checked by the weather service, and not the bench itself.",
 +  "signals.limit.neighbourHours": "Hours next to each other are not independent, so the interval is too narrow.",
 +  "signals.limit.cameraEstimate": "Camera estimate of work on the load, divided by g so sets at any gravity compare.",
 +  "signals.limit.notFoodEnergy": "Mechanical work on the load. It is never compared with food energy.",
@@ -5439,7 +5475,7 @@ gh pr create --draft --base main --title "feat(console): D45 signals screen and 
 | Spec section | Where |
 |---|---|
 | §4.1 package, feature gate, routes | Tasks 2, 3 |
-| §4.2 ISS Live stored; Earth weather importer; contract additions | Tasks 6, 7, 8, 9 (gate 5) |
+| §4.2 ISS Live stored; Earth weather importer; contract additions | Tasks 6, 7, 8, 9 |
 | §4.3 nothing else changes | Task 6 (quiet feeds, off `/api/status`); Task 3 test (feature off = 404) |
 | §5 signal object and honesty rules 1–7 | Task 2 (object, `not_enough_data`, `missing`), Task 15 (wording, `rulePrediction`), Tasks 2/11/12 (replay never pools), Task 12 (no energy arithmetic) |
 | §6.1 Mann-Kendall + Sen, blocking, minimums | Tasks 1, 2 |
@@ -5454,7 +5490,7 @@ gh pr create --draft --base main --title "feat(console): D45 signals screen and 
 | §10 testing | every task's tests; Task 18 |
 | §11 build order (6 slices) | Slices 1–6 |
 | §12 out of scope | not built: link digest, public signals, camera features, dose signals, kcal links, ML, assessment status, tilt lag correction |
-| §13 open points | Task 5 gate, Task 9 |
+| §13 open points | decided 2026-11-15: Task 5 (record), Task 9 (INMET adapter) |
 
 ## Execution notes
 
@@ -5465,3 +5501,21 @@ gh pr create --draft --base main --title "feat(console): D45 signals screen and 
 - Always run pytest with `-m 'not broker'`: the broker tests talk to a real Mosquitto, never the bench broker.
 - The replay file is generated; regenerate it with the command in Task 4, never edit it by hand. Its test compares the
   committed bytes with the generator.
+
+## Addendum: changes made while implementing slices 1–3 (2026-11-15)
+
+Slices 1–3 are open as draft PRs alefnsc/habitat-health-monitor#43, #44 and #45. An adversarial review (5 lenses,
+3 skeptics per finding, 16 of 28 findings confirmed) led to these changes. Later slices must follow them where they
+differ from the code blocks above.
+
+- **Weather provider:** an open hourly weather API (named in `DATA_SOURCES.md`), not INMET: no token. The adapter is
+  `nodes/weather/hourly_api.py`, and its URL comes from `WEATHER_API_URL` in `.env`. It replaces Task 9's INMET
+  steps. The past hours are weather-model values, so Task 15's `signals.limit.earthReference` copy should read
+  "Earth reference, outdoor (weather model), not the bench itself". The API's licence asks for a credit next to
+  displayed data: where it goes on the `cabin_vs_earth` card is the team owner's call at Task 16.
+- **ISS:** Node 3 ppCO2 is stored as its own indicator `iss_ppco2_node3`. `iss_ppco2` and `iss_ppco2_6h` are the
+  US Lab only. Task 15's `signals.limit.issTelemetry` copy should read "ISS public telemetry: the US Lab ppCO2
+  item". `REFERENCE_INDS` has seven indicators.
+- **Nights** (`hub/signals/inputs.py`): nights and nightly SpO2 come from the ring only (`dev RING`).
+  `rest_hr_14n` keeps the last 14 local nights.
+- **Tests:** `nodes/weather/tests` is in pytest `testpaths`. Weather tests use invented coordinates.
