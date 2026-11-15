@@ -1,0 +1,37 @@
+# Build context for the Dockerfile (D47). Secrets and local state never reach the build.
+# hub/tests/test_docker_files.py checks the first three groups.
+
+# Secrets
+.env
+**/.env
+hub/mosquitto/passwd
+firmware/**/secrets.h
+
+# Local state: databases, boot counters, caches
+var/
+**/var/
+.state/
+**/.state/
+
+# Environments and build output
+.venv/
+**/node_modules/
+vendor/**/node_modules/
+**/dist/
+**/dist-replay/
+camera/public/mediapipe/
+**/__pycache__/
+**/*.egg-info/
+build/
+.pytest_cache/
+.ruff_cache/
+.vercel/
+
+# Not used by the image
+.git
+.github/
+.claude/
+docs/
+firmware/
+api/
+**/.DS_Store
