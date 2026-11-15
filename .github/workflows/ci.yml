@@ -1,0 +1,114 @@
+name: CI
+
+# Offline tests for the hub, the web apps and the firmware. No secrets, no hardware, no bench broker.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: pip install -e '.[dev,analysis]'
+      - run: ruff check .
+      # The firmware host tests inside pytest skip here (no ArduinoJson); the firmware job runs them.
+      - run: pytest -m 'not broker' -q
+      # A throwaway broker on its own port: the broker test refuses 1883 by design.
+      - name: Broker round trip (throwaway Mosquitto)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q mosquitto mosquitto-clients
+          mosquitto -p 18830 -d
+          sleep 1
+          HUB_TEST_BROKER_PORT=18830 pytest -m broker -q
+
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [console, camera, ground]
+    defaults:
+      run:
+        working-directory: ${{ matrix.app }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.app }}/package-lock.json
+      - run: npm ci
+      # Build first: the offline tests read dist/.
+      - run: npm run build
+        if: matrix.app != 'ground'
+      - run: npx vitest run
+
+  firmware:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ARDUINO_BOARD_MANAGER_ADDITIONAL_URLS: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+      ARDUINOJSON_SRC: /home/runner/Arduino/libraries/ArduinoJson/src
+      SPARKFUN_SRC: /home/runner/Arduino/libraries/SparkFun_MAX3010x_Pulse_and_Proximity_Sensor_Library/src
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/setup-arduino-cli@v2
+        with:
+          version: 1.5.1
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.arduino15/packages
+            ~/.arduino15/staging
+            ~/Arduino/libraries
+          key: arduino-avr188-esp8266312-${{ hashFiles('firmware/**/libraries.txt', '.github/workflows/ci.yml') }}
+      - name: Cores and libraries (pinned, see firmware/README.md)
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install arduino:avr@1.8.8 esp8266:esp8266@3.1.2
+          arduino-cli lib install "ArduinoJson@7.4.3" "MQTT@2.5.3" "DHT sensor library@1.4.7" \
+            "Adafruit Unified Sensor@1.1.15" "SparkFun MAX3010x Pulse and Proximity Sensor Library@1.1.2"
+      - name: HabitatNode library host tests
+        run: |
+          H=firmware/libraries/HabitatNode
+          mkdir -p firmware/build
+          c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_ring.cpp -o firmware/build/test_ring && firmware/build/test_ring
+          c++ -std=c++17 -Wall -Werror -I $H/src -I "$ARDUINOJSON_SRC" $H/src/ReadingFormat.cpp $H/test/test_format.cpp -o firmware/build/test_format && firmware/build/test_format
+          c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_boot.cpp -o firmware/build/test_boot && firmware/build/test_boot
+      - name: Sketch host tests
+        run: |
+          firmware/exercise-uno/test/run_host_tests.sh
+          firmware/tilt-esp8266/test/run_host_tests.sh
+          firmware/vitals-esp32/test/run_host_tests.sh
+      - name: Wokwi chip tests and copy checks
+        run: |
+          firmware/wokwi/full-bench/test/run_chip_tests.sh
+          firmware/wokwi/vitals-esp32/test/run_chip_tests.sh
+          for s in firmware/wokwi/*/check_sync.sh; do "$s"; done
+      - name: Compile the UNO sketch (D40 defaults) and its Wokwi twin
+        run: |
+          arduino-cli compile --fqbn arduino:avr:uno firmware/exercise-uno
+          firmware/wokwi/uno-rig/build.sh
+      - name: Compile the tilt-1 sketch for the NodeMCU, with the example secrets
+        run: |
+          cp firmware/tilt-esp8266/secrets.example.h firmware/tilt-esp8266/secrets.h
+          arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
