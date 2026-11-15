@@ -71,3 +71,23 @@ The `offset_ms` that `GET /api/reps` reports (midpoint of the switch interval mi
     arduino-cli compile --fqbn esp8266:esp8266:nodemcuv2 --library firmware/libraries/HabitatNode firmware/tilt-esp8266
 
 Host tests (no board): `firmware/tilt-esp8266/test/run_host_tests.sh` prints `ok`.
+
+## Broker address and the serial log
+
+`MQTT_HOST` takes an IP or a hostname. HabitatNode resolves it again before every reconnect attempt, so a hostname
+such as the laptop's `.local` name follows a DHCP change. (Bench 15/11: the laptop moved from .6 to .10, and the node,
+built with the old IP, dropped 280 readings.) The ESP8266 core's lwIP is built with mDNS queries on
+(`LWIP_DNS_SUPPORT_MDNS_QUERIES 1`), but a `.local` name has not been tried on the bench board yet. The IP is still
+the safe choice. A lookup waits at most 2 s.
+
+At 115200 baud, every failed attempt prints one line, and never the user name or the password:
+
+    # mqtt fail rc=0 err=-3 host=192.168.0.6 ip=192.168.0.6 port=1883 retry_ms=4000   nobody answers there
+    # mqtt fail rc=5 err=-10 host=... ip=... port=1883 retry_ms=1000                    broker refused: user or ACL
+    # mqtt fail dns host=my-laptop.local port=1883 retry_ms=2000                       name not resolved: use the IP
+    # mqtt ok host=my-laptop.local ip=192.168.0.10 port=1883
+
+`rc` is the broker's CONNACK code (4 = bad user name or password, 5 = not authorised). `err` is the client error
+(-3 = could not connect, -4 = timeout, -10 = connection denied). The retry wait doubles from 1 s to 30 s and goes
+back to 1 s after a success. While the link is down, the ring keeps the newest 32 readings; `# ring dropped=N` counts
+the ones overwritten.

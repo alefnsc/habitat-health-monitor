@@ -142,10 +142,13 @@ AJ="$HOME/Documents/Arduino/libraries/ArduinoJson/src"   # ~/Arduino/libraries o
 c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_ring.cpp -o firmware/build/test_ring && firmware/build/test_ring
 c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test/test_format.cpp -o firmware/build/test_format && firmware/build/test_format
 c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_boot.cpp -o firmware/build/test_boot && firmware/build/test_boot
+c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test/test_link.cpp -o firmware/build/test_link && firmware/build/test_link
 ```
 
 Each prints `ok`. `test_boot` runs the boot counter (`BootLog.h`, an append-only log in one flash sector) against a NOR
-flash model with torn and refused writes; the tilt node's `run_host_tests.sh` runs it too.
+flash model with torn and refused writes; the tilt node's `run_host_tests.sh` runs it too. `test_link` drives the
+MQTT half of `HabitatNode::loop()` (`MqttLink.h`: reconnect, backoff, the `# mqtt fail` line, the drain) with a fake
+client. `hub/tests/test_firmware_habitatnode.py` runs all four when a compiler and ArduinoJson are installed.
 
 UNO I/O board (`exercise-uno`) host tests, builds and the Wokwi twin:
 
