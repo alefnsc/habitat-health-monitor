@@ -148,7 +148,9 @@ export interface LaneSeries {
 export function laneSeries(readings: StoredReading[], rules: ThresholdRule[], window: LaneWindow): LaneSeries {
   const rows = [...readings].sort((a, b) => ts(a) - ts(b));
   const raw = rows.map((r) => (flagged(r) ? null : r.val));
-  const mean = window === "mean_1h" ? trailingMean(rows) : null;
+  // Bucketed rows are a subset, so the 1-hour mean comes from the hub, which saw every reading.
+  const hubMean = rows.some((r) => r.mean_1h !== undefined);
+  const mean = window !== "mean_1h" ? null : hubMean ? rows.map((r) => r.mean_1h ?? null) : trailingMean(rows);
   const judged = mean ?? raw;
   const pick = (s: LaneStatus) => judged.map((v) => (v !== null && statusOf(rules, v) === s ? v : null));
   return {

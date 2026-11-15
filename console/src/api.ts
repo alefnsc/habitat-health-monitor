@@ -79,9 +79,9 @@ export async function getStatus(crew?: CrewId): Promise<StatusBody> {
 
 export async function getReadings(
   ind: Ind,
-  opts: { since?: string; limit?: number; crew?: CrewId } = {},
+  opts: { since?: string; limit?: number; crew?: CrewId; bucket_s?: number } = {},
 ): Promise<StoredReading[]> {
-  const json = await get("/api/readings", { ind, since: opts.since, limit: opts.limit, crew: opts.crew });
+  const json = await get("/api/readings", { ind, since: opts.since, limit: opts.limit, crew: opts.crew, bucket_s: opts.bucket_s });
   if (!Array.isArray(json)) throw new ApiError(0, "unexpected response from /api/readings");
   return json as StoredReading[];
 }

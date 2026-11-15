@@ -12,13 +12,14 @@ import {
 import { RULES } from "../model/rules";
 import { alpha, color } from "../palette";
 
-const WINDOWS = [
-  { key: "1h", hours: 1 },
-  { key: "24h", hours: 24 },
-  { key: "7d", hours: 7 * 24 },
+// With bucket_s the hub keeps a few stored readings per bucket, so the whole window fits under LIMIT.
+export const WINDOWS = [
+  { key: "1h", hours: 1, bucketS: 10 },
+  { key: "24h", hours: 24, bucketS: 180 },
+  { key: "7d", hours: 7 * 24, bucketS: 1200 },
 ] as const;
 const REFRESH_MS = 10_000;
-const LIMIT = 5000;
+export const LIMIT = 5000;
 const SYNC_KEY = "lanes";
 const fill = (status: string): string | undefined =>
   status === "ok" || status === "watch" || status === "act" ? alpha(color(status), status === "watch" ? 0.22 : 0.2) : undefined;
@@ -130,6 +131,12 @@ export function laneOptions(p: Prepared, o: { width: number; height: number; sho
   };
 }
 
+/** The bucket step, or a warning when a lane still came back at the cap (a hub without bucket_s). */
+export function footnote(rows: StoredReading[][], bucketS: number): string {
+  if (rows.some((r) => r.length >= LIMIT)) return COPY["lanes.cut"];
+  return COPY["lanes.step"].replace("{s}", bucketS < 60 ? `${bucketS} s` : `${bucketS / 60} min`);
+}
+
 export function renderLanes(root: HTMLElement): () => void {
   let hours: number = WINDOWS[1].hours;
   let plots: uPlot[] = [];
@@ -182,15 +189,16 @@ export function renderLanes(root: HTMLElement): () => void {
     const crew = currentCrew() ?? undefined;
     const sinceS = Date.now() / 1000 - hours * 3600;
     const since = new Date(sinceS * 1000).toISOString();
+    const bucketS = WINDOWS.find((w) => w.hours === hours)!.bucketS;
     try {
       const [rows, sets] = await Promise.all([
-        Promise.all(LANES.filter((l) => l.ind).map((l) => getReadings(l.ind!, { since, limit: LIMIT, crew }))),
+        Promise.all(LANES.filter((l) => l.ind).map((l) => getReadings(l.ind!, { since, limit: LIMIT, crew, bucket_s: bucketS }))),
         loadSets(sinceS, crew),
       ]);
       if (disposed || mine !== token) return;
       let i = 0;
       draw(LANES.map((spec) => (spec.ind ? prepareReadings(spec, rows[i++]) : prepareSets(spec, sets))), [sinceS, Date.now() / 1000]);
-      foot.textContent = "";
+      foot.textContent = footnote(rows, bucketS);
     } catch (e) {
       if (disposed || mine !== token) return;
       foot.textContent = e instanceof Error ? e.message : String(e);

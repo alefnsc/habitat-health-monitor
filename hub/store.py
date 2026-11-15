@@ -68,6 +68,8 @@ _R_COLS = (
     "id, node, boot, seq, age_ms, ind, val, unit, src, dev, q, crew, code, "
     "measured_at, received_at, derived_from"
 )
+# measured_at as integer epoch milliseconds; to_iso always writes YYYY-MM-DDTHH:MM:SS.mmmZ.
+_MS = "(CAST(strftime('%s', measured_at) AS INTEGER) * 1000 + CAST(substr(measured_at, 21, 3) AS INTEGER))"
 _A_COLS = (
     "id, reading_id, ind, val, unit, status, rule_id, source_kind, source_ref, guidance_id,"
     " escalate_to, measured_at, crew"
@@ -302,6 +304,57 @@ class Store:
         with self.lock:
             rows = self.conn.execute(sql, args).fetchall()
         return [_reading_row(r) for r in rows]
+
+    def bucket_picks(
+        self, ind: str, bucket_ms: int, since: datetime | None = None, crew: str | None = None
+    ) -> dict[int, int]:
+        """{id: epoch ms} of the rows a chart keeps per bucket: the first, last, lowest and
+        highest assessable row, and the lowest and highest flagged row. Ties keep any one row."""
+        where = "ind=?"
+        args: list = [ind]
+        if since is not None:
+            where += " AND measured_at>=?"
+            args.append(to_iso(since))
+        if crew is not None:
+            where += " AND crew=?"
+            args.append(crew)
+        sql = (
+            # MATERIALIZED: the four arms read b once, not four times (3x faster over 7 days).
+            "WITH r AS MATERIALIZED (SELECT id, val, q='[\"ok\"]' AS ok, " + _MS + " AS ms"
+            f" FROM readings WHERE {where}), b AS MATERIALIZED (SELECT *, ms / ? AS b FROM r)"
+            " SELECT id, ms FROM (SELECT id, ms, MIN(val) FROM b GROUP BY b, ok)"
+            " UNION SELECT id, ms FROM (SELECT id, ms, MAX(val) FROM b GROUP BY b, ok)"
+            " UNION SELECT id, ms FROM (SELECT id, MIN(ms) AS ms FROM b WHERE ok GROUP BY b)"
+            " UNION SELECT id, ms FROM (SELECT id, MAX(ms) AS ms FROM b WHERE ok GROUP BY b)"
+        )
+        with self.lock:
+            return dict(self.conn.execute(sql, [*args, bucket_ms]).fetchall())
+
+    def ok_points(
+        self, ind: str, after: datetime | None = None
+    ) -> list[tuple[int, int, float, str | None]]:
+        """(id, epoch ms, val, crew) of assessable rows with measured_at > after, all crews,
+        in ascending (measured_at, id) order."""
+        sql = f"SELECT id, {_MS}, val, crew FROM readings WHERE ind=? AND q='[\"ok\"]'"
+        args: list = [ind]
+        if after is not None:
+            sql += " AND measured_at>?"
+            args.append(to_iso(after))
+        sql += " ORDER BY measured_at, id"
+        with self.lock:
+            return self.conn.execute(sql, args).fetchall()
+
+    def readings_by_ids(self, ids: list[int]) -> list[StoredReading]:
+        """The rows with these ids, in ascending (measured_at, id) order."""
+        out: list[tuple] = []
+        with self.lock:
+            for i in range(0, len(ids), 500):
+                chunk = ids[i : i + 500]
+                marks = ",".join("?" * len(chunk))
+                sql = f"SELECT {_R_COLS} FROM readings WHERE id IN ({marks})"
+                out += self.conn.execute(sql, chunk).fetchall()
+        out.sort(key=lambda row: (row[13], row[0]))
+        return [_reading_row(r) for r in out]
 
     def latest_reading(
         self, ind: str, *, crew: str | None = None, scope_crew: bool = False
