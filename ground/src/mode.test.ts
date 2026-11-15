@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { LIVE_BANNER, STALE_MS, decideMode, fetchSummary } from "./mode";
+import { LIVE_BANNER, STALE_MS, decideMode, fetchSummary, liveBanner } from "./mode";
+import { emptyView, reduce } from "./model";
+import type { Arrival } from "./types";
 
 const now = Date.parse("2026-11-14T15:10:00.000Z");
 
@@ -31,7 +33,24 @@ describe("fetchSummary", () => {
   });
 });
 
-it("live banner says synthetic crew data is labelled", () => {
-  expect(LIVE_BANNER).toMatch(/sim-1/);
-  expect(LIVE_BANNER).toMatch(/synthetic/i);
+const withReading = (node: string): Arrival => ({
+  arrival_id: 1, received_at: "2026-11-14T15:00:00.000Z", beacon: null,
+  items: [{ id: 1, kind: "reading", created_at: "z", payload: {
+    node, ind: "hr", val: 70, unit: "bpm", src: "x", q: ["ok"], crew: "crew-a", status: "ok",
+    measured_at: "2026-11-14T15:00:00.000Z",
+  } }],
+});
+
+describe("liveBanner", () => {
+  it("says nothing about synthetic data when none is shown", () => {
+    expect(LIVE_BANNER).not.toMatch(/sim-1|synthetic/i);
+    expect(liveBanner(emptyView())).toBe(LIVE_BANNER);
+    expect(liveBanner(reduce(emptyView(), withReading("cabin-1"), 0))).toBe(LIVE_BANNER);
+  });
+  it("labels sim-1 readings as synthetic when they are shown", () => {
+    const b = liveBanner(reduce(emptyView(), withReading("sim-1"), 0));
+    expect(b.startsWith(LIVE_BANNER)).toBe(true);
+    expect(b).toMatch(/sim-1/);
+    expect(b).toMatch(/synthetic/i);
+  });
 });

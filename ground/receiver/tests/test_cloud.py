@@ -90,3 +90,41 @@ def test_same_shapes_as_local_receiver(tmp_path):
     assert ls.keys() == cs.keys()
     for k in ("stored", "min_id", "max_id", "missing_ids", "arrivals"):
         assert ls[k] == cs[k]
+
+
+def _batches(n: int, pad: int = 400):
+    return [
+        {"beacon": {"state": "contact"}, "items": [
+            {"id": k, "kind": "reading", "created_at": T, "payload": {"ind": "cabin_co2", "note": "x" * pad}}
+        ]}
+        for k in range(1, n + 1)
+    ]
+
+
+def test_arrivals_page_stays_under_byte_budget_and_pages_on():
+    budget = 5_000
+    c = TestClient(create_cloud_app(RedisStore(MemoryKV()), "k", max_response=budget))
+    for b in _batches(40):
+        assert post(c, b).status_code == 200
+    first = c.get("/ground/arrivals?after=0&limit=1000")
+    assert first.status_code == 200 and len(first.content) <= budget
+    assert 1 <= len(first.json()) < 40
+    seen, after = [], 0
+    while page := c.get(f"/ground/arrivals?after={after}&limit=1000").json():
+        seen += [a["arrival_id"] for a in page]
+        after = page[-1]["arrival_id"]
+    assert seen == list(range(1, 41))
+
+
+def test_arrival_bigger_than_budget_still_served_alone():
+    c = TestClient(create_cloud_app(RedisStore(MemoryKV()), "k", max_response=100))
+    for b in _batches(2):
+        post(c, b)
+    assert [a["arrival_id"] for a in c.get("/ground/arrivals?after=0").json()] == [1]
+    assert [a["arrival_id"] for a in c.get("/ground/arrivals?after=1").json()] == [2]
+
+
+def test_default_budget_is_under_the_hosting_cap():
+    from receiver.cloud import MAX_RESPONSE_BYTES
+
+    assert MAX_RESPONSE_BYTES <= 3_000_000

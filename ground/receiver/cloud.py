@@ -15,10 +15,32 @@ from .signing import HEADER, verify
 from .store import utc_now
 
 CACHE = "public, max-age=0, s-maxage=5, stale-while-revalidate=30"
+# The hosting function refuses responses over 4.5 MB; stay well under it.
+MAX_RESPONSE_BYTES = 2_500_000
+
+
+def within_budget(arrivals: list[dict[str, Any]], budget: int) -> list[dict[str, Any]]:
+    """Leading arrivals whose JSON list fits in `budget` bytes (always at least one).
+
+    The client pages on from the last arrival_id until an empty page, so a cut page loses nothing.
+    """
+    out: list[dict[str, Any]] = []
+    size = 2  # the list brackets
+    for a in arrivals:
+        n = len(json.dumps(a, ensure_ascii=False, separators=(",", ":")).encode()) + (1 if out else 0)
+        if out and size + n > budget:
+            break
+        out.append(a)
+        size += n
+    return out
 
 
 def create_cloud_app(
-    store: RedisStore, secret: str, max_body: int = 1_000_000, max_items: int = 1000
+    store: RedisStore,
+    secret: str,
+    max_body: int = 1_000_000,
+    max_items: int = 1000,
+    max_response: int = MAX_RESPONSE_BYTES,
 ) -> FastAPI:
     app = FastAPI(title="Ground segment (public)")
     router = APIRouter()
@@ -50,7 +72,7 @@ def create_cloud_app(
         limit: int = Query(500, ge=1, le=1000),
     ) -> list[dict[str, Any]]:
         response.headers["Cache-Control"] = CACHE
-        return [asdict(a) for a in store.arrivals_after(after, limit)]
+        return within_budget([asdict(a) for a in store.arrivals_after(after, limit)], max_response)
 
     @router.get("/ground/summary")
     def summary(response: Response) -> dict[str, Any]:
