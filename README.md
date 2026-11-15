@@ -40,6 +40,52 @@ Copy `.env.example` to `.env` and fill it in locally. Never commit `.env`, the b
 Settings come from `HUB_*` environment variables (see `.env.example`). Without a broker the HTTP API
 still serves and the MQTT subscriber keeps retrying.
 
+## Run with Docker
+
+Decision D47 (`docs/decisions/2026-11-15-docker-stack-design.md`). One image, built from the `Dockerfile`, runs
+the hub, the link simulator and the local ground receiver; `compose.yaml` adds the Mosquitto broker. You build the
+image yourself: nothing is pushed to a registry. Needs Docker with Compose 2.24 or newer. Build from a clean
+clone: the image copies `data/` as it is.
+
+1. **Broker password file**, `hub/mosquitto/passwd`. It is git-ignored, mounted read-only and never copied into
+   the image. With Mosquitto installed: `mosquitto_passwd -c hub/mosquitto/passwd habitat`. Without it, use the
+   broker image (it asks for the password twice):
+
+   ```bash
+   docker run --rm -it --user "$(id -u):$(id -g)" -v "$PWD/hub/mosquitto:/work" eclipse-mosquitto:2 \
+     mosquitto_passwd -c /work/passwd habitat
+   ```
+
+2. **`.env`**: copy `.env.example` and set `HUB_MQTT_PASS` to the same password. The hub container reads it.
+   Compose sets the broker and linksim addresses, the ports, the database path and the page folders itself, so
+   the `.env` of a native hub works unchanged.
+3. **Start**: `docker compose up -d --build`, then open `http://<host>:8000/`. Logs: `docker compose logs -f hub`.
+   Stop: `docker compose down`. `docker compose down -v` also deletes the databases (the `var` volume).
+
+Synthetic demo: `docker compose --profile sim up -d --build` also runs `python -m hub.sim`, which replays
+`data/replay/l0-synthetic.jsonl` into the hub as node `sim-1` (synthetic data, not measurements) and exits.
+
+Host ports: hub 8000 and broker 1883 on every interface; linksim 8200 and receiver 8100 on 127.0.0.1 only. When a
+native hub or broker already holds them, choose others and a project name of your own:
+`HOST_HUB_PORT=18000 HOST_BROKER_PORT=18830 HOST_LINKSIM_PORT=18200 HOST_RECEIVER_PORT=18100 docker compose -p habitat-try up -d`.
+
+**Serial (the UNO on USB).** Linux only, for example the Pi (`docs/pi-setup.md`): set `HUB_SERIAL_PORT` in `.env`
+(default `/dev/ttyACM0`) and start `hub-serial` instead of `hub`, by naming the services:
+
+```bash
+docker compose --profile serial up -d --build broker hub-serial linksim receiver
+```
+
+Never start `hub` and `hub-serial` together: both want port 8000. Docker Desktop on macOS cannot pass a USB
+device to a container, so on a Mac run the hub natively for serial (`python -m hub`, with
+`HUB_MQTT_HOST=127.0.0.1` and `HUB_LINKSIM_URL=http://127.0.0.1:8200` in `.env`) and the rest in compose:
+
+```bash
+LINKSIM_HUB_URL=http://host.docker.internal:8000 docker compose up -d --build broker linksim receiver
+```
+
+Public uplink from compose: `docs/deploy-public.md`, step 13.
+
 ## Hardware
 
 Wiring maps (DRAFT [confirm: hardware member to review before submission]): the whole bench as one Wokwi canvas in `firmware/wokwi/full-bench/` (link in `docs/decisions/links.md`), the UNO wiring table in `firmware/wokwi/uno-rig/README.md`, and the NodeMCU wiring and power in `firmware/tilt-esp8266/README.md`. There is no separate bill of materials in the repository yet.

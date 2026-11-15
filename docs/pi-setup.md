@@ -191,6 +191,52 @@ It does not:
 UNO+WiFi only: set its DIP switch to "USB to ATmega328" (`firmware/README.md`) before plugging it in. A plain UNO R3
 has no switch.
 
+## Another way: Docker (D47)
+
+Also **not yet run on a Pi.** The compose stack (README, "Run with Docker") replaces steps 5, 6, 8 and 10: no
+script, no systemd units, no page copying, because the pages are inside the image. It needs 64-bit Raspberry Pi
+OS: the image is `linux/arm64`, which CI builds under emulation on every change. Use one way or the other, not
+both: the native `mosquitto` and `habitat-hub` services hold ports 1883 and 8000. If the script already ran, stop
+them first with `sudo systemctl disable --now habitat-hub mosquitto`.
+
+1. **Docker on the Pi**: Docker Engine and its Compose plugin, following Docker's install guide for Debian
+   (64-bit Raspberry Pi OS uses those steps). Then `sudo usermod -aG docker "$USER"` and log in again.
+2. **Build the image on the laptop**, not on the Pi (1 GB of RAM), and copy it over. On an Apple-silicon Mac the
+   arm64 build is native; elsewhere Docker emulates it.
+
+   ```bash
+   docker build --platform linux/arm64 -t habitat-health-monitor:local .
+   docker save habitat-health-monitor:local | gzip > habitat-arm64.tar.gz
+   scp habitat-arm64.tar.gz habitat@habitat.local:
+   ssh habitat@habitat.local 'docker load -i habitat-arm64.tar.gz'
+   ```
+
+   Build from the same commit the Pi cloned. On the Pi, never add `--build` to `docker compose`: it would build
+   there.
+3. **Broker password file and `.env`**, on the Pi, in the clone. Use the laptop broker's password, so the
+   NodeMCU's `MQTT_PASS` keeps working. If the NodeMCU's user is not `habitat` (step 6), run the same command
+   again with that user and without `-c`.
+
+   ```bash
+   docker run --rm -it --user "$(id -u):$(id -g)" -v "$PWD/hub/mosquitto:/work" eclipse-mosquitto:2 \
+     mosquitto_passwd -c /work/passwd habitat
+   ( umask 077 && cp .env.example .env )
+   nano .env    # HUB_MQTT_PASS: the same password; HUB_SERIAL_PORT=/dev/ttyACM0
+   ```
+
+4. **Start it**, with the UNO on a Pi USB port. The UNO's port is passed into the hub container, and the hub's
+   user joins `dialout` (the same group number as on the Pi), as the systemd unit does.
+
+   ```bash
+   ls /dev/ttyACM* /dev/ttyUSB*
+   docker compose --profile serial up -d broker hub-serial linksim receiver
+   docker compose logs hub-serial | grep 'rig connected'
+   ```
+
+   The log shows `rig connected on /dev/ttyACM0`. The four containers start again at every boot by themselves.
+   The databases live in the `var` volume, not in the clone; `docker compose down -v` deletes them.
+5. **Smoke test**: step 11 as written, then steps 12 to 14. The ports are the same.
+
 ## Optional, not used in D40: cabin sensors on the Pi header
 
 Only if a BME280 or SCD41 is fitted later. `nodes/cabin_pi` also publishes as `cabin-1`, so run it **instead of** the
