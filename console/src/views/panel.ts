@@ -10,7 +10,10 @@ import { topBar } from "./panel/topbar";
 import { PANEL_LANES, vitalsCard } from "./panel/vitals";
 
 // The habitat panel (D43): one frame in the video's reading order. Every card loads on its own; a failed request
-// leaves that card at "No data" and the others alone. The panel only reads, from the hub or from a replay file.
+// leaves that card at "No data" and the others alone. The panel only reads from the hub.
+const REFRESH_MS = 10_000;
+const LANES_REFRESH_MS = 30_000; // the lane readings are the heavy request: refetch them less often
+const LANE_HOURS = 6;
 const LANE_LIMIT = 5000;
 const MASS_DAYS = 30;
 
@@ -31,6 +34,7 @@ async function laneRows(src: PanelSource, sinceIso: string, crew: CrewId | undef
   return Object.fromEntries(PANEL_LANES.map((s, i) => [s.key, all[i] ?? []]));
 }
 
+/** The panel, read from the hub (`liveSource`) or from a recorded replay (`replaySource`), which can set its own clock. */
 export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): () => void {
   const top = topBar(src);
   const lift = liftCard(src);
@@ -48,8 +52,8 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
     const mine = ++token;
     const crew = currentCrew() ?? undefined;
     const nowS = src.now() / 1000;
-    const win = src.laneWindow(nowS);
-    const lanesDue = Date.now() - lanesAt >= src.lanesRefreshMs;
+    const win = src.laneWindow?.(nowS) ?? [nowS - LANE_HOURS * 3600, nowS];
+    const lanesDue = Date.now() - lanesAt >= (src.lanesRefreshMs ?? LANES_REFRESH_MS);
     const [status, set, weather, linkState, weighIns, food, training, rows, iss, ref] = await Promise.all([
       soft(src.status(crew)), latestSet(src, crew), soft(src.spaceWeather()), soft(src.link()),
       soft(src.readings("body_mass", { since: new Date((nowS - MASS_DAYS * 86400) * 1000).toISOString(), limit: 500, crew })),
@@ -70,7 +74,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
     link.update(linkState);
   };
   void load();
-  const timer = setInterval(() => void load(), src.refreshMs);
+  const timer = setInterval(() => void load(), src.refreshMs ?? REFRESH_MS);
   const offCrew = onCrewChange(() => {
     lanesAt = 0;
     void load();

@@ -114,7 +114,7 @@ export function replaySource(file: ReplayFile, set: ReplaySet | null, positionMs
       session: id,
       pairs: id === set?.session.session ? repsBy(now()).map((r) => ({ rep: r.rep, camera: r, load_cell: null, work_cell_j: null })) : [],
     }),
-    readings: async (ind, o) => readingsUntil(file, ind, Date.parse(o.since), now()),
+    readings: async (ind, o) => readingsUntil(file, ind, o?.since ? Date.parse(o.since) : -Infinity, now()),
     foodDay: notInReplay,
     exerciseDay: async (): Promise<ExerciseDay> => {
       const n = now();

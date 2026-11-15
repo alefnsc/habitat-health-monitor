@@ -84,7 +84,7 @@ describe("replay panel source", () => {
     const s = src(5000);
     expect(s.replay).toBe(true);
     expect(s.now()).toBe(T0 + 5000);
-    expect(s.laneWindow(0)).toEqual([T0 / 1000, (T0 + 9000) / 1000]);
+    expect(s.laneWindow!(0)).toEqual([T0 / 1000, (T0 + 9000) / 1000]);
     expect(liveSource.replay).toBe(false);
   });
 

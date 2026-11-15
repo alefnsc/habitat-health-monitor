@@ -16,14 +16,14 @@ export interface PanelSource {
   replay: boolean;
   /** Milliseconds since the epoch: the wall clock on a live hub, the replay clock in the replay. */
   now(): number;
-  refreshMs: number;
-  lanesRefreshMs: number;
-  /** The lanes' time window in seconds, for a panel clock of `nowS`. */
-  laneWindow(nowS: number): [number, number];
+  /** Overrides of the panel's refresh times and of its 6-hour lane window (seconds, for a clock of `nowS`). */
+  refreshMs?: number;
+  lanesRefreshMs?: number;
+  laneWindow?(nowS: number): [number, number];
   status(crew?: CrewId): Promise<StatusBody>;
   sessions(): Promise<Session[]>;
   reps(session: string): Promise<RepsBody>;
-  readings(ind: Ind, o: { since: string; limit: number; crew?: CrewId }): Promise<StoredReading[]>;
+  readings(ind: Ind, o: Parameters<typeof getReadings>[1]): Promise<StoredReading[]>;
   foodDay(crew?: CrewId): Promise<FoodDay>;
   exerciseDay(crew?: CrewId): Promise<ExerciseDay>;
   spaceWeather(): Promise<SpaceWeather>;
@@ -35,14 +35,9 @@ export interface PanelSource {
 /** What a card needs to know about its source: its clock, and whether it is a replay. */
 export type PanelClock = Pick<PanelSource, "now" | "replay">;
 
-const LANE_HOURS = 6;
-
 export const liveSource: PanelSource = {
   replay: false,
   now: () => Date.now(),
-  refreshMs: 10_000,
-  lanesRefreshMs: 30_000, // the lane readings are the heavy request: refetch them less often
-  laneWindow: (nowS) => [nowS - LANE_HOURS * 3600, nowS],
   status: getStatus,
   sessions: getSessions,
   reps: getReps,
