@@ -68,6 +68,10 @@ _TABLE: dict[str, dict[str, tuple[str, ...]]] = {
         "hub.food.log": ("FoodWriter",),
         "hub.food.routes": ("router",),
     },
+    "signals": {
+        "hub.signals.engine": ("evaluate",),
+        "hub.signals.routes": ("router", "SignalsState"),
+    },
 }
 
 
@@ -290,5 +294,15 @@ def wire_features(app: FastAPI, features: Features, ctx: HubContext) -> FeatureR
 
     if "food" in on and "food" not in f.skipped:
         _guard(f, "food", build_food, level=logging.ERROR)
+
+    def build_signals() -> None:
+        routes = f.mod("hub.signals.routes")
+        app.state.signals = routes.SignalsState(
+            ctx.store, ctx.assessor.rules, crews, settings.tz, ctx.clock
+        )
+        app.include_router(routes.router)
+
+    if "signals" in on and "signals" not in f.skipped:
+        _guard(f, "signals", build_signals)
 
     return rt
