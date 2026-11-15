@@ -103,8 +103,8 @@ def test_the_request_url_is_not_logged_even_at_info(caplog):
     with caplog.at_level("DEBUG"):
         api.hours(rows_all[0].t, rows_all[-1].t)
     assert (
-        "-23.6" not in caplog.text
-        and "46.7" not in caplog.text
+        "12.3" not in caplog.text
+        and "45.7" not in caplog.text
         and "weather.example" not in caplog.text
     )
 
