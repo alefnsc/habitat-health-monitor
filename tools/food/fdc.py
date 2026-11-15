@@ -15,14 +15,18 @@ from __future__ import annotations
 
 import argparse
 import csv
+import io
 import json
 import os
 import re
+import tempfile
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
 import httpx
+
+from hub.food.catalog import CatalogError, load_catalog
 
 try:
     import build_catalog as bc
@@ -39,6 +43,8 @@ FIELDS = [
     "fluid_ml_per_serving", "fluid_basis", "note",
 ]  # fmt: skip
 
+
+SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 # Rule R5: no company or brand name in the catalogue. SR Legacy holds brand-named records in two ways: whole
 # categories of chain and restaurant foods, and brand names written in capitals ("..., KELLOGG'S, ...").
@@ -87,7 +93,71 @@ def _portion(p: Mapping) -> str:
     return f"{p.get('gramWeight', 0):g} g: {text}".rstrip(": ")
 
 
+def _replace_text(path: Path, text: str) -> None:
+    """Write `text` to `path` through a temp file in the same folder, keeping the file's mode."""
+    fd, tmp = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+        os.chmod(tmp, path.stat().st_mode & 0o777)
+        os.replace(tmp, path)
+    finally:
+        Path(tmp).unlink(missing_ok=True)
+
+
+def _csv_row(row: bc.ItemRow) -> str:
+    buf = io.StringIO()
+    csv.DictWriter(buf, fieldnames=FIELDS, lineterminator="\n").writerow({
+        **{k: getattr(row, k) for k in FIELDS},
+        "serving_g": f"{row.serving_g:g}",
+        "fluid_ml_per_serving": f"{row.fluid_ml_per_serving:g}",
+    })  # fmt: skip
+    return buf.getvalue()
+
+
+def _append_row(items: Path, row: bc.ItemRow) -> None:
+    old = items.read_text(encoding="utf-8")
+    _replace_text(items, old + ("" if old.endswith("\n") or not old else "\n") + _csv_row(row))
+
+
+def _check_loads(cat: Mapping, folder: Path) -> None:
+    """Refuse a catalogue the hub would not load (a bad file makes it skip the food feature)."""
+    fd, tmp = tempfile.mkstemp(prefix=".catalog-check.", suffix=".json", dir=folder)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(dump_catalog(cat))
+        load_catalog(Path(tmp))
+    except CatalogError as e:
+        raise SystemExit(f"the hub would not load the new catalogue: {e}") from None
+    finally:
+        Path(tmp).unlink(missing_ok=True)
+
+
+def save(catalog: Path, items: Path, cat: Mapping, row: bc.ItemRow) -> None:
+    """Catalogue first, then the items.csv row; if the row fails, the catalogue goes back."""
+    _check_loads(cat, catalog.parent)
+    old = catalog.read_text(encoding="utf-8")
+    _replace_text(catalog, dump_catalog(cat))
+    try:
+        _append_row(items, row)
+    except BaseException:
+        _replace_text(catalog, old)
+        raise
+
+
+def _check_args(args: argparse.Namespace) -> None:
+    if not SLUG.match(args.id):
+        raise SystemExit(
+            "--id must be lower-case letters and digits joined by single hyphens, e.g. lentils-dry"
+        )
+    if not args.category.strip():
+        raise SystemExit("--category must not be blank")
+    if args.serving_label is not None and not args.serving_label.strip():
+        raise SystemExit("--serving-label must not be blank")
+
+
 def add(args: argparse.Namespace, key: str, today: str) -> int:
+    _check_args(args)
     try:
         rows = bc.read_items(args.items)
     except bc.BuildError as e:
@@ -141,14 +211,7 @@ def add(args: argparse.Namespace, key: str, today: str) -> int:
     item["values_via"] = "FDC API"
     item["accessed_at"] = today
     cat["items"].append(item)
-    args.catalog.write_text(dump_catalog(cat), encoding="utf-8")
-    with open(args.items, "a", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=FIELDS, lineterminator="\n")
-        w.writerow({
-            **{k: getattr(row, k) for k in FIELDS},
-            "serving_g": f"{row.serving_g:g}",
-            "fluid_ml_per_serving": f"{row.fluid_ml_per_serving:g}",
-        })  # fmt: skip
+    save(args.catalog, args.items, cat, row)
     print(f"added {args.id} (FDC {args.fdc_id}, {meta['dataset']}); restart a demo hub to load it")
     return 0
 

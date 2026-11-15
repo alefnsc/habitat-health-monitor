@@ -163,22 +163,88 @@ def test_unknown_fdc_id(data):
             fdc.main(add_args(items, cat), env=ENV)
 
 
-def test_a_failed_catalogue_write_leaves_items_csv_unchanged(data, monkeypatch):
+def _ok_food(router):
+    router.get(FOOD).mock(return_value=httpx.Response(200, json=FOOD_BODY))
+
+
+def _unchanged(items: Path, cat: Path, old_items: str, old_cat: str) -> None:
+    assert items.read_text(encoding="utf-8") == old_items
+    assert cat.read_text(encoding="utf-8") == old_cat
+    assert sorted(x.name for x in cat.parent.iterdir()) == [
+        "catalog.json",
+        "items.csv",
+    ]  # no temp file left
+
+
+def test_a_failed_catalogue_replace_leaves_both_files_unchanged(data, monkeypatch):
     items, cat = data
-    old_items = items.read_text(encoding="utf-8")
-    real = Path.write_text
+    old = items.read_text(encoding="utf-8"), cat.read_text(encoding="utf-8")
 
-    def fail_catalog(self, *a, **k):
-        if self.name == "catalog.json":
-            raise OSError("disk full")
-        return real(self, *a, **k)
+    def fail(*a, **k):
+        raise OSError("disk full")
 
-    monkeypatch.setattr(Path, "write_text", fail_catalog)
+    monkeypatch.setattr(fdc.os, "replace", fail)
     with respx.mock() as router:
-        router.get(FOOD).mock(return_value=httpx.Response(200, json=FOOD_BODY))
+        _ok_food(router)
         with pytest.raises(OSError):
             fdc.main(add_args(items, cat), env=ENV)
-    assert items.read_text(encoding="utf-8") == old_items
+    _unchanged(items, cat, *old)
+
+
+def test_a_failed_items_csv_append_rolls_the_catalogue_back(data, monkeypatch):
+    items, cat = data
+    old = items.read_text(encoding="utf-8"), cat.read_text(encoding="utf-8")
+
+    def fail(*a, **k):
+        raise OSError("disk full")
+
+    monkeypatch.setattr(fdc, "_append_row", fail)
+    with respx.mock() as router:
+        _ok_food(router)
+        with pytest.raises(OSError):
+            fdc.main(add_args(items, cat), env=ENV)
+    _unchanged(items, cat, *old)
+
+
+def test_a_catalogue_the_hub_would_reject_is_not_written(data, monkeypatch):
+    from hub.food.catalog import CatalogError
+
+    items, cat = data
+    old = items.read_text(encoding="utf-8"), cat.read_text(encoding="utf-8")
+
+    def reject(path):
+        raise CatalogError("item test-lentils-dry: missing serving_label")
+
+    monkeypatch.setattr(fdc, "load_catalog", reject)
+    with respx.mock() as router:
+        _ok_food(router)
+        with pytest.raises(SystemExit, match="the hub would not load"):
+            fdc.main(add_args(items, cat), env=ENV)
+    _unchanged(items, cat, *old)
+
+
+@pytest.mark.parametrize(
+    "bad_id", ["Lentils", "lentils dry", "../lentils", "lentils--dry", "lentils-"]
+)
+def test_item_ids_must_be_slugs(data, bad_id):
+    items, cat = data
+    args = add_args(items, cat)
+    args[args.index("--id") + 1] = bad_id
+    with respx.mock() as router:
+        with pytest.raises(SystemExit, match="--id"):
+            fdc.main(args, env=ENV)
+        assert not router.calls
+
+
+@pytest.mark.parametrize(("flag", "value"), [("--category", " "), ("--serving-label", "")])
+def test_category_and_serving_label_must_not_be_blank(data, flag, value):
+    items, cat = data
+    args = add_args(items, cat)
+    args[args.index(flag) + 1] = value
+    with respx.mock() as router:
+        with pytest.raises(SystemExit, match=flag):
+            fdc.main(args, env=ENV)
+        assert not router.calls
 
 
 def test_a_bad_items_csv_is_reported_without_a_traceback(data):
