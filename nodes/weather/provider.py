@@ -1,5 +1,6 @@
-"""The weather provider seam (D45 §4.2). The provider itself is the team owner's choice (spec §13);
-until it is chosen, default_provider refuses to run, so nothing is fetched by accident."""
+"""The weather provider seam (D45 §4.2). The hourly API is used once WEATHER_API_URL is set (its value
+is in DATA_SOURCES.md, "Earth weather"); without it, default_provider refuses, so nothing is fetched
+by accident."""
 
 from __future__ import annotations
 
@@ -17,8 +18,12 @@ class Provider(Protocol):
 
 class NoProvider:
     def hours(self, start: datetime, end: datetime) -> list[HourRow]:
-        raise RuntimeError("no weather provider chosen yet (D45 §13); see DATA_SOURCES.md")
+        raise RuntimeError("no weather provider: set WEATHER_API_URL (see DATA_SOURCES.md)")
 
 
-def default_provider(lat: float, lon: float) -> Provider:
-    return NoProvider()
+def default_provider(lat: float, lon: float, url: str | None) -> Provider:
+    if not url:
+        return NoProvider()
+    from nodes.weather.hourly_api import HourlyApi
+
+    return HourlyApi(url, lat, lon)

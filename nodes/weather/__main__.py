@@ -44,19 +44,26 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--hub", default=os.environ.get("WEATHER_HUB", DEFAULT_HUB))
     p.add_argument("--dry-run", action="store_true", help="fetch and map, post nothing")
     a = ap.parse_args(argv)
+    dotenv = env_file_values(Path(".env"))
     try:
-        lat, lon = coarse_location(os.environ, env_file_values(Path(".env")))
+        lat, lon = coarse_location(os.environ, dotenv)
     except LocationError as e:
         print(f"error: {e}", file=sys.stderr)
         return 2
-    provider = default_provider(lat, lon)
+    provider = default_provider(
+        lat, lon, os.environ.get("WEATHER_API_URL") or dotenv.get("WEATHER_API_URL")
+    )
     now = datetime.now(UTC)
-    if a.dry_run:
-        counts = run_pull(provider, hours=a.hours, now=now, post=None)
-    else:
-        with httpx.Client(base_url=a.hub, timeout=10) as http:
-            counts = run_pull(provider, hours=a.hours, now=now,
-                              post=lambda rs: post_readings(rs, http))  # fmt: skip
+    try:
+        if a.dry_run:
+            counts = run_pull(provider, hours=a.hours, now=now, post=None)
+        else:
+            with httpx.Client(base_url=a.hub, timeout=10) as http:
+                counts = run_pull(provider, hours=a.hours, now=now,
+                                  post=lambda rs: post_readings(rs, http))  # fmt: skip
+    except (RuntimeError, httpx.HTTPError) as e:  # WeatherApiError is a RuntimeError
+        print(f"error: {e}", file=sys.stderr)  # never the URL or the location
+        return 1
     print(" ".join(f"{k}={v}" for k, v in counts.items()))  # counts only: never the location
     return 0
 

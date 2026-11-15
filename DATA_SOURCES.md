@@ -108,9 +108,24 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 - Importer: `python -m nodes.weather pull --hours 48`, a separate process like the ring importer. The habitat hub
   never calls the internet.
 - Location: a coarse grid cell (1 decimal, about 11 km) from `WEATHER_LAT` and `WEATHER_LON` in `.env`
-  (git-ignored), used only to pick the nearest station. The cell and the station code are never committed, posted,
-  logged or shown.
-- Provider: INMET (Instituto Nacional de Meteorologia) automatic stations, chosen by the team owner on 2026-11-15.
-  Endpoint, token, fields, terms and access date go here when the adapter lands (D45 plan, Task 9). Until then
-  `nodes/weather` refuses to fetch.
+  (git-ignored). It goes to the API as the request's coordinates and nowhere else: it is never committed, posted to
+  the hub, logged or shown.
+- Name: Open-Meteo Forecast API (the vendor is named here only; the code and the console say "weather API" and
+  device `WEATHER`). Chosen by the team owner on 2026-11-15 instead of INMET, so no token is needed.
+- Endpoint: `https://api.open-meteo.com/v1/forecast`, set as `WEATHER_API_URL` in `.env`. Parameters:
+  `latitude`, `longitude`, `hourly=temperature_2m,relative_humidity_2m,surface_pressure`, `past_days` (1 to 92),
+  `forecast_days=1`, `timeformat=unixtime`, `timezone=GMT`. Units: °C, %, hPa (`surface_pressure`, at the model's
+  ground height, not sea level). Errors: HTTP 400 with `{"error": true, "reason": ...}`. Docs:
+  https://open-meteo.com/en/docs (read 2026-11-15; a live response at the neutral point 0, 0 matched them).
+- What the values are: past hours are archived weather-model values, not station observations. The console labels
+  them "Earth reference, outdoor (weather model)".
+- Terms: free API for non-commercial use only, under 10,000 calls per day, 5,000 per hour and 600 per minute; no API
+  key and no contact details needed (https://open-meteo.com/en/terms, read 2026-11-15). One pull per hour is about
+  24 calls a day.
+- Licence and credit: data under CC BY 4.0 (https://open-meteo.com/en/licence). The licence page asks for a credit
+  link next to displayed data, such as "Weather data by Open-Meteo.com" linking to https://open-meteo.com/. Where that
+  credit appears in the console is the team owner's decision for the console slice (D45 plan, Task 16); until the
+  card exists, the data is not displayed.
+- Committed file: `nodes/weather/tests/fixtures/hourly-api-sample.json`, 12 hours recorded on 2026-11-15 at the
+  neutral point (0, 0), location fields removed, one value set to null by hand for the missing-value test.
 - Without it: the "side by side" card says not enough data; nothing else changes.
