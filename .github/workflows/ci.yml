@@ -87,13 +87,16 @@ jobs:
           arduino-cli core install arduino:avr@1.8.8 esp8266:esp8266@3.1.2
           arduino-cli lib install "ArduinoJson@7.4.3" "MQTT@2.5.3" "DHT sensor library@1.4.7" \
             "Adafruit Unified Sensor@1.1.15" "SparkFun MAX3010x Pulse and Proximity Sensor Library@1.1.2"
-      - name: HabitatNode library host tests
+      - name: HabitatNode library host tests (every test/test_*.cpp)
         run: |
           H=firmware/libraries/HabitatNode
           mkdir -p firmware/build
-          c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_ring.cpp -o firmware/build/test_ring && firmware/build/test_ring
-          c++ -std=c++17 -Wall -Werror -I $H/src -I "$ARDUINOJSON_SRC" $H/src/ReadingFormat.cpp $H/test/test_format.cpp -o firmware/build/test_format && firmware/build/test_format
-          c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_boot.cpp -o firmware/build/test_boot && firmware/build/test_boot
+          for t in $H/test/test_*.cpp; do
+            n=$(basename "$t" .cpp)
+            echo "== $n"
+            c++ -std=c++17 -Wall -Werror -I $H/src -I "$ARDUINOJSON_SRC" $H/src/ReadingFormat.cpp "$t" -o "firmware/build/$n"
+            "firmware/build/$n"
+          done
       - name: Sketch host tests
         run: |
           firmware/exercise-uno/test/run_host_tests.sh
