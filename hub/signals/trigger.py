@@ -2,7 +2,8 @@
 
 Every state change of a ★ signal is logged in signal_events. A prompt opens only on a change from
 `steady` to `notable`, when no prompt for that signal and crew is open, after the cooldown, and
-never for a replay signal (synthetic data does not ask a real crew how they feel).
+never for a replay signal (synthetic data does not ask a real crew how they feel). Replay and real
+events keep separate histories, so a replay `steady` is never the baseline for a real `notable`.
 """
 
 from __future__ import annotations
@@ -28,9 +29,9 @@ PERIOD_S = 300
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS signal_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT, signal_id TEXT NOT NULL, crew TEXT, state TEXT NOT NULL,
-  at TEXT NOT NULL, prompt_id INTEGER, snapshot TEXT NOT NULL
+  replay INTEGER NOT NULL, at TEXT NOT NULL, prompt_id INTEGER, snapshot TEXT NOT NULL
 );
-CREATE INDEX IF NOT EXISTS signal_events_key ON signal_events(signal_id, crew, id);
+CREATE INDEX IF NOT EXISTS signal_events_key ON signal_events(signal_id, crew, replay, id);
 """
 
 
@@ -60,9 +61,10 @@ class SignalTrigger:
             store.conn.executescript(_SCHEMA)
             store.conn.commit()
 
-    def _last(self, signal_id: str, crew: str | None, with_prompt: bool = False) -> tuple | None:
-        sql = "SELECT state, at, prompt_id FROM signal_events WHERE signal_id=?"
-        args: list = [signal_id]
+    def _last(self, s: Signal, with_prompt: bool = False) -> tuple | None:
+        sql = "SELECT state, at, prompt_id FROM signal_events WHERE signal_id=? AND replay=?"
+        args: list = [s.id, int(s.replay)]
+        crew = s.crew
         sql += " AND crew IS NULL" if crew is None else " AND crew=?"
         if crew is not None:
             args.append(crew)
@@ -75,9 +77,9 @@ class SignalTrigger:
     def _log(self, s: Signal, at: datetime, prompt_id: int | None, snap: dict) -> None:
         with self.store.lock:
             self.store.conn.execute(
-                "INSERT INTO signal_events (signal_id, crew, state, at, prompt_id, snapshot)"
-                " VALUES (?,?,?,?,?,?)",
-                (s.id, s.crew, s.state, to_iso(at), prompt_id, json.dumps(snap)),
+                "INSERT INTO signal_events (signal_id, crew, state, replay, at, prompt_id, snapshot)"
+                " VALUES (?,?,?,?,?,?,?)",
+                (s.id, s.crew, s.state, int(s.replay), to_iso(at), prompt_id, json.dumps(snap)),
             )
             self.store.conn.commit()
 
@@ -92,12 +94,12 @@ class SignalTrigger:
         return False
 
     def _cooling(self, s: Signal, now: datetime) -> bool:
-        last = self._last(s.id, s.crew, with_prompt=True)
+        last = self._last(s, with_prompt=True)
         return last is not None and now - parse_iso(last[1]) < COOLDOWN[kind_for(s)]
 
     def step(self, s: Signal, now: datetime):
         """Log a state change and maybe open a prompt; returns the prompt or None."""
-        last = self._last(s.id, s.crew)
+        last = self._last(s)
         prev = last[0] if last else None
         if prev == s.state:
             return None
