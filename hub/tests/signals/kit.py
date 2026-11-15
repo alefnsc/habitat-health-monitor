@@ -51,16 +51,27 @@ def night(rig: Rig, end: datetime, sleep_h: float, crew: str = "crew-a") -> None
 
 
 def lift_set(rig: Rig, sid: str, start: datetime, works: list[float], crew: str = "crew-a",
-             exercise: str = "curl", node: str = "camera") -> None:  # fmt: skip
-    """One camera set: a session row and one camera rep per work value (joules at Earth g)."""
-    rig.store.insert_session(sid, 5.0, 9.81, crew, start, exercise)
+             exercise: str = "curl", node: str = "camera", g: float = 9.81,
+             turn_ms: int | None = None) -> None:  # fmt: skip
+    """One camera set: a session row and one camera rep per work value (joules at `g`).
+    Rep i ends at start + 5 i s and lasts 1.5 s; `turn_ms` puts its turnaround that far in."""
+    rig.store.insert_session(sid, 5.0, g, crew, start, exercise)
     for i, w in enumerate(works, 1):
         rig.clock.set(start + timedelta(seconds=5 * i))
         rep = {
             "v": 1, "node": node, "boot": 1, "seq": rig.seq + i, "age_ms": 0, "type": "rep",
             "session": sid, "rep": i, "src": "camera", "peak_n": 60.0, "work_j": w,
-            "rom_m": 0.4, "g": 9.81, "mass_kg": 5.0, "t0_ms": 0, "t1_ms": 1500,
+            "rom_m": 0.4, "g": g, "mass_kg": 5.0, "t0_ms": 0, "t1_ms": 1500,
             "exercise": exercise,
         }  # fmt: skip
+        if turn_ms is not None:
+            rep["t_turn_ms"] = turn_ms
         assert rig.ing.ingest_rep(rep, channel="test").reason is None
     rig.seq += len(works)
+
+
+def ring_hr(rig: Rig, end: datetime, sleep_h: float, hr: float, crew: str = "crew-a") -> None:
+    """A ring night ending at `end` with one ring HR sample in every 5-minute block of it."""
+    for k in range(int(sleep_h * 12), 0, -1):
+        rig.put("hr", hr, end - timedelta(minutes=5 * k - 2), node="ring-1", dev="RING", crew=crew)
+    night(rig, end, sleep_h, crew)

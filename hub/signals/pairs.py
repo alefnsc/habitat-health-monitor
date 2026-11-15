@@ -21,6 +21,13 @@ from hub.signals.types import Missing, Signal, Value
 
 DAY = timedelta(days=1)
 CABIN_LAGS_H = (0, 1, 2, 3)
+_LAG_KEY = {"signals.pair.few": "signals.pair.lagFew",
+            "signals.pair.noSpread": "signals.pair.lagNoSpread"}  # fmt: skip
+
+
+def _no_rho(n: int, spec: Spec) -> str:
+    """Why a pair has no rho: too few pairs, or enough pairs but one side never varies."""
+    return "signals.pair.few" if n < spec.min_n else "signals.pair.noSpread"
 
 
 def _pair_signal(ctx: Ctx, spec: Spec, crew: str | None, xs: dict, ys: dict, lag: timedelta,
@@ -34,7 +41,8 @@ def _pair_signal(ctx: Ctx, spec: Spec, crew: str | None, xs: dict, ys: dict, lag
                       **common)  # fmt: skip
     sp = M.spearman([(x, y) for _, x, y in pairs], min_n=spec.min_n)
     if sp is None:
-        return signal(spec, crew, "steady", "signals.pair.few", None, meth, pairs=table, **common)
+        return signal(spec, crew, "steady", _no_rho(len(pairs), spec), None, meth, pairs=table,
+                      **common)  # fmt: skip
     value = Value(sp.rho, sp.low, sp.high, "rho")
     return signal(spec, crew, "steady", "signals.pair.rho", value, meth, pairs=table, **common)
 
@@ -51,7 +59,7 @@ def training_vs_rest_hr(ctx: Ctx, spec: Spec, crew: str | None) -> Signal:
     ss, _ = lift.sets(ctx, crew, spec)
     ss = [s for s in ss if s.replay == replay]
     xs = lift.daily_work(ss, ctx.tz)
-    common = {"inputs": I.describe(used, ctx.at), "replay": replay}
+    common = {"inputs": I.describe(used, ctx.at) + lift._inputs(ss, ctx.at), "replay": replay}
     return _pair_signal(ctx, spec, crew, xs, ys, DAY, **common)
 
 
@@ -92,18 +100,25 @@ def cabin_vs_earth(ctx: Ctx, spec: Spec, crew: str | None) -> Signal:
     cabin, replay = I.choose(I.ok_rows(ctx.store, "cabin_temp", start, ctx.at, None))
     earth = I.same_mode(I.ok_rows(ctx.store, "earth_temp", start, ctx.at, None), replay)
     xs, ys = _hourly(I.points(earth)), _hourly(I.points(cabin))
-    meth = method(spec, ctx, "spearman_fisher_z", M.SPEARMAN_REF, 0, start, None)
     common = {"inputs": I.describe([*cabin, *earth], ctx.at), "replay": replay}
     lags, table = [], []
     for h in CABIN_LAGS_H:
         pairs = M.lagged_pairs(xs, ys, lag=timedelta(hours=h))  # earth at t, cabin at t + h
         sp = M.spearman([(x, y) for _, x, y in pairs], min_n=spec.min_n)
+        key = "signals.pair.lag" if sp else _LAG_KEY[_no_rho(len(pairs), spec)]
         lags.append({"lag_h": h, "n": len(pairs), "rho": sp.rho if sp else None,
-                     "low": sp.low if sp else None, "high": sp.high if sp else None})  # fmt: skip
+                     "low": sp.low if sp else None, "high": sp.high if sp else None,
+                     "key": key})  # fmt: skip
         table += [[I.to_iso(k), x, y, h] for k, x, y in pairs]
+    # n is the largest pair count over the lags (lag 0 unless an hour is missing at the ends)
+    meth = method(spec, ctx, "spearman_fisher_z", M.SPEARMAN_REF, max(x["n"] for x in lags),
+                  start, None)  # fmt: skip
     if not table:
         return nodata(spec, crew, meth, [Missing("signals.missing.pairs", spec.min_n, 0)],
                       detail={"lags": lags}, **common)  # fmt: skip
-    head = "signals.pair.rho" if any(x["rho"] is not None for x in lags) else "signals.pair.few"
+    if any(x["rho"] is not None for x in lags):
+        head = "signals.pair.rho"
+    else:
+        head = _no_rho(meth.n, spec)
     return signal(spec, crew, "steady", head, None, meth, pairs=table, detail={"lags": lags},
                   **common)  # fmt: skip
