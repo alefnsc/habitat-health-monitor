@@ -127,7 +127,8 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
   link next to displayed data, such as "Weather data by Open-Meteo.com" linking to https://open-meteo.com/. The
   console shows the credit "Weather data by Open-Meteo.com (CC BY 4.0)" (COPY `signals.credit.weather`) on the one
   card that displays the data, the signals screen's "Bench cabin and outdoor temperature" (`cabin_vs_earth`) card.
-  It is plain text, not a link, because the console runs offline on the habitat network.
+  It is plain text, not a link, because the console runs offline on the habitat network. This is the one vendor
+  name in console text, an exception to R5 for a licence credit, approved by the team owner on 2026-11-15.
 - Committed file: `nodes/weather/tests/fixtures/hourly-api-sample.json`, 12 hours recorded on 2026-11-15 at the
   neutral point (0, 0), location fields removed, one value set to null by hand for the missing-value test.
 - Without it: the "side by side" card says not enough data; nothing else changes.
