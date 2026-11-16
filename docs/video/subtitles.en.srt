@@ -1,35 +1,39 @@
 1
-00:00:00,000 --> 00:00:01,500
+00:00:00,000 --> 00:00:01,367
 Habitat Health Monitor.
 
 2
-00:00:01,600 --> 00:00:04,200
-A camera tracks each lift on the bench,
+00:00:01,467 --> 00:00:03,400
+A camera tracks every lift on the bench
 
 3
-00:00:04,300 --> 00:00:07,600
-and turns every rep into work, in joules.
+00:00:03,500 --> 00:00:05,933
+and converts each rep into work, in joules.
 
 4
-00:00:07,700 --> 00:00:11,200
-Sensors reach the hub over USB and Wi-Fi.
+00:00:06,033 --> 00:00:09,067
+An Arduino UNO senses cabin air and sounds the alarm;
 
 5
-00:00:11,300 --> 00:00:14,500
-One hub judges every reading, offline.
+00:00:09,167 --> 00:00:11,033
+a NodeMCU reports the weight's tilt.
 
 6
-00:00:14,600 --> 00:00:18,300
-The panel shows food energy, training work and mass.
+00:00:11,133 --> 00:00:15,333
+A Raspberry Pi hub checks every reading against NASA limits, with no link to Earth.
 
 7
-00:00:18,400 --> 00:00:21,500
-Cabin readings are judged against NASA's own limits.
+00:00:15,433 --> 00:00:18,867
+The crew panel adds food energy, training work and body mass.
 
 8
-00:00:21,600 --> 00:00:25,400
-Earth sees it later, over a simulated Mars link.
+00:00:18,967 --> 00:00:22,167
+Cabin temperature and humidity are scored on NASA's own bands.
 
 9
-00:00:25,500 --> 00:00:29,000
+00:00:22,267 --> 00:00:26,233
+Mission control sees it all twelve minutes later, over a simulated Mars link.
+
+10
+00:00:26,333 --> 00:00:28,900
 An educational prototype, not a medical device.

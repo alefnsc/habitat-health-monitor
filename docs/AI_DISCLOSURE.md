@@ -8,7 +8,7 @@ The team made the idea and every design decision: what to monitor, which sources
 
 - Claude Code (Anthropic), using Claude models, run in the team's own development environment. [confirm exact model names against the commit trailers]
 - An image tool run by a team member, using a Gemini image model (Google), generated the background art for two presentation images (see "Generated media").
-- ElevenLabs (text-to-speech, model `eleven_multilingual_v2`) read the team's own script to make the English narration of the 29-second video, using a stock library voice. One 1-second AI video clip is used: the team's AI illustration animated with a Gemini Veo model through an internal media tool, labelled "AI-generated video" on screen, with its audio removed [confirm at the pre-submit check].
+- ElevenLabs (text-to-speech, model `eleven_turbo_v2_5` for the final v3 cut; `eleven_multilingual_v2` for earlier cuts) read the team's own script to make the English narration of the 29-second video, using a stock library voice. One 1-second AI video clip is used: the team's AI illustration animated with a Gemini Veo model through an internal media tool, labelled "AI-generated video" on screen, with its audio removed.
 
 ## What each tool did
 
@@ -22,7 +22,7 @@ The team made the idea and every design decision: what to monitor, which sources
   - They added the labels, panels and watermarks with a script.
   - A separate agent reviewed each image for people, logos and wrong numbers.
   - The operator chose which images to use.
-- Narration: the team wrote the 29-second script, and ElevenLabs only turned it into speech. The audio was sped up 8 % and its loudness normalised in the edit. No real person's voice was cloned.
+- Narration: the team wrote the 29-second script, and ElevenLabs only turned it into speech. In the final cut the pauses were trimmed and the audio was sped up 34 % (pitch kept), and its loudness normalised in the edit. No real person's voice was cloned.
 
 ## Human review
 
