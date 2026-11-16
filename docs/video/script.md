@@ -6,34 +6,38 @@ The title card (0.0–1.6 s) states it: deck slide 1, "Habitat Health Monitor. H
 
 ## Audio and AI use
 
-- **Narration:** an AI-generated voice (ElevenLabs, `eleven_multilingual_v2`, the stock library voice "Ryan – American Documentary Narrator") reads the team's own script. It was sped up 1.08× and loudness-normalised in the edit. It is the only audio track: there is no microphone or room audio (R8). The end card says "Narration: AI-generated voice (ElevenLabs)."
-- **AI video:** shot 8a is a 1-second clip animated from the team's AI illustration with a Gemini Veo model. It is labelled "AI-generated video" on screen and has no audio.
+- **Narration:** an AI-generated voice (ElevenLabs, `eleven_turbo_v2_5`, the stock library voice "Ryan – American Documentary Narrator") reads the team's own script (version B, v3 cut). Pauses were trimmed and the audio was sped up 1.343× (+34 %, pitch kept) so each line fits under its own shot; loudness was normalised in the edit. It is the only audio track: there is no microphone or room audio (R8). The end card says "Narration: AI-generated voice (ElevenLabs)." The file's `comment` and `description` metadata say the same.
+- **AI images:** the title slide's illustration carries an "AI-generated illustration" badge.
+- **AI video:** shot 8a is a 1-second clip animated from the team's AI illustration with a Gemini Veo model. It is labelled "AI-generated video" on screen (a top-right badge in v3) and has no audio.
 - **Captions:** English captions are burnt in and repeat the narration. `subtitles.en.srt` has the same cues.
 - Full disclosure: `docs/AI_DISCLOSURE.md`.
 
-## Shots (final cut, 29.0 s)
+## Shots (final cut v3, 29.0 s)
 
-| Time (s) | Shot | Picture | Caption (= narration) | Lower third |
+Synthetic data: no camera set was recorded on the live hub on 15/11, so the lift, work and food/mass cards in v3 come from a scratch hub seeded with one simulated set (crew A, 5 kg, 8 reps), 3 meals and 7 weigh-ins. Every frame that shows them carries a "Simulated set" badge.
+
+| Time (s) | Shot | Picture | Caption (= narration) | Lower third / badge |
 |---|---|---|---|---|
-| 0.0–1.6 | 1 | Deck slide 1 (title) | Habitat Health Monitor. | — |
-| 1.6–4.3 | 2 | Split: the lift with the sealed tilt pod on the weight, and the camera page following the right wrist | A camera tracks each lift on the bench, | — |
-| 4.3–7.7 | 3 | Camera page result table: work per rep in joules | and turns every rep into work, in joules. | Gravity configured: Earth, Moon or Mars |
-| 7.7–11.3 | 4 | Desk View of the bench: the Uno with the temperature and humidity sensor and the buzzer, and the tilt node | Sensors reach the hub over USB and Wi-Fi. | Uno → USB serial → hub · tilt node → Wi-Fi → MQTT → hub |
-| 11.3–14.6 | 5 | The full bench circuit in Wokwi, with the hub chip | One hub judges every reading, offline. | Hub: Mosquitto, NASA-STD-3001 rules, console |
-| 14.6–18.4 | 6 | Panel: food energy and training work side by side (not converted), body mass trend | The panel shows food energy, training work and mass. | — |
-| 18.4–21.6 | 7 | Panel: cabin temperature and humidity, live, against the NASA limits | Cabin readings are judged against NASA's own limits. | — |
-| 21.6–22.6 | 8a | AI video clip (labelled): the habitat and the Mars–Earth link | Earth sees it later, over a simulated Mars link. | — |
-| 22.6–25.5 | 8b | Public ground page: the delay to Earth | (same caption) | — |
-| 25.5–29.0 | 9 | End card: repo and public page links, "Educational prototype, not a medical device.", AI disclosure lines | An educational prototype, not a medical device. | — |
+| 0.00–1.47 | 1 | Deck slide 1 (title) | Habitat Health Monitor. | AI-generated illustration |
+| 1.47–3.50 | 2 | Split: a real lift on the bench tray (hand and forearm, no face), and the panel's Lift card (8 reps, 137 J) | A camera tracks every lift on the bench | Simulated set |
+| 3.50–6.03 | 3 | Panel card "Same lift, four places": work per rep at Earth, Moon, Mars and station gravity | and converts each rep into work, in joules. | Simulated set |
+| 6.03–9.17 | 4a | Desk View of the bench: the UNO with the DHT11 and the buzzer | An Arduino UNO senses cabin air and sounds the alarm; | UNO → USB serial → hub · tilt-1 (NodeMCU) → Wi-Fi → MQTT → hub |
+| 9.17–11.13 | 4b | Crop of the Desk View on the weight and the tilt node | a NodeMCU reports the weight's tilt. | (same) |
+| 11.13–15.43 | 5 | Crop of the Desk View on the Raspberry Pi | A Raspberry Pi hub checks every reading against NASA limits, with no link to Earth. | Hub: Mosquitto, NASA-STD-3001 rules, crew console. Runs on a Raspberry Pi 3 or a Mac. |
+| 15.43–18.97 | 6 | Panel: food energy and training work side by side (not converted), body mass trend | The crew panel adds food energy, training work and body mass. | Simulated set, meals and weigh-ins |
+| 18.97–22.27 | 7 | Panel: cabin temperature and humidity (real bench data) against the NASA limits | Cabin temperature and humidity are scored on NASA's own bands. | — |
+| 22.27–23.27 | 8a | AI video clip: the habitat on Mars | Mission control sees it all twelve minutes later, over a simulated Mars link. | AI-generated video |
+| 23.27–26.33 | 8b | Public ground page: the 12-minute one-way delay | (same caption) | — |
+| 26.33–29.00 | 9 | End card: repo and public page links, "Educational prototype, not a medical device.", AI disclosure lines | An educational prototype, not a medical device. | Also AI-generated: one 1-second video clip (Veo), labelled on screen. |
 
 ## Indicators that have data, with frame times
 
 S16's `six_indicators_shown` check was amended on 15/11 (operator decision B3).
 
-- **Work per rep in joules (camera):** 4.3–7.7 s. The lift itself is at 1.6–4.3 s.
-- **Cabin temperature and relative humidity** (live bench sensor, judged against NASA-STD-3001): 18.4–21.6 s. The sensor appears on the bench at 7.7–11.3 s.
-- **Food energy, training work and body mass:** 14.6–18.4 s. The card shows what was logged before the take, and says so when nothing was.
-- **Link delay to Earth:** 21.6–25.5 s.
+- **Work per rep in joules (camera, simulated set):** 3.50–6.03 s. A real lift is at 1.47–3.50 s.
+- **Cabin temperature and relative humidity** (live bench sensor, judged against NASA-STD-3001): 18.97–22.27 s. The sensor appears on the bench at 6.03–9.17 s.
+- **Food energy, training work and body mass (simulated meals and weigh-ins):** 15.43–18.97 s.
+- **Link delay to Earth:** 22.27–26.33 s.
 - **Not shown:**
   - Blood pressure, blood sugar, body temperature and mood are typed-in readings, and the bench has none.
   - Heart rate, SpO2 and sleep come from the team owner's ring and are kept off camera: the panel is recorded as Crew A (decision B1).
@@ -41,13 +45,13 @@ S16's `six_indicators_shown` check was amended on 15/11 (operator decision B3).
 ## Export
 
 - **Size limit:** the exported `docs/video/final.mp4` stays out of git if it is over 10 MB.
-- **Final export (15/11, about 22:05):**
-  - **File:** `video-2026-11-15/out/final-29s.mp4`, hosted with the public pages as `ground/public/video/habitat-health-monitor-29s.mp4`. 1920x1080, 30 fps, H.264 with one AAC track (the narration). 6,040,942 bytes.
-  - **SHA-256:** `897ae381647cbd910b4359d32d27037a8378b1207c3729c2a539c6008ed4cfd3`.
+- **Final export v3 (15/11, 22:49), replaces v2 at the same address:**
+  - **File:** `video-2026-11-15/out/final-29s-v3.mp4`, hosted with the public pages as `ground/public/video/habitat-health-monitor-29s.mp4`. 1920x1080, 30 fps, H.264 High yuv420p with one AAC track (the narration). 9,327,054 bytes.
+  - **SHA-256:** `a1973183ee01e0ae8e1f01cf9b335e3c9dd766b2b1703617e41fd543d7d91e62`.
   - **ffprobe duration:** 29.000000 s, within the 29.0 s limit.
-  - **Shot 2:** a split. On the left, a real lift on the bench tray (hand and forearm with the tilt pod, no face). On the right, the panel's live lift card.
-  - **Shot 3:** the panel's "Same lift, four places" card.
-  - **No set was counted on camera tonight.** The camera page could not track a top-down forearm. So the narration's joules line is illustrated by the panel, not by a measured rep.
+  - **What changed from v2:** narration version B (names the UNO, the NodeMCU and the Raspberry Pi); the lift, work and food/mass cards show a labelled simulated set instead of empty cards; close-ups of the tilt node and the Pi replace the Wokwi shot; AI badges on the title illustration and the Veo clip.
+  - **Still true:** no set was counted on camera on 15/11; the joules lines are illustrated by the simulated set, and say so on screen.
+- **Previous export v2 (15/11, about 22:05):** SHA-256 `897ae381647cbd910b4359d32d27037a8378b1207c3729c2a539c6008ed4cfd3`, 6,040,942 bytes.
 - **Rules:**
   - R5: no company name or logo in any shot or the audio.
   - R7: AI images and the AI clip carry visible labels.
