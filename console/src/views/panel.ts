@@ -14,6 +14,7 @@ import { PANEL_LANES, vitalsCard } from "./panel/vitals";
 // leaves that card at "No data" and the others alone. The panel only reads from the hub.
 const REFRESH_MS = 10_000;
 const LANES_REFRESH_MS = 30_000; // the lane readings are the heavy request: refetch them less often
+const SIGNALS_REFRESH_MS = 30_000; // D45 signals are worked out on read for every crew: on their own, slower cadence
 export const LANE_HOURS = 6;
 export const LANE_BUCKET_S = 60; // a few stored readings per minute, so a fast sensor cannot cut the window
 export const LANE_LIMIT = 5000;
@@ -52,7 +53,19 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   let token = 0;
   let disposed = false;
   let lanesAt = 0;
+  let signalsAt = 0;
+  let signalsToken = 0;
+  // The signals chip loads on its own: no card waits for the evaluation.
+  const loadSignals = () => {
+    if (!src.signals || Date.now() - signalsAt < SIGNALS_REFRESH_MS) return;
+    signalsAt = Date.now();
+    const mine = ++signalsToken;
+    void soft(src.signals(currentCrew() ?? undefined)).then((b) => {
+      if (!disposed && mine === signalsToken) top.signals(b);
+    });
+  };
   const load = async () => {
+    loadSignals();
     const mine = ++token;
     const crew = currentCrew() ?? undefined;
     const nowS = src.now() / 1000;
@@ -81,6 +94,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   const timer = setInterval(() => void load(), src.refreshMs ?? REFRESH_MS);
   const offCrew = onCrewChange(() => {
     lanesAt = 0;
+    signalsAt = 0;
     void load();
   });
   return () => {

@@ -1,9 +1,10 @@
 import { COPY } from "../../copy";
-import type { LinkState, Session, SpaceWeather, StatusBody } from "../../contract";
+import type { LinkState, Session, SignalsBody, SpaceWeather, StatusBody } from "../../contract";
 import { el } from "../../dom";
 import { formatAge } from "../../format";
 import { formatLightTime } from "../../model/guidance";
 import { weatherBanner } from "../../model/nasa";
+import { notableCounts } from "../../model/signals";
 import { liveSource, type PanelClock } from "./source";
 
 export interface TopData {
@@ -17,13 +18,19 @@ function chip(dot: string, label: string, value: string): HTMLElement {
   return el("span", { class: "pchip" }, el("i", { class: `dot ${dot}` }), `${label} `, el("b", { text: value }));
 }
 
-/** The panel's top strip: live sources at a glance and a UTC clock. */
-export function topBar(src: PanelClock = liveSource): { node: HTMLElement; update: (d: TopData) => void; dispose: () => void } {
+/**
+ * The panel's top strip: live sources at a glance and a UTC clock. `signals` (D45) draws the signals chip on its own
+ * cadence; it is never called for a source without signals (the replay), so that strip has no signals chip.
+ */
+export function topBar(src: PanelClock = liveSource): {
+  node: HTMLElement; update: (d: TopData) => void; signals: (b: SignalsBody | null) => void; dispose: () => void;
+} {
   const age = (iso: string | null) => (iso ? formatAge((src.now() - Date.parse(iso)) / 1000) : COPY["status.none"]);
   const missing = src.replay ? COPY["panel.notInReplayShort"] : COPY["panel.noData"];
   const chips = el("div", { style: "display:contents" });
   const clock = el("span", { class: "clock" });
-  const node = el("div", { class: "p-top" }, chips, clock);
+  const sig = el("span", { style: "display:contents" });
+  const node = el("div", { class: "p-top" }, chips, sig, clock);
   const tick = () => {
     clock.textContent = `${new Date(src.now()).toISOString().slice(11, 19)} ${COPY["lanes.utc"]}`;
   };
@@ -50,5 +57,14 @@ export function topBar(src: PanelClock = liveSource): { node: HTMLElement; updat
         COPY["panel.chipLink"], d.link ? formatLightTime(d.link.light_time_s, 1) : missing),
     );
   };
-  return { node, update, dispose: () => clearInterval(t) };
+  /** null when the request failed: the chip says no data, never "0 notable". Replay notables are counted apart. */
+  const signals = (b: SignalsBody | null) => {
+    const { real, replay } = notableCounts(b);
+    const text = !b ? missing
+      : (replay ? COPY["panel.signalsNotableReplay"].replace("{m}", String(replay)) : COPY["panel.signalsNotable"])
+        .replace("{n}", String(real));
+    sig.replaceChildren(el("a", { href: "#/signals", class: "pchip-link" },
+      chip(real > 0 ? "watch" : "", COPY["panel.chipSignals"], text)));
+  };
+  return { node, update, signals, dispose: () => clearInterval(t) };
 }

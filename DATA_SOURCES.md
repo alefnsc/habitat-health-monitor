@@ -105,14 +105,14 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 ## Earth weather (outdoor reference, D45)
 
 - Use: the outdoor temperature, humidity and pressure next to the bench cabin, for the signals module's
-  "side by side" card. Readings are node `earth-1`, `src ref`, device `WEATHER`, shown as "Earth reference, outdoor".
+  "side by side" card. Readings are node `earth-1`, `src ref`, device `WEATHER`, shown as "Earth reference, outdoor (weather model)".
 - Importer: `python -m nodes.weather pull --hours 48`, a separate process like the ring importer. The habitat hub
   never calls the internet.
 - Location: a coarse grid cell (1 decimal, about 11 km) from `WEATHER_LAT` and `WEATHER_LON` in `.env`
   (git-ignored). It goes to the API as the request's coordinates and nowhere else: it is never committed, posted to
   the hub, logged or shown.
-- Name: Open-Meteo Forecast API (the vendor is named here only; the code and the console say "weather API" and
-  device `WEATHER`). Chosen by the team owner on 2026-11-15 instead of INMET, so no token is needed.
+- Name: Open-Meteo Forecast API. The code says "weather API" and device `WEATHER`; the console names the vendor in
+  one place only, the licence credit below. Chosen by the team owner on 2026-11-15 instead of INMET, so no token is needed.
 - Endpoint: `https://api.open-meteo.com/v1/forecast`, set as `WEATHER_API_URL` in `.env`. Parameters:
   `latitude`, `longitude`, `hourly=temperature_2m,relative_humidity_2m,surface_pressure`, `past_days` (1 to 92),
   `forecast_days=1`, `timeformat=unixtime`, `timezone=GMT`. Units: °C, %, hPa (`surface_pressure`, at the model's
@@ -124,9 +124,11 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
   key and no contact details needed (https://open-meteo.com/en/terms, read 2026-11-15). One pull per hour is about
   24 calls a day.
 - Licence and credit: data under CC BY 4.0 (https://open-meteo.com/en/licence). The licence page asks for a credit
-  link next to displayed data, such as "Weather data by Open-Meteo.com" linking to https://open-meteo.com/. Where that
-  credit appears in the console is the team owner's decision for the console slice (D45 plan, Task 16); until the
-  card exists, the data is not displayed.
+  link next to displayed data, such as "Weather data by Open-Meteo.com" linking to https://open-meteo.com/. The
+  console shows the credit "Weather data by Open-Meteo.com (CC BY 4.0)" (COPY `signals.credit.weather`) on the one
+  card that displays the data, the signals screen's "Bench cabin and outdoor temperature" (`cabin_vs_earth`) card.
+  It is plain text, not a link, because the console runs offline on the habitat network. This is the one vendor
+  name in console text, an exception to R5 for a licence credit, approved by the team owner on 2026-11-15.
 - Committed file: `nodes/weather/tests/fixtures/hourly-api-sample.json`, 12 hours recorded on 2026-11-15 at the
   neutral point (0, 0), location fields removed, one value set to null by hand for the missing-value test.
 - Without it: the "side by side" card says not enough data; nothing else changes.

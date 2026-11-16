@@ -1,10 +1,10 @@
 import {
   getExerciseDay, getFoodDay, getIssCabin, getIssReference, getLink, getReadings, getReps, getSessions, getSpaceWeather,
-  getStatus,
+  getSignals, getStatus,
 } from "../../api";
 import type {
-  CrewId, ExerciseDay, FoodDay, Ind, IssCabin, IssReference, LinkState, RepsBody, Session, SpaceWeather, StatusBody,
-  StoredReading,
+  CrewId, ExerciseDay, FoodDay, Ind, IssCabin, IssReference, LinkState, RepsBody, Session, SignalsBody, SpaceWeather,
+  StatusBody, StoredReading,
 } from "../../contract";
 
 /**
@@ -30,6 +30,8 @@ export interface PanelSource {
   issCabin(): Promise<IssCabin>;
   issReference(): Promise<IssReference>;
   link(): Promise<LinkState>;
+  /** D45 signals. A source without it (the recorded replay) shows no signals chip. */
+  signals?(crew?: CrewId): Promise<SignalsBody>;
 }
 
 /** What a card needs to know about its source: its clock, and whether it is a replay. */
@@ -48,4 +50,5 @@ export const liveSource: PanelSource = {
   issCabin: getIssCabin,
   issReference: getIssReference,
   link: getLink,
+  signals: (crew) => getSignals(crew),
 };
