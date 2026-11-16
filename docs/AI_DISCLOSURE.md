@@ -57,7 +57,7 @@ The 29-second video's narration is an AI-generated voice (ElevenLabs, a stock li
 
 ## Commit trailers
 
-Every commit made with AI assistance ends with a trailer naming the assistant, for example `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. On 2026-11-16 at about 00:20 BRT, all 245 non-merge commits on `main` carry it; the other 58 commits are GitHub merge commits, which carry no trailer. The trailers can be listed with `git log --format=%B | grep Co-Authored-By`.
+Every commit made with AI assistance ends with a trailer naming the assistant, for example `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. On 2026-11-16 at about 00:10 BRT, all 245 non-merge commits on `main` carry it; the other 58 commits are GitHub merge commits, which carry no trailer. The trailers can be listed with `git log --format=%B | grep Co-Authored-By`.
 
 ## Short version for the form ("Use of Super Intelligence (SI)")
 
