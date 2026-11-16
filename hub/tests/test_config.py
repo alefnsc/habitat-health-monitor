@@ -30,7 +30,7 @@ def test_defaults():
     assert s.http_host == "0.0.0.0"
     assert s.http_port == 8000
     assert s.cors_origins == ["*"]
-    assert s.features == {"nasa", "iss", "wearable", "mcp", "ble", "serial", "food"}
+    assert s.features == {"nasa", "iss", "wearable", "mcp", "ble", "serial", "food", "signals"}
     assert s.features == FEATURE_NAMES
     assert s.linksim_url == "http://127.0.0.1:8200"
     assert s.link_config == Path("linksim/link.json")
