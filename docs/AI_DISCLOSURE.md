@@ -7,7 +7,8 @@ The team made the idea and every design decision: what to monitor, which sources
 ## Tools
 
 - Claude Code (Anthropic), using Claude models, run in the team's own development environment. [confirm exact model names against the commit trailers]
-- An image tool run by a team member, using a Gemini image model (Google), generated the background art for two presentation images (see "Generated media"). No AI video or voice generator was used [confirm at the pre-submit check].
+- An image tool run by a team member, using a Gemini image model (Google), generated the background art for two presentation images (see "Generated media").
+- ElevenLabs (text-to-speech, model `eleven_turbo_v2_5` for the final v3 cut; `eleven_multilingual_v2` for earlier cuts) read the team's own script to make the English narration of the 29-second video, using a stock library voice. One 1-second AI video clip is used: the team's AI illustration animated with a Gemini Veo model through an internal media tool, labelled "AI-generated video" on screen, with its audio removed.
 
 ## What each tool did
 
@@ -21,6 +22,7 @@ The team made the idea and every design decision: what to monitor, which sources
   - They added the labels, panels and watermarks with a script.
   - A separate agent reviewed each image for people, logos and wrong numbers.
   - The operator chose which images to use.
+- Narration: the team wrote the 29-second script, and ElevenLabs only turned it into speech. In the final cut the pauses were trimmed and the audio was sped up 34 % (pitch kept), and its loudness normalised in the edit. No real person's voice was cloned.
 
 ## Human review
 
@@ -53,7 +55,7 @@ The images:
   - Added by the team: the composite layout, the comparison text and numbers from cited NASA sources, and the watermark.
 - `docs/img/console-status.png` is not AI. It is a real screenshot of the team's console replaying a recorded synthetic session, labelled "Real screenshot".
 
-No AI video or voice is used [confirm]. No image shows a person, a NASA logo or a mission identifier.
+The 29-second video's narration is an AI-generated voice (ElevenLabs, a stock library voice) reading the team's script. No person's voice is cloned, and the video contains no microphone or room audio. One 1-second AI video clip (Gemini Veo, animated from the team's AI illustration, labelled "AI-generated video" on screen, audio removed) is used [confirm]. No image shows a person, a NASA logo or a mission identifier.
 
 ## Commit trailers
 
@@ -61,4 +63,4 @@ Every commit made with AI assistance ends with a trailer naming the assistant, f
 
 ## Short version for the form ("Use of Super Intelligence (SI)")
 
-We used Claude Code (Anthropic) to plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware work and validation sessions, and reviewed the outputs. All AI-assisted commits carry a Co-Authored-By trailer. Two presentation images are AI-generated illustrations, made with an image tool using a Gemini image model, and carry a visible "AI-generated" watermark; no AI video or voice is used. Details: `docs/AI_DISCLOSURE.md`.
+We used Claude Code (Anthropic) to plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware work and validation sessions, and reviewed the outputs. All AI-assisted commits carry a Co-Authored-By trailer. Two presentation images are AI-generated illustrations, made with an image tool using a Gemini image model, and carry a visible "AI-generated" watermark; the 29-second video's narration is an AI-generated voice (ElevenLabs), and one 1-second clip is AI-generated video, labelled on screen. Details: `docs/AI_DISCLOSURE.md`.

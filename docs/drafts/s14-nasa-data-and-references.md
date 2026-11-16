@@ -27,10 +27,12 @@ Data
 - NASA DONKI, OSDR EDA, HRP: see NASA Data and `DATA_SOURCES.md`
 
 Prior work (declared)
-- ground-truth, https://github.com/alefnsc/ground-truth, declared prior work written 2026-09-23 to 2026-10-11, Apache-2.0, used at commit [40-hex SHA from `vendor/ground-truth/PINNED`]. Public status pending S1.
+- ground-truth, https://github.com/alefnsc/ground-truth, declared prior work written 2026-09-23 to 2026-10-11, Apache-2.0, used at commit 0940adab0ec33dd5127d7efdacfbc6744a31e4d6 (the `commit=` line of `vendor/ground-truth/PINNED`). The repository is public.
 
 Software (Python, licence from package metadata)
 - FastAPI (MIT), Uvicorn (BSD-3-Clause), aiomqtt (BSD), paho-mqtt (EPL-2.0 or BSD-3-Clause), pyserial (BSD), httpx (BSD-3-Clause), Beautiful Soup 4 (MIT), pytest (MIT), ruff (MIT), respx (BSD-3-Clause), pytest-asyncio (Apache-2.0), matplotlib (Matplotlib licence, PSF-based), NumPy (BSD-3-Clause)
+- Python optional extras in `pyproject.toml`, installed only for that use: segno (BSD-3-Clause; `labels` and `dev` extras, printable food-pack QR labels), smbus2 (MIT; `pi` extra, cabin node on a Raspberry Pi), upstash-redis (MIT; `cloud` extra, public ground segment)
+- JavaScript (licence from `package-lock.json`): uPlot (MIT; console charts), @types/node (MIT; type definitions, dev only, camera and console)
 - JavaScript (confirm): Vite, Vitest, jsdom, TypeScript; console and camera manifests to be read at 14:00
 - MediaPipe Pose Landmarker lite (Apache-2.0), if the camera page ships
 - Mosquitto broker (EPL-2.0/EDL-1.0) [confirm]

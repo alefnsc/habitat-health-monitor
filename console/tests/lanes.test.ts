@@ -7,6 +7,9 @@ import {
   yRange,
 } from "../src/model/lanes";
 import { SCREENS, screenFromHash } from "../src/screens";
+import { LANE_BUCKET_S, LANE_HOURS, LANE_LIMIT } from "../src/views/panel";
+import { LIMIT, WINDOWS, footnote } from "../src/views/lanes";
+import { COPY } from "../src/copy";
 
 const rd = (
   ind: Ind, val: number, t: number, q: QualityFlag[] = ["ok"], src: SrcClass = "hobby", dev = "BME280",
@@ -139,6 +142,33 @@ describe("lane series", () => {
     expect(hot.mean?.[4]).toBeCloseTo(3.6);
     expect(hot.act.slice(0, 4)).toEqual([null, null, null, null]);
     expect(hot.act[4]).toBeCloseTo(3.6);
+  });
+});
+
+describe("long windows", () => {
+  test("mean lane: the hub's 1-hour mean is used when the rows carry it", () => {
+    const rs = laneRules(RULES, "cabin_ppco2", "mean_1h");
+    // Too few rows here for a local mean; the hub computed it on every stored reading.
+    const rows = [{ ...rd("cabin_ppco2", 2, 0), mean_1h: 3.5 }, { ...rd("cabin_ppco2", 2, 600), mean_1h: 2.8 },
+      { ...rd("cabin_ppco2", 4, 900, ["assumed_pressure"]), mean_1h: null }];
+    const s = laneSeries(rows, rs, "mean_1h");
+    expect(s.mean).toEqual([3.5, 2.8, null]);
+    expect(s.act).toEqual([3.5, null, null]);
+  });
+
+  test("every window fits under the row cap, even with all 8 kept rows per bucket", () => {
+    // hub/buckets.py keeps at most: first, last, lowest, highest; flagged lowest, highest; mean lowest, highest.
+    const fits = (hours: number, bucketS: number, limit: number) => (Math.floor((hours * 3600) / bucketS) + 1) * 8 <= limit;
+    for (const w of WINDOWS) expect(fits(w.hours, w.bucketS, LIMIT), w.key).toBe(true);
+    expect(fits(LANE_HOURS, LANE_BUCKET_S, LANE_LIMIT)).toBe(true);
+  });
+
+  test("footnote names the step, and says so when the hub still cut the window", () => {
+    const few = [[rd("cabin_temp", 22, 0)], []];
+    expect(footnote(few, 180)).toBe(COPY["lanes.step"].replace("{s}", "3 min"));
+    expect(footnote(few, 10)).toBe(COPY["lanes.step"].replace("{s}", "10 s"));
+    const full = [Array.from({ length: LIMIT }, (_, i) => rd("cabin_temp", 22, i)), []];
+    expect(footnote(full, 180)).toBe(COPY["lanes.cut"]);
   });
 });
 

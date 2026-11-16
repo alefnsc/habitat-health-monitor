@@ -134,6 +134,11 @@ describe("replay panel source", () => {
     expect((await src(5000).link()).state).toBe("blackout");
   });
 
+  test("the replay source has no signals, so the panel shows no signals chip", () => {
+    expect("signals" in replaySource(file(), null, () => 0)).toBe(false);
+    expect("signals" in src(0)).toBe(false);
+  });
+
   test("feeds the replay does not carry are refused, so their cards say so", async () => {
     const s = src(0);
     for (const p of [s.spaceWeather(), s.issCabin(), s.issReference(), s.foodDay()]) await expect(p).rejects.toThrow();
@@ -206,6 +211,8 @@ describe("replay mode opens on the habitat panel", () => {
     const top = root.querySelector(".p-top")!.textContent!;
     expect(top).toContain("Cabin sensors Replay (recorded)");
     expect(top).not.toMatch(/\blive\b/);
+    expect(top).not.toContain("Signals");
+    expect(root.querySelector('.p-top a[href="#/signals"]')).toBeNull();
     expect(root.querySelector(".p-lift")!.textContent).toContain("Synthetic set from the exercise replay file");
     expect(root.querySelectorAll(".p-lift .bar")).toHaveLength(8);
     expect(root.querySelector(".p-vitals")!.textContent).toContain("Recorded session");

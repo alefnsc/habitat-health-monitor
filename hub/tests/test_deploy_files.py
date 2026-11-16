@@ -33,6 +33,16 @@ def test_no_provider_names_in_ui_sources():
         assert "vercel" not in text and "upstash" not in text, path
 
 
+def test_ground_page_identity_notice_and_phone_tables():
+    html = (ROOT / "ground" / "index.html").read_text()
+    assert "<title>Habitat Health Monitor — ground segment</title>" in html
+    assert 'href="https://github.com/alefnsc/habitat-health-monitor"' in html
+    assert "not a medical device" in html and "until real data exists" not in html
+    css = re.sub(r"\s+", " ", (ROOT / "ground" / "src" / "style.css").read_text())
+    assert re.search(r"\.table-scroll \{[^}]*overflow-x: auto", css)
+    assert 'class="table-scroll"' in (ROOT / "ground" / "src" / "render.ts").read_text()
+
+
 def test_consent_doc_has_both_languages_and_rules():
     text = (ROOT / "docs" / "consent.md").read_text()
     for needle in ("## English", "## Português", "48 h", "PUBLIC_CREWS", "purge", "under 18", "menores de 18", "sim-1", "guardian", "Responsável legal"):

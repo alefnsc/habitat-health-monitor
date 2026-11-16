@@ -43,20 +43,18 @@ uint32_t bumpBootCounter() {
 }  // namespace habitat
 
 namespace {
-const uint32_t kBackoffStartMs = 1000;
-const uint32_t kBackoffMaxMs = 30000;
 const uint32_t kDiagEveryMs = 10000;
-const uint8_t kDrainPerLoop = 4;
+const uint32_t kDnsTimeoutMs = 2000;  // ESP8266 only; bounds the loop stall on a missing .local name
 
-uint32_t nextBackoff(uint32_t b) { return b * 2 > kBackoffMaxMs ? kBackoffMaxMs : b * 2; }
 bool due(uint32_t now, uint32_t at) { return static_cast<int32_t>(now - at) >= 0; }
 }  // namespace
 
 HabitatNode::HabitatNode()
-    : mqtt_(512),
-      boot_(0), seq_(0), wifi_was_up_(false), mqtt_was_up_(false),
-      wifi_retry_at_(0), wifi_backoff_ms_(kBackoffStartMs),
-      mqtt_retry_at_(0), mqtt_backoff_ms_(kBackoffStartMs),
+    : boot_(0), seq_(0),
+      mqtt_(512),
+      port_{*this},
+      link_(port_, ring_),
+      wifi_was_up_(false),
       last_diag_ms_(0), last_dropped_(0) {
   node_[0] = topic_r_[0] = topic_status_[0] = '\0';
 #if defined(ARDUINO_ARCH_ESP32)
@@ -86,13 +84,16 @@ bool HabitatNode::beginWith(const char* node_id, const HabitatConfig& cfg) {
   Serial.printf("# %s boot=%lu\n", node_, static_cast<unsigned long>(boot_));
 
   WiFi.mode(WIFI_STA);
-  mqtt_.begin(cfg_.mqtt_host, cfg_.mqtt_port, net_);
+  mqtt_.begin(net_);  // the address is set before each attempt (Port::resolve)
   mqtt_.setKeepAlive(10);
   mqtt_.setCleanSession(true);
   mqtt_.setTimeout(2000);
   mqtt_.setWill(topic_status_, "offline", true, 1);
   uint32_t now = millis();
-  wifi_retry_at_ = mqtt_retry_at_ = now;
+  wifi_backoff_.retry_at = now;
+  link_.begin({node_, boot_, cfg_.mqtt_host, cfg_.mqtt_port, cfg_.mqtt_user, cfg_.mqtt_pass,
+               topic_r_, topic_status_},
+              now);
   last_diag_ms_ = now;
   return true;
 }
@@ -114,69 +115,52 @@ void HabitatNode::connectWifi(uint32_t now) {
   if (WiFi.status() == WL_CONNECTED) {
     if (!wifi_was_up_) {
       wifi_was_up_ = true;
-      wifi_backoff_ms_ = kBackoffStartMs;
+      wifi_backoff_.succeeded();
       Serial.printf("# wifi ok ip=%s rssi=%d\n", WiFi.localIP().toString().c_str(),
                     static_cast<int>(WiFi.RSSI()));
     }
     return;
   }
   wifi_was_up_ = false;
-  if (!due(now, wifi_retry_at_)) return;
+  if (!wifi_backoff_.due(now)) return;
   WiFi.disconnect();
   WiFi.begin(cfg_.wifi_ssid, cfg_.wifi_pass);  // returns at once; status is polled
-  wifi_retry_at_ = now + wifi_backoff_ms_;
-  wifi_backoff_ms_ = nextBackoff(wifi_backoff_ms_);
+  wifi_backoff_.failed(now);
 }
 
-void HabitatNode::connectMqtt(uint32_t now) {
-  if (WiFi.status() != WL_CONNECTED) return;
-  if (mqtt_.connected()) {
-    mqtt_was_up_ = true;
-    return;
+bool HabitatNode::Port::connected() { return node.mqtt_.connected(); }
+
+bool HabitatNode::Port::resolve(const char* host, uint16_t port, char* ip, size_t cap) {
+  IPAddress addr;
+  if (!addr.fromString(host)) {
+#if defined(ARDUINO_ARCH_ESP32)
+    if (!WiFi.hostByName(host, addr)) return false;
+#else
+    // lwIP in the ESP8266 core is built with LWIP_DNS_SUPPORT_MDNS_QUERIES: a .local name works.
+    if (!WiFi.hostByName(host, addr, kDnsTimeoutMs)) return false;
+#endif
   }
-  if (mqtt_was_up_) {
-    mqtt_was_up_ = false;
-    Serial.println("# mqtt lost");
-  }
-  if (!due(now, mqtt_retry_at_)) return;
-  if (mqtt_.connect(node_, cfg_.mqtt_user, cfg_.mqtt_pass)) {
-    Serial.println("# mqtt ok");
-    mqtt_.publish(topic_status_, "online", true, 1);
-    mqtt_was_up_ = true;
-    mqtt_backoff_ms_ = kBackoffStartMs;
-  } else {
-    mqtt_retry_at_ = now + mqtt_backoff_ms_;
-    mqtt_backoff_ms_ = nextBackoff(mqtt_backoff_ms_);
-  }
+  node.mqtt_.setHost(addr, port);
+  snprintf(ip, cap, "%s", addr.toString().c_str());
+  return true;
 }
 
-void HabitatNode::drain(uint32_t now) {
-  char buf[256];
-  for (uint8_t n = 0; n < kDrainPerLoop && mqtt_.connected(); ++n) {
-    habitat::PendingReading r;
-    lock();
-    bool have = ring_.peekOldest(r);
-    unlock();
-    if (!have) return;
-    size_t len = habitat::formatReading(r, node_, boot_, now, buf, sizeof buf);
-    if (len == 0) {  // cannot happen with legal values; drop rather than block the ring
-      lock();
-      ring_.popOldest();
-      unlock();
-      continue;
-    }
-    // QoS 1: publish() returns true only after the PUBACK arrived.
-    if (!mqtt_.publish(topic_r_, buf, static_cast<int>(len), false, 1)) return;
-    lock();
-    habitat::PendingReading oldest;
-    // Pop only if the entry we sent is still the oldest (an overflow may have dropped it).
-    if (ring_.peekOldest(oldest) && oldest.seq == r.seq) ring_.popOldest();
-    unlock();
-    Serial.printf("# pub %s %.3f seq=%lu age_ms=%lu\n", habitat::kIndNames[r.ind],
-                  static_cast<double>(r.val), static_cast<unsigned long>(r.seq),
-                  static_cast<unsigned long>(now - r.sampled_ms));
-  }
+bool HabitatNode::Port::connect(const char* id, const char* user, const char* pass) {
+  return node.mqtt_.connect(id, user, pass);
 }
+
+int HabitatNode::Port::returnCode() { return static_cast<int>(node.mqtt_.returnCode()); }
+
+int HabitatNode::Port::lastError() { return static_cast<int>(node.mqtt_.lastError()); }
+
+bool HabitatNode::Port::publish(const char* topic, const char* payload, int len, bool retained,
+                                int qos) {
+  return node.mqtt_.publish(topic, payload, len, retained, qos);
+}
+
+void HabitatNode::Port::poll() { node.mqtt_.loop(); }
+
+void HabitatNode::Port::log(const char* line) { Serial.println(line); }
 
 void HabitatNode::diagnostics(uint32_t now) {
   lock();
@@ -197,10 +181,6 @@ void HabitatNode::diagnostics(uint32_t now) {
 void HabitatNode::loop() {
   uint32_t now = millis();
   connectWifi(now);
-  connectMqtt(now);
-  if (mqtt_.connected()) {
-    mqtt_.loop();
-    drain(now);
-  }
+  link_.loop(now, WiFi.status() == WL_CONNECTED);
   diagnostics(now);
 }

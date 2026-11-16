@@ -4,14 +4,14 @@ Status: approved by the team owner, 2026-11-14 ~12:10 (UTC−03:00), section by 
 
 ## 1. Goal
 
-Give the judged public link a live "Earth" side. While the habitat runs, the data that crosses the simulated Mars link appears on a public page on the team's own domain, after the light-time delay. When the habitat is off, the same page plays the labelled replay. The habitat hub itself stays offline (LAN only), as the spec requires.
+Give the judged public link a live "Earth" side. While the habitat runs, the data that crosses the simulated Mars link appears on a public page, after the light-time delay. The page is the hosting project's default address, https://habitat-health-monitor.vercel.app/ (§7.3; no team domain was claimed). When the habitat is off, the same page plays the labelled replay. The habitat hub itself stays offline (LAN only), as the spec requires.
 
 ## 2. Constraints
 
 | ID | Constraint | Consequence |
 |---|---|---|
 | R2 | The final-project link is public, with no login | The page and the read API need no account |
-| R5 | No company name or logo, and no promotion | The page and repo name no hosting or domain provider. The domain comes from the Space Apps Global Offer (free domain through the registry's partner registrar) |
+| R5 | No company name or logo, and no promotion | The page UI text and the video name no hosting or domain provider. Exception E6 (operator, 2026-11-15 ~18:15; listed in `docs/submission/checklist.md`): the judged URL is the hosting project's default address, so it carries the provider's name. That URL appears only in the "Link to Final Project" field, `docs/decisions/links.md`, the plan and the setup docs (this design, `docs/deploy-public.md`, the S19/S20 checklist). Setup files such as `vercel.json` also carry the name where it can't be avoided |
 | R8 | No likeness of anyone under 18 | Recordings, photos and video show adult team members only. Readings of anyone under 18 are never published, whatever the consent |
 | Consent | Real people's health data is published only with that person's documented consent | Body data reaches the public side only for crew ids listed in `PUBLIC_CREWS` (§5) |
 | Privacy | Health data is sensitive personal data | Public storage keeps at most 48 h. A signed purge removes a crew's data on request |
@@ -127,8 +127,8 @@ hub outbox ──> link simulator ──(light-time hold, blackouts)──┬─
    - set `GROUND_INGEST_SECRET` in the hosting project and in the habitat `.env`;
    - add the domain and set DNS at the registrar;
    - collect consent forms.
-3. **After the domain is live:**
-   - D24 and `docs/decisions/links.md` change so that the judged link is the domain;
-   - the GitHub Pages site stays as a mirror;
-   - the project page uses the domain.
+3. **Judged link (operator, 2026-11-15 ~18:15):** no team domain was claimed.
+   - D24 and `docs/decisions/links.md` name the hosting project's default address, https://habitat-health-monitor.vercel.app/, as the judged link;
+   - the GitHub Pages site stays as a mirror (replay only);
+   - the project page's "Link to Final Project" field uses that address.
 4. **R8 throughout:** D31 (OBS build scenes) records only adult team members, and only the hands and bench of the team owner.

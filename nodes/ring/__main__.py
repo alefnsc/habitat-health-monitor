@@ -21,6 +21,7 @@ from collections import Counter
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -43,7 +44,9 @@ from nodes.ring.records import KIND, append_record, load_records
 DEFAULT_HUB = "http://127.0.0.1:8000"
 DEFAULT_TOKEN = "var/ring/token.json"
 DEFAULT_PULLS = "var/ring/pulls.jsonl"
-DEFAULT_REDIRECT = "http://127.0.0.1:8799/callback"
+# localhost, not 127.0.0.1: the vendor's load balancer answers 403 to any request carrying 127.0.0.1.
+# The listener still binds 127.0.0.1; the browser reaches it through localhost.
+DEFAULT_REDIRECT = "http://localhost:8799/callback"
 
 
 def set_env_values(path: Path, values: Mapping[str, str]) -> None:
@@ -128,6 +131,12 @@ def _replay(args: argparse.Namespace, http: httpx.Client) -> int:
 def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
     env = fill_missing(env, Path(args.env_file), input, getpass.getpass)
     cfg = config_from_env(env)
+    if urlsplit(cfg.redirect_uri).hostname == "127.0.0.1":
+        print(
+            f"warning: RING_REDIRECT_URI is {cfg.redirect_uri}, but the vendor's load balancer blocks "
+            f"requests carrying 127.0.0.1. Register {DEFAULT_REDIRECT} and set RING_REDIRECT_URI to match.",
+            file=sys.stderr,
+        )
     verifier, challenge = make_pkce()
     state = secrets.token_urlsafe(24)
     send_redirect = not args.use_registered_redirect
@@ -138,12 +147,17 @@ def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
         if not args.no_browser:
             webbrowser.open(url)
 
-    if is_loopback_redirect(cfg.redirect_uri):
+    if is_loopback_redirect(cfg.redirect_uri) and not args.paste:
         # the callback port is bound before the browser opens (see wait_for_redirect)
         redirect = wait_for_redirect(cfg.redirect_uri, on_ready=open_sign_in)
     else:
         open_sign_in()
-        redirect = input("Paste the full URL the browser was sent to: ")
+        try:
+            redirect = input("Paste the full URL the browser was sent to: ")
+        except EOFError:
+            raise AuthError(
+                "nothing to read the address from: run `python -m nodes.ring auth` in an interactive terminal"
+            ) from None
     code = code_from_redirect(redirect, state)
     with httpx.Client() as http:
         tok = exchange_code(cfg, code, verifier, http, include_redirect=send_redirect)
@@ -187,6 +201,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--use-registered-redirect", action="store_true",
         help="send no redirect_uri: the vendor uses the app's one registered redirect "
         "(still listened for on RING_REDIRECT_URI)",
+    )  # fmt: skip
+    au.add_argument(
+        "--paste", action="store_true",
+        help="do not listen for the callback: paste the address the browser ended on "
+        "(it holds the code even if the page does not load)",
     )  # fmt: skip
     pu = sub.add_parser("pull", help="fetch, save the raw pull, post as src hobby")
     pu.add_argument("--days", type=int, default=2, help="how many days back (default 2)")

@@ -8,7 +8,7 @@ from datetime import time
 from pathlib import Path
 
 FEATURE_NAMES: frozenset[str] = frozenset(
-    {"nasa", "iss", "wearable", "mcp", "ble", "serial", "food"}
+    {"nasa", "iss", "wearable", "mcp", "ble", "serial", "food", "signals"}
 )
 KNOWN_CREWS: tuple[str, ...] = ("crew-a", "crew-b", "crew-c")
 

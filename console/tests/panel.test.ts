@@ -7,7 +7,9 @@ import { RULES } from "../src/model/rules";
 import { bandSentence, compactSource } from "../src/model/panel/bands";
 import { laneRules } from "../src/model/lanes";
 import { exercisesDone } from "../src/model/panel/exercises";
-import { holdMs, packetsInFlight } from "../src/model/panel/link";
+import { holdMs, positions, prune, queueAlert, resume } from "../src/model/panel/link";
+import { latestEntry } from "../src/model/panel/latest";
+import type { StatusEntry } from "../src/contract";
 import { missingLine } from "../src/model/panel/missing";
 import { PLACES, placesWork } from "../src/model/panel/places";
 import { weighTrend } from "../src/model/panel/trend";
@@ -76,12 +78,42 @@ describe("Mars link packets", () => {
     expect(holdMs(link)).toBe(12_000);
     expect(holdMs({ ...link, time_scale: 1 })).toBe(720_000);
   });
-  test("each alert travels from Mars (0) to Earth (1), then leaves the line", () => {
-    expect(packetsInFlight([1000, 7000, -20_000], 13_000, 12_000, "contact")).toEqual([1, 0.5]);
+  test("in contact, each alert leaves Mars at once and crosses in the hold time", () => {
+    let p = queueAlert([], 1000, "contact");
+    p = queueAlert(p, 7000, "contact");
+    expect(positions(p, 13_000, 12_000)).toEqual({ moving: [1, 0.5], waiting: 0 });
+    expect(prune(p, 13_001, 12_000)).toHaveLength(1);
   });
-  test("in a blackout or with no link simulator, alerts wait at Mars", () => {
-    expect(packetsInFlight([1000], 2000, 12_000, "blackout")).toEqual([0]);
-    expect(packetsInFlight([1000], 2000, 12_000, "unreachable")).toEqual([0]);
+  test("alerts raised in a blackout or with no link simulator wait at Mars", () => {
+    const p = queueAlert(queueAlert([], 1000, "blackout"), 2000, "unreachable");
+    expect(positions(p, 60_000, 12_000)).toEqual({ moving: [], waiting: 2 });
+    expect(prune(p, 600_000, 12_000)).toHaveLength(2); // never dropped while waiting
+  });
+  test("a long blackout: waiting alerts leave when contact returns and are seen crossing", () => {
+    let p = queueAlert([], 10_000, "blackout");
+    p = resume(p, 50_000, "blackout"); // still dark: nothing moves
+    expect(positions(p, 50_000, 12_000)).toEqual({ moving: [], waiting: 1 });
+    p = resume(p, 70_000, "contact"); // 60 s after it was raised, longer than the 12 s hold
+    expect(positions(p, 76_000, 12_000)).toEqual({ moving: [0.5], waiting: 0 });
+    expect(prune(p, 82_001, 12_000)).toHaveLength(0);
+  });
+  test("an alert already in flight keeps moving through a blackout", () => {
+    let p = queueAlert([], 0, "contact");
+    p = resume(p, 3000, "blackout");
+    expect(positions(p, 6000, 12_000)).toEqual({ moving: [0.5], waiting: 0 });
+  });
+});
+
+describe("latest entry for a lane outside the window", () => {
+  const e = (ind: StatusEntry["ind"], at: string, val: number): StatusEntry => ({
+    ind, val, unit: "bpm", status: "ok", rule_id: "r", source_kind: "clinical_ref", source_ref: "x", guidance_id: null,
+    escalate_to: "self", measured_at: at, crew: "crew-b", src: "hobby", dev: "RING", q: ["ok"], node: "ring-1", reading_id: 1,
+  });
+  test("newest entry for the indicator, or null", () => {
+    const list = [e("hr", "2026-10-28T03:00:00Z", 58), e("hr", "2026-10-29T03:00:00Z", 55), e("spo2", "2026-10-29T03:00:00Z", 96)];
+    expect(latestEntry(list, "hr")?.val).toBe(55);
+    expect(latestEntry(list, "sleep_h")).toBeNull();
+    expect(latestEntry(null, "hr")).toBeNull();
   });
 });
 
@@ -123,6 +155,8 @@ describe("panel helpers", () => {
       s("row", "2026-11-15T14:00:00Z"), s("curl", "2026-11-15T13:00:00Z"), s("overhead_press", "2026-11-13T13:00:00Z"),
       s(null, "2026-11-15T12:00:00Z"),
     ], now)).toEqual(["curl", "row"]);
+    const empty = { ...s("overhead_press", "2026-11-15T14:30:00Z"), camera_reps: 0, load_cell_reps: 0 };
+    expect(exercisesDone([empty], now)).toEqual([]);
   });
   test("source chip prints the standard once", () => {
     expect(chipSource("NASA-STD-3001", "NASA-STD-3001 Vol 2 Rev F, 6.2.3.2 [V2 6013]")).toBe(

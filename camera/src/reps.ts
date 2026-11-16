@@ -92,10 +92,14 @@ export const refusalText = (reasons: RefusalReason[]): string[] => refusalSenten
 
 export const inputProblemText = (inputs: CaptureInputs): string | null => captureInputProblem(inputs);
 
+// NASA NSSDC Mars Fact Sheet, surface gravity (mean): 3.73 m/s² (equatorial 3.69). The vendored table's Mars value
+// is not on that page; the console's four-places card uses 3.73 too.
+export const MARS_G_MS2 = 3.73;
+
 export const ENVIRONMENT_MENU = (["EARTH", "MOON", "MARS", "ISS"] as const).map((id) => ({
   id,
   label: COPY[`env.${id}`],
-  g: G_ENV_MS2[id],
+  g: id === "MARS" ? MARS_G_MS2 : G_ENV_MS2[id],
 }));
 
 // The line under the result table: work uses the configured g, taken from the selected menu entry.

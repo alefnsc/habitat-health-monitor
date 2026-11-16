@@ -2,7 +2,7 @@ import { COPY } from "../../copy";
 import type { LinkState } from "../../contract";
 import { el } from "../../dom";
 import { formatLightTime } from "../../model/guidance";
-import { holdMs, lightText, packetsInFlight } from "../../model/panel/link";
+import { holdMs, lightText, positions, prune, queueAlert, resume, type Packet } from "../../model/panel/link";
 import { hubEvents } from "../../state";
 import { card } from "./common";
 
@@ -27,7 +27,7 @@ export function linkCard(): { node: HTMLElement; update: (l: LinkState | null) =
   const c = card("p-link", "5", COPY["panel.link"]);
   c.sub.textContent = COPY["panel.linkSim"];
   let link: LinkState | null = null;
-  const sent: number[] = [];
+  let packets: Packet[] = [];
   const holder = el("div");
   holder.innerHTML = SKELETON;
   const svg = holder.firstElementChild as SVGSVGElement;
@@ -48,7 +48,8 @@ export function linkCard(): { node: HTMLElement; update: (l: LinkState | null) =
       return;
     }
     const hold = holdMs(link);
-    const xs = packetsInFlight(sent, Date.now(), hold, link.state);
+    packets = prune(packets, Date.now(), hold);
+    const { moving: xs, waiting } = positions(packets, Date.now(), hold);
     pk.innerHTML = xs.map((x) => `<circle class="pkt" cx="${(X0 + x * (X1 - X0)).toFixed(1)}" cy="${Y}" r="7"></circle>`).join("");
     lt.textContent = formatLightTime(link.light_time_s, 1);
     demo.textContent = link.time_scale > 1
@@ -57,30 +58,34 @@ export function linkCard(): { node: HTMLElement; update: (l: LinkState | null) =
     state.textContent = COPY[`panel.state.${link.state}`];
     svg.setAttribute("aria-label", `${COPY["panel.link"]}: ${lt.textContent}. ${state.textContent}`);
     caption.textContent = COPY["panel.linkCaption"].replace("{t}", lightText(link.light_time_s));
-    counts.textContent = `${xs.length} ${COPY["panel.inFlight"]} · ${link.queue_len} ${COPY["panel.queue"]}`;
+    counts.textContent = `${xs.length} ${COPY["panel.inFlight"]} · ${waiting} ${COPY["panel.waitingAtMars"]}`;
   };
   let raf = 0;
   let moving = false;
   const tick = () => {
     // Redraw per frame only while a packet is on the line (plus one frame to clear it).
-    const busy = !!link && sent.some((t) => Date.now() - t <= holdMs(link!));
+    const busy = !!link && packets.some((p) => p.startMs !== null && Date.now() - p.startMs <= holdMs(link!));
     if (busy || moving) draw();
     moving = busy;
     raf = requestAnimationFrame(tick);
   };
   raf = requestAnimationFrame(tick);
+  const setLink = (l: LinkState) => {
+    link = l;
+    packets = resume(packets, Date.now(), l.state); // back in contact: the queue leaves Mars now
+  };
   const offAlert = hubEvents.onAlert(() => {
-    sent.push(Date.now());
-    while (sent.length > 50) sent.shift();
+    packets = queueAlert(packets, Date.now(), link?.state ?? "unreachable");
+    draw();
   });
   const offLink = hubEvents.onLink((l) => {
-    link = l;
+    setLink(l);
     draw();
   });
   return {
     node: c.node,
     update: (l) => {
-      if (l) link = l;
+      if (l) setLink(l);
       draw();
     },
     dispose: () => {

@@ -11,7 +11,7 @@ import time
 
 import serial
 
-from hub.commands import Command, encode_command, parse_command
+from hub.commands import SERIAL_NODES, Command, encode_command, parse_command
 from hub.config import Settings
 from hub.contract import ContractError
 from hub.ingest import Ingestor, IngestResult
@@ -20,7 +20,6 @@ from hub.mqtt import NodeRegistry
 log = logging.getLogger("hub.serial")
 
 RIG_NODE = "exercise-1"  # commands and acks
-SERIAL_NODES: frozenset[str] = frozenset({RIG_NODE, "cabin-1"})  # D40: the UNO also reads the DHT11
 MAX_LINE = 256
 RECONNECT_S = 2.0
 

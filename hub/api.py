@@ -19,6 +19,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse
 from starlette.concurrency import run_in_threadpool
 
 from hub.assess import Assessor, load_escalation, status_body
+from hub.buckets import bucketed
 from hub.commands import CommandRouter
 from hub.config import Settings, load_settings
 from hub.contract import CREWS, DERIVED, INDICATORS, ContractError
@@ -41,6 +42,7 @@ log = logging.getLogger("hub.api")
 
 DEFAULT_LIMIT = 500
 MAX_LIMIT = 5000
+MAX_BUCKET_S = 86400
 OUTBOX_DEFAULT = 500
 OUTBOX_MAX = 1000
 
@@ -260,6 +262,18 @@ def create_app(
         crew = q.get("crew") or None
         if crew is not None and crew not in CREWS:
             return reject("bad_crew")
+        if q.get("bucket_s"):
+            try:
+                bucket_s = int(q["bucket_s"])
+            except ValueError:
+                return reject("bad_type:bucket_s")
+            if not 1 <= bucket_s <= MAX_BUCKET_S:
+                return reject("bad_value:bucket_s")
+            mean_1h = any(r.ind == ind and r.window == "mean_1h" for r in rules)
+            return JSONResponse(
+                bucketed(store, ind, bucket_s=bucket_s, limit=limit, since=since, crew=crew,
+                         mean_1h=mean_1h)
+            )  # fmt: skip
         rows = store.readings(ind, since=since, limit=limit, crew=crew)
         return JSONResponse([r.to_dict() for r in rows])
 

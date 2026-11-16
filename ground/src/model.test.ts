@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  asOfLabel, blackoutLabel, emptyView, indicatorLabel, orderedKeys, reduce, silenceLabel,
-  sourceKindLabel,
+  arrivalMs, asOfLabel, blackoutLabel, emptyView, indicatorLabel, orderedKeys, reduce, showsSynthetic,
+  silenceLabel, sourceKindLabel,
 } from "./model";
 import type { Arrival, GroundView, OutboxItem } from "./types";
 
@@ -130,5 +130,22 @@ describe("order", () => {
   it("indicator_order_nutrition", () => {
     expect(inds(mk(["body_mass", "intake_sodium_mg", "intake_kcal", "rad_dose_cum", "hr"]))).toEqual(
       ["hr", "rad_dose_cum", "intake_kcal", "intake_sodium_mg", "body_mass"]);
+  });
+});
+
+describe("synthetic readings and arrival time", () => {
+  it("showsSynthetic is true only while a sim-1 reading is in the table", () => {
+    expect(showsSynthetic(reduce(emptyView(), arr(1, [reading(1)]), 0))).toBe(false);
+    const v = reduce(emptyView(), arr(1, [reading(1, { node: "sim-1" })]), 0);
+    expect(v.latest.get("crew-a:hr")!.node).toBe("sim-1");
+    expect(showsSynthetic(v)).toBe(true);
+    const later = reduce(v, arr(2, [reading(2, { measured_at: "2026-11-15T13:00:09.000Z" })]), 0);
+    expect(showsSynthetic(later)).toBe(false);
+  });
+  it("arrivalMs reads received_at and falls back when it is not a date", () => {
+    expect(arrivalMs({ ...arr(1, []), received_at: "2026-11-15T13:00:05.000Z" }, 7)).toBe(
+      Date.parse("2026-11-15T13:00:05.000Z"),
+    );
+    expect(arrivalMs(arr(1, []), 7)).toBe(7);
   });
 });

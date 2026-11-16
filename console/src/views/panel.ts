@@ -14,8 +14,10 @@ import { PANEL_LANES, vitalsCard } from "./panel/vitals";
 // leaves that card at "No data" and the others alone. The panel only reads from the hub.
 const REFRESH_MS = 10_000;
 const LANES_REFRESH_MS = 30_000; // the lane readings are the heavy request: refetch them less often
-const LANE_HOURS = 6;
-const LANE_LIMIT = 5000;
+const SIGNALS_REFRESH_MS = 30_000; // D45 signals are worked out on read for every crew: on their own, slower cadence
+export const LANE_HOURS = 6;
+export const LANE_BUCKET_S = 60; // a few stored readings per minute, so a fast sensor cannot cut the window
+export const LANE_LIMIT = 5000;
 const MASS_DAYS = 30;
 
 const soft = <T>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
@@ -30,7 +32,9 @@ async function latestSet(src: PanelSource, crew: CrewId | undefined): Promise<{ 
 }
 
 async function laneRows(src: PanelSource, sinceIso: string, crew: CrewId | undefined): Promise<Record<string, StoredReading[]> | null> {
-  const all = await Promise.all(PANEL_LANES.map((s) => soft(src.readings(s.ind!, { since: sinceIso, limit: LANE_LIMIT, crew: laneCrew(s.ind!, crew) }))));
+  const all = await Promise.all(PANEL_LANES.map((s) => soft(src.readings(s.ind!, {
+    since: sinceIso, limit: LANE_LIMIT, crew: laneCrew(s.ind!, crew), bucket_s: LANE_BUCKET_S,
+  }))));
   if (all.every((r) => r === null)) return null;
   return Object.fromEntries(PANEL_LANES.map((s, i) => [s.key, all[i] ?? []]));
 }
@@ -49,11 +53,23 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   let token = 0;
   let disposed = false;
   let lanesAt = 0;
+  let signalsAt = 0;
+  let signalsToken = 0;
+  // The signals chip loads on its own: no card waits for the evaluation.
+  const loadSignals = () => {
+    if (!src.signals || Date.now() - signalsAt < SIGNALS_REFRESH_MS) return;
+    signalsAt = Date.now();
+    const mine = ++signalsToken;
+    void soft(src.signals(currentCrew() ?? undefined)).then((b) => {
+      if (!disposed && mine === signalsToken) top.signals(b);
+    });
+  };
   // The source clock at the last load and at the last lane load. A paused replay holds its clock still, so once the
   // lanes have caught up with the frozen frame there is nothing to reload or redraw.
   let loadedAt = Number.NaN;
   let lanesClock = Number.NaN;
   const load = async () => {
+    loadSignals(); // on the wall clock, so a paused source clock does not stop it
     const clock = src.now();
     if (clock === loadedAt && clock === lanesClock) return;
     const frozen = clock === loadedAt;
@@ -78,7 +94,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
     if (rows !== undefined) {
       lanesAt = Date.now();
       lanesClock = clock;
-      vitals.update({ rows, win, iss });
+      vitals.update({ rows, win, iss, latest: status?.results ?? null });
     }
     rad.update({ ref, weather });
     link.update(linkState);
@@ -87,6 +103,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   const timer = setInterval(() => void load(), src.refreshMs ?? REFRESH_MS);
   const offCrew = onCrewChange(() => {
     lanesAt = 0;
+    signalsAt = 0;
     loadedAt = Number.NaN;
     void load();
   });

@@ -4,7 +4,10 @@
 // Educational prototype. Readings go to habitat/v1/r/tilt-1 through HabitatNode.
 //
 // Board: NodeMCU Amica (esp8266:esp8266:nodemcuv2). Pin: D5 (GPIO14), INPUT_PULLUP.
-// Keep D1/D2 free (I2C for a later MPU6050) and D3, D4, D8 free (boot pins).
+// BMP280 (cabin_p as tilt-1, every 10 s): SDA D2 (GPIO4), SCL D1 (GPIO5), VCC on 3V3, CSB and SDO open (0x76).
+//   It builds in when bmp280_lite.h sits next to this file (firmware/bmp280/sync.sh copies it); the Wokwi
+//   twin has no copy and builds without it. A missing module is reported once and the tilt channel goes on.
+// Keep D3, D4, D8 free (boot pins). An MPU6050 could share the D1/D2 bus later.
 // Power (D40): a cell pack, so the pod on the weight has no cable. 4 x Ni-MH AA on VIN and GND (chosen),
 // or 2 x alkaline AA/AAA on 3V3 and GND. Never 2 cells on VIN, never 3+ cells on 3V3, no CR2032.
 // The KY-017 stays on 3V3. Rules and runtimes: firmware/tilt-esp8266/README.md.
@@ -22,6 +25,13 @@
 #define TILT_MQTT 1
 #else
 #define TILT_MQTT 0
+#endif
+
+#if __has_include("bmp280_lite.h")
+#include "bmp280_lite.h"
+#define TILT_BMP280 1
+#else
+#define TILT_BMP280 0
 #endif
 
 #ifndef TILT_ACTIVE_LOW
@@ -110,10 +120,44 @@ static void publish(uint8_t val) {
   lastPublish = millis();
 }
 
+#if TILT_BMP280
+static bmp280::Poller baro;
+
+static void baroPoll(uint32_t now) {
+  float p = 0;
+  switch (baro.poll(now, 10000, &p)) {
+    case bmp280::EV_READING:
+#if TILT_MQTT
+      node.queue(habitat::IND_CABIN_P, p, habitat::DEV_BMP280,
+                 bmp280::inRange(p) ? 0 : habitat::Q_OUT_OF_RANGE);
+#else
+      Serial.print(F("# bmp280 cabin_p hPa="));
+      Serial.println(p, 2);
+#endif
+      break;
+    case bmp280::EV_FOUND:
+      Serial.print(F("# bmp280 found addr=0x"));
+      Serial.println(baro.address(), HEX);
+      break;
+    case bmp280::EV_MISSING:
+      Serial.println(F("# bmp280 missing at 0x76 and 0x77: no cabin_p, tilt goes on"));
+      break;
+    case bmp280::EV_LOST:
+      Serial.println(F("# bmp280 lost: no cabin_p until it answers again"));
+      break;
+    default:
+      break;
+  }
+}
+#endif
+
 void setup() {
   Serial.begin(115200);
   Serial.println();
   pinMode(PIN_TILT, INPUT_PULLUP);
+#if TILT_BMP280
+  Wire.begin();  // NodeMCU default pins: SDA D2 (GPIO4), SCL D1 (GPIO5)
+#endif
 #if TILT_MQTT
   node.begin("tilt-1");
 #else
@@ -129,5 +173,8 @@ void loop() {
 #endif
   uint32_t now = millis();
   if (deb.feed(readRaw(), now) || heartbeatDue(lastPublish, now)) publish(deb.stable);
+#if TILT_BMP280
+  baroPoll(now);
+#endif
   delay(2);
 }

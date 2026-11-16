@@ -142,10 +142,13 @@ AJ="$HOME/Documents/Arduino/libraries/ArduinoJson/src"   # ~/Arduino/libraries o
 c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_ring.cpp -o firmware/build/test_ring && firmware/build/test_ring
 c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test/test_format.cpp -o firmware/build/test_format && firmware/build/test_format
 c++ -std=c++17 -Wall -Werror -I $H/src $H/test/test_boot.cpp -o firmware/build/test_boot && firmware/build/test_boot
+c++ -std=c++17 -Wall -Werror -I $H/src -I "$AJ" $H/src/ReadingFormat.cpp $H/test/test_link.cpp -o firmware/build/test_link && firmware/build/test_link
 ```
 
 Each prints `ok`. `test_boot` runs the boot counter (`BootLog.h`, an append-only log in one flash sector) against a NOR
-flash model with torn and refused writes; the tilt node's `run_host_tests.sh` runs it too.
+flash model with torn and refused writes; the tilt node's `run_host_tests.sh` runs it too. `test_link` drives the
+MQTT half of `HabitatNode::loop()` (`MqttLink.h`: reconnect, backoff, the `# mqtt fail` line, the drain) with a fake
+client. `hub/tests/test_firmware_habitatnode.py` runs all four when a compiler and ArduinoJson are installed.
 
 UNO I/O board (`exercise-uno`) host tests, builds and the Wokwi twin:
 
@@ -179,3 +182,20 @@ firmware/vitals-esp32/test/run_host_tests.sh              # pure logic: lines, c
 firmware/wokwi/vitals-esp32/test/run_chip_tests.sh        # native tests of the two simulated Wokwi chips
 firmware/wokwi/vitals-esp32/check_sync.sh                 # the Wokwi copy must equal vitals-esp32.ino
 ```
+
+## BMP280 cabin pressure (one module per board)
+
+Each board publishes `cabin_p` in hPa with dev `BMP280`, every 5 s on the UNO and every 10 s on the ESP boards.
+The driver is `firmware/bmp280/bmp280_lite.h` (register level, no library). Run `firmware/bmp280/sync.sh`
+after editing it; `firmware/bmp280/check_sync.sh` checks the copies. The BMP280 temperature is not published:
+`cabin_temp` stays with the DHT11. The module is 3.3 V only (the chip's limit is 3.6 V): never 5 V or VIN.
+
+| Board | Node | VCC | GND | SDA | SCL | CSB, SDO |
+|---|---|---|---|---|---|---|
+| UNO R3 | cabin-1 | 3.3V pin | GND | A4 | A5 | open (0x76) |
+| NodeMCU ESP8266 | tilt-1 | 3V3 | GND | D2 (GPIO4) | D1 (GPIO5) | open (0x76) |
+| ESP32 DevKit | cabin-2 | 3V3 | GND | GPIO21 | GPIO22 | open (0x76) |
+
+On the UNO the sketch switches off the AVR's internal 5 V pull-ups after `Wire.begin()`, so the bus is pulled
+to 3.3 V only by the module's 10 kOhm resistors. A level shifter is the proper fix for a permanent build.
+Wire with the board unplugged. Never connect the tilt-1 battery pack and USB at the same time.

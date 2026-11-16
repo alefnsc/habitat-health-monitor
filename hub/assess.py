@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from hub.contract import BODY_INDS, DERIVED, INDICATORS, INTAKE_INDS
+from hub.contract import BODY_INDS, DERIVED, INDICATORS, INTAKE_INDS, REFERENCE_INDS
 from hub.results import Alert, AssessmentResult, entry_for, escalate_to_for
 from hub.store import Store, StoredReading
 from hub.thresholds import Rule, band_status, rules_for
@@ -258,6 +258,8 @@ def status_body(store: Store, nodes: list[dict], crew: str | None, now: datetime
     """GET /api/status body (D2): one worst-of entry per indicator that has any reading."""
     results = []
     for ind in [*INDICATORS, *DERIVED]:
+        if ind in REFERENCE_INDS:
+            continue
         scoped = crew is not None and ind in CREW_SCOPED
         r = store.latest_reading(ind, crew=crew, scope_crew=scoped)
         if r is None:

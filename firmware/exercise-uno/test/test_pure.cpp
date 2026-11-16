@@ -48,6 +48,15 @@ int main() {
     assert(e["q"].size() == 2 && std::string(e["q"][0].as<const char*>()) == "settling" &&
            std::string(e["q"][1].as<const char*>()) == "out_of_range");
   }
+  {  // BMP280 line (cabin-1 cabin_p, hPa, two decimals) stays inside the 160-byte budget
+    size_t n = buildReading(buf, sizeof buf, "cabin-1", 999, 9999999, "cabin_p", 1006.5327f, "hPa", "BMP280",
+                            QF_OUT_OF_RANGE);
+    assert(n > 0 && n <= 160);
+    JsonDocument d;
+    assert(!deserializeJson(d, buf));
+    assert(str(d, "node") == "cabin-1" && str(d, "ind") == "cabin_p" && str(d, "unit") == "hPa");
+    assert(str(d, "dev") == "BMP280" && fabs(d["val"].as<double>() - 1006.53) < 1e-3);
+  }
   {  // bench_line_budget: boot 999, seq 7 digits (35 h at 80 SPS), |val| < 1000 N and one flag
      // stay within 160 bytes; absurd counters and three flags stay within the 256-byte contract limit
     size_t n = buildReading(buf, sizeof buf, "exercise-1", 999, 9999999, "load_raw", -999.99f, "N", "HX711",

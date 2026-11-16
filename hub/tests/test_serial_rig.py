@@ -153,14 +153,50 @@ def test_disabled_without_port(settings, clock):
     assert threading.active_count() <= before + 1
 
 
+D40_SERIAL_READINGS = {
+    ("cabin-1", "cabin_temp"),  # DHT11, always built (D40)
+    ("cabin-1", "cabin_rh"),
+    ("cabin-1", "cabin_p"),  # BMP280 on A4/A5, when the module answers
+    ("exercise-1", "load_raw"),  # only with ENABLE_HX711=1
+}
+
+
+def check_capture(lines: list[str]) -> set[tuple[str, str]]:
+    """Every reading line of a UNO capture parses under contract v1 as a D40 serial reading."""
+    seen = set()
+    for raw in lines:
+        if raw.startswith("{") and '"type"' not in raw:  # skip acks, `#` comments and blanks
+            r = parse_reading(raw, max_bytes=256)
+            assert (r.node, r.ind) in D40_SERIAL_READINGS, raw
+            seen.add((r.node, r.ind))
+    assert {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh")} <= seen  # the D40 default build
+    return seen
+
+
+def test_capture_check_on_d40_lines():
+    # Lines in the exact shape of exercise-uno.ino buildReading()/buildAck() with the D40 defaults.
+    lines = [
+        "# exercise-1 boot=8",
+        (
+            '{"v":1,"node":"cabin-1","boot":8,"seq":601,"age_ms":0,"ind":"cabin_temp","val":25.2,'
+            '"unit":"C","src":"hobby","dev":"DHT11","q":["ok"]}'
+        ),
+        (
+            '{"v":1,"node":"cabin-1","boot":8,"seq":602,"age_ms":0,"ind":"cabin_rh","val":52,'
+            '"unit":"%","src":"hobby","dev":"DHT11","q":["ok"]}'
+        ),
+        '{"v":1,"node":"exercise-1","type":"ack","cmd":"alarm","ok":true}',
+    ]
+    assert check_capture(lines) == {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh")}
+    with pytest.raises(AssertionError):
+        check_capture(lines[:1] + lines[3:])  # no DHT11 lines: not a D40 capture
+
+
 def test_capture_contract():
     p = Path(__file__).parent / "fixtures" / "rig_capture.jsonl"
     if not p.exists():
-        pytest.skip("no rig capture yet")
-    for raw in p.read_text().splitlines():
-        if raw.startswith("{") and '"type"' not in raw:
-            r = parse_reading(raw, max_bytes=256)
-            assert (r.node, r.ind) == ("exercise-1", "load_raw")
+        pytest.skip("no real UNO capture yet: save a minute of its serial output to " + str(p))
+    check_capture(p.read_text().splitlines())
 
 
 def test_cabin_line_accepted_and_tilt_rejected_over_serial(ing):
@@ -171,6 +207,29 @@ def test_cabin_line_accepted_and_tilt_rejected_over_serial(ing):
     tilt = msg(node="tilt-1", boot=1, seq=2, ind="tilt", unit="state", val=1, dev="KY017")
     res = handle_line(ing, json.dumps(tilt).encode() + b"\n", st)
     assert res.reason == "topic_node_mismatch"
+
+
+def test_bmp280_pressure_line_accepted_over_serial(ing):
+    # The exact shape of exercise-uno.ino baroPoll(): cabin-1, cabin_p in hPa, dev BMP280.
+    st = new_stats()
+    line = (
+        b'{"v":1,"node":"cabin-1","boot":8,"seq":603,"age_ms":0,"ind":"cabin_p","val":1006.53,'
+        b'"unit":"hPa","src":"hobby","dev":"BMP280","q":["ok"]}\n'
+    )
+    assert handle_line(ing, line, st).reason is None
+    assert check_capture(
+        [
+            (
+                '{"v":1,"node":"cabin-1","boot":8,"seq":601,"age_ms":0,"ind":"cabin_temp","val":25.2,'
+                '"unit":"C","src":"hobby","dev":"DHT11","q":["ok"]}'
+            ),
+            (
+                '{"v":1,"node":"cabin-1","boot":8,"seq":602,"age_ms":0,"ind":"cabin_rh","val":52,'
+                '"unit":"%","src":"hobby","dev":"DHT11","q":["ok"]}'
+            ),
+            line.decode().strip(),
+        ]
+    ) == {("cabin-1", "cabin_temp"), ("cabin-1", "cabin_rh"), ("cabin-1", "cabin_p")}
 
 
 def test_serial_nodes_go_online_and_offline_together(ing, settings, clock):

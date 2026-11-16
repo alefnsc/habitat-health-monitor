@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { emptyView, reduce } from "./model";
 import { render } from "./render";
-import { liveSource } from "./sources";
+import { PAGE, liveSource } from "./sources";
 import type { Arrival } from "./types";
 
 const mk = (id: number): Arrival => ({ arrival_id: id, received_at: "z", beacon: null, items: [] });
@@ -15,7 +15,7 @@ afterEach(() => vi.useRealTimers());
 describe("liveSource", () => {
   it("live_pages_until_caught_up", async () => {
     const urls: string[] = [];
-    const pages = [range(1, 1000), range(1001, 1003), [], []];
+    const pages = [range(1, PAGE), range(PAGE + 1, PAGE + 3), [], []];
     const fetchFn = vi.fn((u: string) => {
       urls.push(u);
       return ok(pages.shift() ?? []);
@@ -23,18 +23,18 @@ describe("liveSource", () => {
     const got: number[] = [];
     const s = liveSource("", (a) => got.push(a.arrival_id), fetchFn);
     await vi.advanceTimersByTimeAsync(10);
-    expect(got.length).toBe(1003);
+    expect(got.length).toBe(PAGE + 3);
     expect(got).toEqual([...got].sort((a, b) => a - b));
     expect(urls).toEqual([
-      "/ground/arrivals?after=0&limit=1000",
-      "/ground/arrivals?after=1000&limit=1000",
-      "/ground/arrivals?after=1003&limit=1000",
+      `/ground/arrivals?after=0&limit=${PAGE}`,
+      `/ground/arrivals?after=${PAGE}&limit=${PAGE}`,
+      `/ground/arrivals?after=${PAGE + 3}&limit=${PAGE}`,
     ]);
     await vi.advanceTimersByTimeAsync(980);
     expect(urls.length).toBe(3);
     await vi.advanceTimersByTimeAsync(30);
     expect(urls.length).toBe(4);
-    expect(urls[3]).toContain("after=1003");
+    expect(urls[3]).toContain(`after=${PAGE + 3}`);
     s.stop();
   });
 
@@ -53,6 +53,28 @@ describe("liveSource", () => {
     expect(got).toEqual([1]);
     s.stop();
   });
+
+  it("live_backs_off_on_errors_and_resets_on_success", async () => {
+    const at: number[] = [];
+    let n = 0;
+    const fetchFn = vi.fn(() => {
+      at.push(Date.now());
+      n += 1;
+      if (n <= 6) return Promise.resolve(new Response("too big", { status: 413 }));
+      return ok([]);
+    }) as unknown as typeof fetch;
+    const t0 = Date.now();
+    const s = liveSource("", () => {}, fetchFn);
+    await vi.advanceTimersByTimeAsync(63_000);
+    const gaps = at.slice(1).map((t, i) => t - at[i]);
+    expect(at[0]).toBe(t0);
+    expect(gaps.slice(0, 7)).toEqual([1000, 2000, 4000, 8000, 16000, 30000, 1000]);
+    s.stop();
+  });
+
+  it("live_requests_a_small_page", () => {
+    expect(PAGE).toBeLessThanOrEqual(500);
+  });
 });
 
 describe("render", () => {
@@ -69,6 +91,8 @@ describe("render", () => {
     const root = document.createElement("div");
     render(root, view, 1000, null);
     const t = root.textContent!.replace(/\s+/g, " ");
+    expect(root.querySelector(".table-scroll > table")).not.toBeNull();
+    expect(root.querySelector("h1")).toBeNull();
     for (const s of [
       "Earth's view, as of T − 12 min 00 s", "72 bpm", "hobby", "Team convention, not clinical",
       "Queue on the habitat: 4 (as last reported)", "No blackout yet", "ok → watch", "cmo",

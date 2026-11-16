@@ -32,7 +32,7 @@ TOKEN_URL = "https://auth.example.test/oauth/token"
 CFG = OAuthConfig(
     client_id="cid", client_secret="csecret",
     authorize_url="https://auth.example.test/oauth/authorize", token_url=TOKEN_URL,
-    redirect_uri="http://127.0.0.1:8799/callback",
+    redirect_uri="http://localhost:8799/callback",
 )  # fmt: skip
 ENV = {"RING_CLIENT_ID": "cid", "RING_CLIENT_SECRET": "csecret",
        "RING_AUTHORIZE_URL": CFG.authorize_url, "RING_TOKEN_URL": TOKEN_URL,
@@ -139,8 +139,10 @@ def _free_port() -> int:
         return s.getsockname()[1]
 
 
-def test_wait_for_redirect_catches_the_callback_on_loopback():
-    uri = f"http://127.0.0.1:{_free_port()}/callback"
+@pytest.mark.parametrize("host", ["127.0.0.1", "localhost"])
+def test_wait_for_redirect_catches_the_callback_on_loopback(host):
+    """A localhost redirect (the registered one) still lands on the 127.0.0.1 listener."""
+    uri = f"http://{host}:{_free_port()}/callback"
     got: list[str] = []
     t = threading.Thread(target=lambda: got.append(wait_for_redirect(uri, timeout_s=10)))
     t.start()
@@ -162,6 +164,53 @@ def test_wait_for_redirect_refuses_a_port_someone_else_holds():
         other.bind(("127.0.0.1", 0))
         other.listen()
         uri = f"http://127.0.0.1:{other.getsockname()[1]}/callback"
+        opened: list[bool] = []
+        with pytest.raises(AuthError, match="in use"):
+            wait_for_redirect(uri, timeout_s=1, on_ready=lambda: opened.append(True))
+        assert opened == []
+
+
+def _ipv6_loopback_socket() -> socket.socket | None:
+    try:
+        s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
+        s.bind(("::1", 0))
+    except OSError:
+        return None
+    return s
+
+
+def test_a_localhost_callback_on_ipv6_lands_too():
+    """Browsers try [::1] first for localhost, so the listener serves it as well."""
+    probe = _ipv6_loopback_socket()
+    if probe is None:
+        pytest.skip("no IPv6 loopback on this machine")
+    port = probe.getsockname()[1]
+    probe.close()
+    got: list[str] = []
+    t = threading.Thread(target=lambda: got.append(
+        wait_for_redirect(f"http://localhost:{port}/callback", timeout_s=10)))  # fmt: skip
+    t.start()
+    body = ""
+    for _ in range(50):
+        try:
+            with urllib.request.urlopen(f"http://[::1]:{port}/callback?code=v6&state=s6", timeout=2) as r:
+                body = r.read().decode()
+            break
+        except OSError:
+            threading.Event().wait(0.05)
+    t.join(10)
+    assert "close this tab" in body
+    assert code_from_redirect(got[0], "s6") == "v6"
+
+
+def test_wait_for_redirect_refuses_when_someone_holds_the_ipv6_loopback_port():
+    """A program on [::1]:port would receive a localhost callback first: stop before the browser opens."""
+    other = _ipv6_loopback_socket()
+    if other is None:
+        pytest.skip("no IPv6 loopback on this machine")
+    with other:
+        other.listen()
+        uri = f"http://localhost:{other.getsockname()[1]}/callback"
         opened: list[bool] = []
         with pytest.raises(AuthError, match="in use"):
             wait_for_redirect(uri, timeout_s=1, on_ready=lambda: opened.append(True))

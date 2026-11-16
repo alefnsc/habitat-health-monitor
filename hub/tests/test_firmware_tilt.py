@@ -29,17 +29,26 @@ def test_sketch_pin_names_and_timing() -> None:
 def test_firmware_tables_carry_tilt() -> None:
     h = (FW / "libraries/HabitatNode/src/ReadingFormat.h").read_text()
     cpp = (FW / "libraries/HabitatNode/src/ReadingFormat.cpp").read_text()
-    assert "IND_TILT, IND_COUNT" in h and "DEV_KY017, DEV_RING, DEV_COUNT" in h
+    assert "IND_TILT, IND_COUNT" in h and "DEV_KY017, DEV_RING, DEV_BMP280, DEV_COUNT" in h
     assert '"tilt"' in cpp and '"state"' in cpp and '"KY017"' in cpp
+
+
+def tracked_files(d: Path) -> list[Path]:
+    """Files git tracks under d. A local, git-ignored secrets.h is not repository content."""
+    out = subprocess.run(
+        ["git", "ls-files", "-z", "--", "."], cwd=d, check=True, capture_output=True, text=True
+    ).stdout
+    return [d / p for p in out.split("\0") if p]
 
 
 def test_readme_safety_and_no_company_name() -> None:
     readme = (DIR / "README.md").read_text().lower()
     for word in ("sealed", "adult", "mercury", "reads 0", "d5"):
         assert word in readme, word
-    for f in DIR.rglob("*"):
-        if f.is_file():
-            assert "vocaid" not in f.read_text(errors="ignore").lower(), f
+    files = tracked_files(DIR)
+    assert SKETCH in files and DIR / "secrets.h" not in files
+    for f in files:
+        assert "vocaid" not in f.read_text(errors="ignore").lower(), f
     assert (DIR / "secrets.example.h").exists()
 
 

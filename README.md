@@ -42,7 +42,7 @@ still serves and the MQTT subscriber keeps retrying.
 
 ## Hardware
 
-Circuit diagrams and the bill of materials are in `docs/` (DRAFT [confirm: hardware member to review before submission]).
+Wiring maps (DRAFT [confirm: hardware member to review before submission]): the whole bench as one Wokwi canvas in `firmware/wokwi/full-bench/` (link in `docs/decisions/links.md`), the UNO wiring table in `firmware/wokwi/uno-rig/README.md`, and the NodeMCU wiring and power in `firmware/tilt-esp8266/README.md`. There is no separate bill of materials in the repository yet.
 
 Layout: two microcontrollers and a hub (decision D40, [confirm: hardware member to review before submission]).
 - **Raspberry Pi 3 Model B** is the hub host (Mosquitto, hub, console), with nothing wired to its header. A laptop runs the hub instead if the Pi is not ready. Setup: `docs/pi-setup.md` (not yet run on hardware).
@@ -79,7 +79,7 @@ See `docs/decisions/links.md`.
 
 DRAFT [confirm: operator and hardware member review this text before submission]
 
-Claude Code (Anthropic) helped plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware and validation work, and reviewed the outputs. Every AI-assisted commit carries a `Co-Authored-By` trailer. No AI-generated images, video or voice are used. Full disclosure: [docs/AI_DISCLOSURE.md](docs/AI_DISCLOSURE.md).
+Claude Code (Anthropic) helped plan, research, write code and tests, and draft documents. The team defined the idea and all design decisions, approved every threshold and wording choice, ran all hardware and validation work, and reviewed the outputs. Every AI-assisted commit carries a `Co-Authored-By` trailer. Two presentation images are AI-generated illustrations with a visible label, and the 29-second video's narration is an AI-generated voice (ElevenLabs). One 1-second clip in the video is AI-generated video, labelled on screen. Full disclosure: [docs/AI_DISCLOSURE.md](docs/AI_DISCLOSURE.md).
 
 ## Licence
 

@@ -39,7 +39,19 @@ INDICATORS: dict[str, str] = {
     "intake_iron_mg": "mg",
     "intake_vitd_ug": "ug",
     "body_mass": "kg",
+    # Reference feeds (D45 §4.2): stored for signals, never assessed, outboxed or on /api/status.
+    "iss_cabin_p": "hPa",
+    "iss_cabin_temp": "C",
+    "iss_ppco2": "mmHg",  # the US Lab item
+    "iss_ppco2_node3": "mmHg",  # Node 3: another module, never pooled with the Lab
+    "earth_temp": "C",
+    "earth_rh": "%",
+    "earth_p": "hPa",
 }
+REFERENCE_INDS: frozenset[str] = frozenset(
+    {"iss_cabin_p", "iss_cabin_temp", "iss_ppco2", "iss_ppco2_node3", "earth_temp", "earth_rh",
+     "earth_p"}
+)
 DERIVED: dict[str, str] = {"cabin_ppco2": "mmHg"}
 
 CABIN_INDS: frozenset[str] = frozenset(
@@ -81,14 +93,14 @@ BODY_MASS_RANGE: tuple[float, float] = (20.0, 300.0)
 
 NODES: frozenset[str] = frozenset(
     {"vitals-1", "cabin-1", "exercise-1", "strap-1", "manual", "camera", "sim-1", "nasa", "food",
-     "tilt-1", "ring-1"}
+     "tilt-1", "ring-1", "cabin-2", "earth-1"}
 )
-SOURCES: frozenset[str] = frozenset({"certified", "hobby", "self", "nasa", "replay"})
+SOURCES: frozenset[str] = frozenset({"certified", "hobby", "self", "nasa", "replay", "ref"})
 DEVICES: frozenset[str] = frozenset(
     {
         "MAX30102", "DS18B20", "MLX90614", "SCD41", "BME280", "DHT22", "DHT11", "BH1750",
         "HX711", "H10", "manual", "camera", "MPU6050", "MH-Z19", "DONKI", "OSDR", "catalog",
-        "NTC", "KY039", "KY017", "RING",
+        "NTC", "KY039", "KY017", "RING", "BMP280", "ISSLIVE", "WEATHER",
     }
 )  # fmt: skip
 FLAGS: frozenset[str] = frozenset(
