@@ -111,4 +111,10 @@ def test_manual_create(client):
     assert client.post("/api/prompts", json={"kind": "morning", "crew": "crew-z"}).json() == {
         "reason": "bad_crew"
     }
-    assert set(PROMPT_ASKS) == {"morning", "post_exercise", "cabin_trigger"}
+    assert set(PROMPT_ASKS) == {
+        "morning", "post_exercise", "cabin_trigger", "signal_cabin", "signal_body",
+    }  # fmt: skip
+    # Signal prompts are opened only by the signals trigger, with a snapshot (D45 §8.2).
+    assert client.post("/api/prompts", json={"kind": "signal_body", "crew": "crew-a"}).json() == {
+        "reason": "bad_value:kind"
+    }
