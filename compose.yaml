@@ -1,0 +1,147 @@
+# The habitat stack in containers (D47): broker, hub, link simulator and local ground receiver.
+# Design: docs/decisions/2026-11-15-docker-stack-design.md. How to run: README, "Run with Docker".
+#
+#   docker compose up -d --build                  broker, hub, linksim, receiver
+#   docker compose --profile sim up -d --build    the same, plus python -m hub.sim feeding the hub
+#                                                 synthetic data (not measurements)
+#   docker compose --profile serial up -d --build broker hub-serial linksim receiver
+#                                                 Linux only (the Pi): the hub reads the UNO over USB
+#   docker compose down                           stop (add -v to delete the databases too)
+#
+# Before the first run, create hub/mosquitto/passwd (git-ignored, never in the image).
+# Compose reads .env at the repo root twice: the hub gets it as env_file, and ${...} below is
+# filled from the shell or from .env. Host ports: HOST_HUB_PORT, HOST_BROKER_PORT,
+# HOST_LINKSIM_PORT, HOST_RECEIVER_PORT. linksim and receiver listen on 127.0.0.1 only.
+
+name: habitat
+
+# One image for every service but the broker. Each service names the build, so any subset can be
+# started on its own; the builds after the first come from the cache.
+x-app: &app
+  image: habitat-health-monitor:local
+  build: .
+  restart: unless-stopped
+  volumes:
+    - var:/app/var
+
+x-hub-env: &hub-env
+  HUB_DB: /app/var/hub.db
+  HUB_MQTT_HOST: broker
+  HUB_MQTT_PORT: "1883"
+  HUB_HTTP_HOST: 0.0.0.0
+  HUB_HTTP_PORT: "8000"
+  HUB_LINKSIM_URL: http://linksim:8200
+  HUB_LINK_CONFIG: linksim/link.json
+  HUB_CONSOLE_DIST: /app/console/dist
+  HUB_CAMERA_DIST: /app/camera/dist
+  HUB_SERIAL_PORT: ""
+
+services:
+  broker:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    # Mosquitto drops to its own user before it reads the password file, so the root shell first
+    # copies the read-only file in, owned by that user. The copy lives in the container only.
+    command: ["sh", "-c", "install -m 0600 -o mosquitto -g mosquitto /run/habitat/passwd /mosquitto/config/passwd && exec mosquitto -c /mosquitto/config/habitat.conf"]
+    volumes:
+      - type: bind
+        source: ./hub/mosquitto/compose.conf
+        target: /mosquitto/config/habitat.conf
+        read_only: true
+      - type: bind
+        source: ./hub/mosquitto/passwd
+        target: /run/habitat/passwd
+        read_only: true
+        bind:
+          create_host_path: false
+      - broker-data:/mosquitto/data
+    ports:
+      - "${HOST_BROKER_PORT:-1883}:1883"
+
+  hub: &hub
+    <<: *app
+    command: ["python", "-m", "hub"]
+    env_file:
+      - path: .env
+        required: false
+    # These win over .env: inside the stack the broker and linksim are found by service name.
+    environment:
+      <<: *hub-env
+    ports:
+      - "${HOST_HUB_PORT:-8000}:8000"
+    depends_on:
+      broker:
+        condition: service_started
+
+  # Linux hosts only. Docker Desktop on macOS cannot pass a USB device through: there, run the hub
+  # natively for serial and the rest here (README, "Run with Docker"). Start it instead of `hub`,
+  # by naming the services as in the header above.
+  hub-serial:
+    <<: *hub
+    profiles: [serial]
+    environment:
+      <<: *hub-env
+      HUB_SERIAL_PORT: ${HUB_SERIAL_PORT:-/dev/ttyACM0}
+      HUB_SERIAL_BAUD: ${HUB_SERIAL_BAUD:-250000}
+    devices:
+      - ${HUB_SERIAL_PORT:-/dev/ttyACM0}:${HUB_SERIAL_PORT:-/dev/ttyACM0}
+    group_add:
+      - dialout
+    networks:
+      default:
+        aliases: [hub]
+
+  linksim:
+    <<: *app
+    # LINKSIM_HUB_URL=http://host.docker.internal:8000 points it at a hub running natively.
+    command: ["python", "-m", "linksim", "--hub", "${LINKSIM_HUB_URL:-http://hub:8000}", "--ground", "http://receiver:8100", "--status-host", "0.0.0.0", "--state", "/app/var/linksim-state.json"]
+    # Public uplink (docs/deploy-public.md): off unless PUBLIC_GROUND_URL is set. PUBLIC_CREWS
+    # stays empty unless every listed crew is an adult with a signed consent form, never a minor;
+    # PUBLIC_REPS=0 whenever anyone under 18 uses the rig.
+    environment:
+      PUBLIC_GROUND_URL: ${PUBLIC_GROUND_URL:-}
+      PUBLIC_CREWS: ${PUBLIC_CREWS:-}
+      PUBLIC_REPS: ${PUBLIC_REPS:-0}
+      PUBLIC_FLUSH_S: ${PUBLIC_FLUSH_S:-10}
+      GROUND_INGEST_SECRET: ${GROUND_INGEST_SECRET:-}
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    ports:
+      - "127.0.0.1:${HOST_LINKSIM_PORT:-8200}:8200"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8200/link/state', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+    depends_on:
+      receiver:
+        condition: service_started
+
+  receiver:
+    <<: *app
+    command: ["python", "-m", "receiver", "--db", "/app/var/ground.db", "--host", "0.0.0.0", "--port", "8100"]
+    ports:
+      - "127.0.0.1:${HOST_RECEIVER_PORT:-8100}:8100"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8100/ground/summary', timeout=4)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # Synthetic replay as node sim-1 over HTTP, then it exits. Not measurements.
+  sim:
+    <<: *app
+    profiles: [sim]
+    restart: "no"
+    command: ["python", "-m", "hub.sim", "--file", "data/replay/l0-synthetic.jsonl", "--http", "http://hub:8000", "--speed", "60", "--backdate", "--state", "/app/var/sim-1.boot"]
+    healthcheck:
+      disable: true
+    depends_on:
+      hub:
+        condition: service_healthy
+
+volumes:
+  var:
+  broker-data:
