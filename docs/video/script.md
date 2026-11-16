@@ -41,7 +41,13 @@ S16's `six_indicators_shown` check was amended on 15/11 (operator decision B3).
 ## Export
 
 - **Size limit:** the exported `docs/video/final.mp4` stays out of git if it is over 10 MB.
-- **Recorded after the 17:00 export:** its SHA-256 and its ffprobe duration, which must be ≤ 29.0 s, go here.
+- **Final export (15/11, about 22:05):**
+  - **File:** `video-2026-11-15/out/final-29s.mp4`, hosted with the public pages as `ground/public/video/habitat-health-monitor-29s.mp4`. 1920x1080, 30 fps, H.264 with one AAC track (the narration). 6,040,942 bytes.
+  - **SHA-256:** `897ae381647cbd910b4359d32d27037a8378b1207c3729c2a539c6008ed4cfd3`.
+  - **ffprobe duration:** 29.000000 s, within the 29.0 s limit.
+  - **Shot 2:** a split. On the left, a real lift on the bench tray (hand and forearm with the tilt pod, no face). On the right, the panel's live lift card.
+  - **Shot 3:** the panel's "Same lift, four places" card.
+  - **No set was counted on camera tonight.** The camera page could not track a top-down forearm. So the narration's joules line is illustrated by the panel, not by a measured rep.
 - **Rules:**
   - R5: no company name or logo in any shot or the audio.
   - R7: AI images and the AI clip carry visible labels.
