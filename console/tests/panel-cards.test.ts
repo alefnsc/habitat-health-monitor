@@ -9,7 +9,7 @@ import { massCard } from "../src/views/panel/mass";
 vi.mock("uplot", () => ({ default: class { static tzDate(d: Date) { return d; } destroy() {} } }));
 
 const NOW = Date.parse("2026-11-15T18:00:00Z");
-const clock = { replay: false, now: () => NOW };
+const clock = { now: () => NOW };
 const STARTED = "2026-11-15T17:50:00.000Z";
 
 const session = (over: Partial<Session> = {}): Session => ({

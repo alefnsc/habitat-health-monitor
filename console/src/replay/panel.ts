@@ -1,10 +1,11 @@
-import type { Alert, ExerciseDay, Ind, RepMessage, Session, StatusBody, StatusEntry, StoredReading, StoredRep } from "../contract";
+import type { Alert, ExerciseDay, Ind, RepMessage, Session, StoredReading, StoredRep } from "../contract";
+import { COPY } from "../copy";
 import type { PanelSource } from "../views/panel/source";
-import { entryOf, linkAt, type ReplayFile } from "./adapt";
+import { countUpTo, linkAt, readingIndex, statusAt, type ReplayFile } from "./adapt";
 
-// The habitat panel in the replay build. The panel shows the habitat side of the recording: each reading and alert
-// at its measured time on the replay clock (t0 + position), so an alert's packet reaches Earth when the ground
-// receiver recorded it. The link state comes from the beacons, as on the status board.
+// The habitat panel in the replay build. Like the status board, it shows the habitat side of the recording: each
+// reading and alert at its measured time on the replay clock (t0 + position), so an alert's packet reaches Earth
+// when the ground receiver recorded it. The link state comes from the beacons.
 
 const DAY_MS = 86_400_000;
 
@@ -41,42 +42,17 @@ export function parseExerciseReplay(text: string, startMs: number): ReplaySet | 
   };
 }
 
-type Timed = { t: number; r: StoredReading; p: Record<string, unknown> };
-const cache = new WeakMap<ReplayFile, Timed[]>();
-
-/** Every reading in the file, oldest measured first. */
-function timed(file: ReplayFile): Timed[] {
-  let rows = cache.get(file);
-  if (!rows) {
-    rows = file.arrivals.flatMap((a) => a.items.filter((i) => i.kind === "reading"))
-      .map((i) => ({ t: Date.parse(i.payload.measured_at as string), r: i.payload as unknown as StoredReading, p: i.payload }))
-      .filter((x) => Number.isFinite(x.t))
-      .sort((a, b) => a.t - b.t);
-    cache.set(file, rows);
-  }
-  return rows;
-}
-
 /** First and last measured time of the readings, in ms. */
 export function recordedSpan(file: ReplayFile): [number, number] {
-  const rows = timed(file);
-  if (!rows.length) return [Date.parse(file.t0), Date.parse(file.t0)];
-  return [rows[0].t, rows[rows.length - 1].t];
+  const ts = [...readingIndex(file).values()].flatMap((rows) => [rows[0].t, rows[rows.length - 1].t]);
+  if (!ts.length) return [Date.parse(file.t0), Date.parse(file.t0)];
+  return [Math.min(...ts), Math.max(...ts)];
 }
 
 /** Readings of `ind` measured in [sinceMs, nowMs], oldest first. */
 export function readingsUntil(file: ReplayFile, ind: Ind, sinceMs: number, nowMs: number): StoredReading[] {
-  return timed(file).filter((x) => x.r.ind === ind && x.t >= sinceMs && x.t <= nowMs).map((x) => x.r);
-}
-
-/** The newest reading per indicator measured by `nowMs`. */
-export function statusUntil(file: ReplayFile, nowMs: number): StatusBody {
-  const latest = new Map<string, StatusEntry>();
-  for (const x of timed(file)) {
-    if (x.t > nowMs) break;
-    latest.set(x.r.ind, entryOf(x.p));
-  }
-  return { crew: null, generated_at: new Date(nowMs).toISOString(), nodes: [], results: [...latest.values()] };
+  const rows = readingIndex(file).get(ind) ?? [];
+  return rows.slice(countUpTo(rows, sinceMs, false), countUpTo(rows, nowMs)).map((r) => r.p as unknown as StoredReading);
 }
 
 /** Alerts raised in (fromMs, toMs]: at their measured time, or at their arrival when the file has none. */
@@ -103,12 +79,20 @@ export function replaySource(file: ReplayFile, set: ReplaySet | null, positionMs
   const span = recordedSpan(file);
   const repsBy = (n: number) => (set?.reps ?? []).filter((r) => r.src === "camera" && Date.parse(r.measured_at) <= n);
   return {
-    replay: true,
+    label: COPY["src.replay"],
+    setNote: set ? COPY["panel.replaySet"] : undefined,
+    // Replay wording where the live wording would point at a hub.
+    text: {
+      "panel.noData": COPY["replay.unavailable"],
+      "panel.massNone": COPY["panel.massNoneReplay"],
+      "panel.window": COPY["panel.windowReplay"],
+      "panel.notOnBench": COPY["panel.notInReplay"],
+    },
     now,
     refreshMs: 2000,
     lanesRefreshMs: 2000,
     laneWindow: () => [span[0] / 1000, span[1] / 1000],
-    status: async () => statusUntil(file, now()),
+    status: async () => statusAt(file, positionMs(), null),
     sessions: async () => (set && Date.parse(set.session.started_at) <= now() ? [set.session] : []),
     reps: async (id) => ({
       session: id,

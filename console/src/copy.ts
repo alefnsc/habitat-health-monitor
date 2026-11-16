@@ -313,7 +313,6 @@ export const COPY: Record<string, string> = {
   "panel.replaySet": "Synthetic set from the exercise replay file, shown one minute before the cabin recording.",
   "panel.windowReplay": "Recorded session",
   "panel.notInReplay": "Not in this replay:",
-  "panel.notInReplayShort": "not in this replay",
   "panel.massNoneReplay": "No weigh-ins in this replay.",
   // Signals (D45). Wording is fixed per kind: "trend", "own usual range", "at this rate", "side by side".
   "nav.signals": "Signals",

@@ -194,6 +194,10 @@ cards are the same; `console/src/views/panel/source.ts` is the seam between them
   recording, and the card says so.
 - **Feeds the replay does not carry** say so: weigh-ins, food, space weather, ISS Live and the dose estimate. The
   cabin chip reads "Replay (recorded)", never "live", and the clock shows the recorded UTC time.
+- **The source carries its own wording.** A source can have a label (the replay's is "Replay (recorded)"), a note
+  on where its set comes from, and wording overrides by copy key. The cards read these and never test for a replay.
+- **One time base.** After the review, the status board reads the replay at the measured time too
+  (`statusAt`), so the board and the panel agree at every position.
+- **A paused replay** holds its clock still, so the panel stops reloading and redrawing once the lanes have caught up.
 
-The status board, the replay banner and the Play, Pause and Restart controls are unchanged; the board stays in the
-navigation.
+The replay banner and the Play, Pause and Restart controls are unchanged, and the board stays in the navigation.

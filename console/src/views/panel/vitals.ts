@@ -10,7 +10,7 @@ import { missingLine } from "../../model/panel/missing";
 import { RULES } from "../../model/rules";
 import { laneOptions, prepareReadings } from "../lanes";
 import { card, pill } from "./common";
-import { liveSource, type PanelClock } from "./source";
+import { copyFor, liveSource, type CardSource } from "./source";
 
 export const PANEL_LANES: LaneSpec[] = ["cabin_temp", "cabin_rh", "cabin_ppco2", "hr", "spo2", "sleep_h"]
   .map((k) => LANES.find((l) => l.key === k)!);
@@ -30,9 +30,9 @@ function issNow(iss: IssCabin | null, ind: Ind): string | null {
 }
 
 /** Card 4: compact lanes against the NASA bands, and what this bench cannot fill. */
-export function vitalsCard(src: PanelClock = liveSource): { node: HTMLElement; update: (d: VitalsData) => void; dispose: () => void } {
+export function vitalsCard(src: CardSource = liveSource): { node: HTMLElement; update: (d: VitalsData) => void; dispose: () => void } {
   const c = card("p-vitals", "4", COPY["panel.vitals"]);
-  c.sub.textContent = `${COPY[src.replay ? "panel.windowReplay" : "panel.window"]} · ${COPY["lanes.utc"]}`;
+  c.sub.textContent = `${copyFor(src, "panel.window")} · ${COPY["lanes.utc"]}`;
   let plots: uPlot[] = [];
   const update = (d: VitalsData) => {
     plots.forEach((p) => p.destroy());
@@ -76,7 +76,7 @@ export function vitalsCard(src: PanelClock = liveSource): { node: HTMLElement; u
         el("div", { class: "why", text: `${COPY["panel.olderThanWindow"]} ${age}.` })));
     }
     const parts: HTMLElement[] = [...rows];
-    const miss = missingLine(empty, src.replay ? COPY["panel.notInReplay"] : undefined);
+    const miss = missingLine(empty, copyFor(src, "panel.notOnBench"));
     if (miss) parts.push(el("p", { class: "note", text: miss }));
     c.body.replaceChildren(...parts);
     for (const { box, p, last } of pending) {

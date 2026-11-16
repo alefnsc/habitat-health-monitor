@@ -327,7 +327,7 @@ describe("signals screen loader", () => {
 
 describe("panel top bar signals chip", () => {
   test("shows the real notable count live, with replay counted apart", () => {
-    const live = topBar({ replay: false, now: () => NOW });
+    const live = topBar({ now: () => NOW });
     live.update({ status: null, sessions: null, weather: null, link: null });
     expect(live.node.textContent).not.toContain("Signals");
     live.signals({ crew: null, at: "x", signals: [sig({ state: "notable" })] });
@@ -346,7 +346,7 @@ describe("panel top bar signals chip", () => {
   });
 
   test("a failed request shows no data, never 0 notable", () => {
-    const live = topBar({ replay: false, now: () => NOW });
+    const live = topBar({ now: () => NOW });
     live.update({ status: null, sessions: null, weather: null, link: null });
     live.signals(null);
     const chip = live.node.querySelector('a[href="#/signals"]')!;
@@ -369,7 +369,7 @@ describe("panel signals request", () => {
     }));
     const no = () => Promise.reject(new Error("not in this test"));
     const src: PanelSource = {
-      replay: false, now: () => Date.now(),
+      now: () => Date.now(),
       status: () => Promise.resolve({ results: [], nodes: [] } as never),
       sessions: () => Promise.resolve([]), reps: no, readings: no, foodDay: no, exerciseDay: no, spaceWeather: no,
       issCabin: no, issReference: no, link: no, signals,
@@ -387,6 +387,27 @@ describe("panel signals request", () => {
     expect(signals).toHaveBeenCalledTimes(1);
     vi.advanceTimersByTime(10_000);
     await vi.waitFor(() => expect(signals).toHaveBeenCalledTimes(2));
+    dispose();
+  });
+
+  test("a source clock that stands still skips the card reloads, but signals still refetch every 30 s", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "Date"] });
+    vi.setSystemTime(NOW);
+    const signals = vi.fn(() => Promise.resolve<SignalsBody>({ crew: null, at: "x", signals: [sig({ state: "notable" })] }));
+    const status = vi.fn(() => Promise.resolve({ results: [], nodes: [] } as never));
+    const no = () => Promise.reject(new Error("not in this test"));
+    const src: PanelSource = {
+      now: () => NOW, status,
+      sessions: () => Promise.resolve([]), reps: no, readings: no, foodDay: no, exerciseDay: no, spaceWeather: no,
+      issCabin: no, issReference: no, link: no, signals,
+    };
+    const root = document.createElement("div");
+    const dispose = renderPanel(root, src);
+    await vi.waitFor(() => expect(root.querySelector(".p-top")!.textContent).toContain("Signals 1 notable"));
+    expect(signals).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(30_000);
+    await vi.waitFor(() => expect(signals).toHaveBeenCalledTimes(2));
+    expect(status).toHaveBeenCalledTimes(1);
     dispose();
   });
 });
