@@ -23,7 +23,7 @@ from nodes.ring.records import load_records
 API = "https://api.example.test"
 TOKEN_URL = "https://auth.example.test/oauth/token"
 CFG = OAuthConfig("cid", "csecret", "https://auth.example.test/oauth/authorize", TOKEN_URL,
-                  "http://127.0.0.1:8799/callback")  # fmt: skip
+                  "http://localhost:8799/callback")  # fmt: skip
 ENV = {"RING_CLIENT_ID": "cid", "RING_CLIENT_SECRET": "csecret", "RING_AUTHORIZE_URL": CFG.authorize_url,
        "RING_TOKEN_URL": TOKEN_URL, "RING_REDIRECT_URI": CFG.redirect_uri, "RING_API_BASE": API}  # fmt: skip
 NOW = datetime(2026, 11, 14, 15, 0, tzinfo=UTC).timestamp()
@@ -252,10 +252,34 @@ def test_auth_paste_skips_the_listener_and_reads_the_address_the_browser_ended_o
     assert load_token(path)["access_token"] == "AT"
 
 
+def test_auth_paste_without_a_terminal_says_so(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli.webbrowser, "open", lambda url: True)
+
+    def no_stdin(prompt: str) -> str:
+        raise EOFError
+
+    monkeypatch.setattr("builtins.input", no_stdin)
+    argv = ["auth", "--paste", "--token", str(tmp_path / "t.json"), "--env-file", str(tmp_path / ".env")]
+    assert cli.main(argv, env=ENV) == 2
+    assert "interactive terminal" in capsys.readouterr().err
+    assert not (tmp_path / "t.json").exists()
+
+
+@respx.mock
+def test_auth_warns_when_the_redirect_is_127_0_0_1(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(cli.webbrowser, "open", lambda url: True)
+    monkeypatch.setattr("builtins.input", lambda prompt: "")  # nothing pasted: the run stops after the warning
+    env = {**ENV, "RING_REDIRECT_URI": "http://127.0.0.1:8799/callback"}
+    argv = ["auth", "--paste", "--token", str(tmp_path / "t.json"), "--env-file", str(tmp_path / ".env")]
+    cli.main(argv, env=env)
+    err = capsys.readouterr().err
+    assert "127.0.0.1" in err and "http://localhost:8799/callback" in err
+
+
 def test_fill_missing_prompts_saves_privately_and_never_prints_the_secret(tmp_path, capsys):
     env_file = tmp_path / ".env"
     env_file.write_text("# keep me\nRING_API_BASE=https://api.example.test\nRING_CLIENT_ID=\n"
-                        "RING_CLIENT_SECRET=\nRING_REDIRECT_URI=http://127.0.0.1:8799/callback\n")  # fmt: skip
+                        "RING_CLIENT_SECRET=\nRING_REDIRECT_URI=http://localhost:8799/callback\n")  # fmt: skip
     env_file.chmod(0o600)
     asked: list[str] = []
     env = {k: v for k, v in ENV.items() if k not in ("RING_CLIENT_ID", "RING_CLIENT_SECRET")}
@@ -266,7 +290,7 @@ def test_fill_missing_prompts_saves_privately_and_never_prints_the_secret(tmp_pa
     text = env_file.read_text()
     assert text.splitlines() == ["# keep me", "RING_API_BASE=https://api.example.test",
                                  "RING_CLIENT_ID=my-id", "RING_CLIENT_SECRET=s3cr3t-value",
-                                 "RING_REDIRECT_URI=http://127.0.0.1:8799/callback"]  # fmt: skip
+                                 "RING_REDIRECT_URI=http://localhost:8799/callback"]  # fmt: skip
     assert env_file.stat().st_mode & 0o777 == 0o600
     assert cli.load_env(env_file, {})["RING_CLIENT_SECRET"] == "s3cr3t-value"
     assert "s3cr3t" not in capsys.readouterr().out
