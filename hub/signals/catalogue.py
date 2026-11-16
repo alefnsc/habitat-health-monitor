@@ -68,6 +68,25 @@ CATALOGUE: tuple[Spec, ...] = (
     # 30-minute blocks: ISS Live pushes a value only when it changes (team owner, 2026-11-15).
     Spec("iss_ppco2_6h", "trend", "cabin", "iss_ppco2", 6 * H, 30 * MIN, 10, 0.75, False,
          limits=(INDEPENDENCE, ISS)),
+    # slice 4: food, body mass, lift and cross-references
+    Spec("body_mass_30d", "trend", "daily_last", "body_mass", 30 * D, None, 10, 0.75, True,
+         limits=(INDEPENDENCE, LOGGED_ONLY)),
+    Spec("water_14d", "trend", "daily_sum", "intake_water_ml", 14 * D, None, 10, 0.75, True,
+         limits=(INDEPENDENCE, LOGGED_ONLY)),
+    Spec("lift_work_sets", "trend", "lift_sets", None, 60 * D, None, 10, 0.0, True,
+         limits=(INDEPENDENCE, CAMERA, NOT_FOOD), unit="kg_m"),
+    Spec("lift_within_set", "trend", "lift_within", None, 60 * D, None, 6, 0.0, True,
+         limits=(INDEPENDENCE, CAMERA, NOT_FOOD), unit="kg_m"),
+    Spec("lift_tilt_agreement", "baseline", "lift_tilt", None, 60 * D, None, 7, 0.0, True,
+         side="high", limits=(RIG_CHECK,), unit="ms"),
+    Spec("cabin_vs_earth", "lagged_pair", "cabin_earth", None, 7 * D, None, 20, 0.0, False,
+         limits=(OWN_DATA, NEIGHBOUR_HOURS, EARTH)),
+    Spec("training_vs_rest_hr", "lagged_pair", "training_rest_hr", None, 60 * D, None, 20, 0.0,
+         True, limits=(OWN_DATA, CAMERA, RING)),
+    Spec("last_meal_vs_sleep", "lagged_pair", "meal_sleep", None, 60 * D, None, 20, 0.0, True,
+         limits=(OWN_DATA, LOGGED_ONLY, RING)),
+    Spec("space_weather_vs_sleep", "lagged_pair", "space_weather_sleep", None, 60 * D, None, 20,
+         0.0, True, limits=(OWN_DATA, ON_EARTH)),
 )  # fmt: skip
 
 BY_ID: dict[str, Spec] = {s.id: s for s in CATALOGUE}

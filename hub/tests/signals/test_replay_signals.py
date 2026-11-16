@@ -65,6 +65,23 @@ def test_steady_and_gapped_series(signals):
     assert signals[("sleep_baseline", "crew-a")].state in ("steady", "notable")
 
 
+def test_food_mass_and_cross_references(signals):
+    assert signals[("water_14d", "crew-a")].headline_key == "signals.trend.up"
+    assert signals[("water_14d", "crew-c")].state == "not_enough_data"  # every third day only
+    assert signals[("body_mass_30d", "crew-a")].headline_key == "signals.trend.down"
+    meal = signals[("last_meal_vs_sleep", "crew-a")]
+    assert meal.headline_key == "signals.pair.rho" and meal.state == "steady"
+    sw = signals[("space_weather_vs_sleep", "crew-a")]
+    assert sw.state == "steady" and len(sw.pairs) >= 20
+    ce = signals[("cabin_vs_earth", None)]
+    assert [x["lag_h"] for x in ce.detail["lags"]] == [0, 1, 2, 3] and ce.value is None
+
+
+def test_lift_signals_say_not_enough_data_on_the_replay(signals):
+    for sid in ("lift_work_sets", "lift_within_set", "lift_tilt_agreement", "training_vs_rest_hr"):
+        assert signals[(sid, "crew-a")].state == "not_enough_data", sid
+
+
 def test_committed_replay_matches_the_generator(tmp_path):
     committed = REPO / "data" / "replay" / "signals-synthetic-28d.jsonl"
     fresh = tmp_path / "fresh.jsonl"

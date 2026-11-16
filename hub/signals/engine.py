@@ -7,7 +7,7 @@ from collections.abc import Callable, Sequence
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from hub.signals import body, cabin
+from hub.signals import body, cabin, daily, lift, pairs
 from hub.signals.catalogue import BY_ID, CATALOGUE, Spec
 from hub.signals.common import Ctx
 from hub.signals.types import Signal
@@ -24,6 +24,15 @@ BUILDERS: dict[tuple[str, str], Builder] = {
     ("baseline", "night_rest_hr"): body.baseline,
     ("baseline", "night_value"): body.baseline,
     ("trend", "night_rest_hr"): body.night_trend,
+    ("trend", "daily_last"): daily.daily_trend,
+    ("trend", "daily_sum"): daily.daily_trend,
+    ("trend", "lift_sets"): lift.work_across_sets,
+    ("trend", "lift_within"): lift.work_within_set,
+    ("baseline", "lift_tilt"): lift.tilt_agreement,
+    ("lagged_pair", "cabin_earth"): pairs.cabin_vs_earth,
+    ("lagged_pair", "training_rest_hr"): pairs.training_vs_rest_hr,
+    ("lagged_pair", "meal_sleep"): pairs.last_meal_vs_sleep,
+    ("lagged_pair", "space_weather_sleep"): pairs.space_weather_vs_sleep,
 }
 
 
