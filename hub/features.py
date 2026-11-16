@@ -60,6 +60,7 @@ _TABLE: dict[str, dict[str, tuple[str, ...]]] = {
     "iss": {
         "hub.nasa.isslive": ("IssLiveState", "ISS_ITEMS"),
         "hub.nasa.isslive_client": ("IssLiveClient",),
+        "hub.nasa.iss_store": ("IssWriter",),
     },
     "wearable": {"hub.wearable.routes": ("WearableState", "router")},
     "mcp": {"hub.mcp_server": ("build_mcp",)},
@@ -243,8 +244,11 @@ def wire_features(app: FastAPI, features: Features, ctx: HubContext) -> FeatureR
             raise RuntimeError("needs nasa")
         m = f.mod
         state = m("hub.nasa.isslive").IssLiveState()
+        writer = m("hub.nasa.iss_store").IssWriter(
+            ctx.ingestor.ingest_internal, boot=int(ctx.clock().timestamp())
+        )
         rt.iss_client = m("hub.nasa.isslive_client").IssLiveClient(
-            list(m("hub.nasa.isslive").ISS_ITEMS), state
+            list(m("hub.nasa.isslive").ISS_ITEMS), state, on_update=writer.on_update
         )
         rt.nasa.iss = state
 

@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 from hub.contract import (
     BODY_INDS,
     INTAKE_INDS,
+    REFERENCE_INDS,
     ContractError,
     Reading,
     parse_reading,
@@ -27,7 +28,7 @@ log = logging.getLogger("hub.ingest")
 
 CREW_SCOPED = BODY_INDS | INTAKE_INDS
 # Streams that are stored but never assessed, outboxed or pushed one by one.
-QUIET_INDS = frozenset({"load_raw"})
+QUIET_INDS = frozenset({"load_raw"}) | REFERENCE_INDS
 # Channels fed by hardware nodes, whose (node, boot, seq) key can repeat when a boot counter does
 # (tilt-1, bench 2026-11-15). A repeated key with a different sample is stored under a `clash`
 # number there; software producers (http, prompt, internal) keep exact idempotency.

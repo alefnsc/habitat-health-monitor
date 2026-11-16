@@ -38,6 +38,10 @@ Last updated by the Science lane (N11a). The BLE, wearable-baseline, OAuth, grou
 - Committed file: `data/nasa/isslive_capture.jsonl`, a 13-minute capture (13:56 to 14:10 UTC) recorded on 2026-11-14, all four items present, always shown as "recorded".
 - Use: "ISS cabin now" beside the habitat cabin, with a data-age badge.
 - Without it: the page serves the recorded capture, labelled recorded.
+- Stored (D45): the hub also stores each fresh item as a reference reading (`iss_cabin_p` in hPa from the mmHg value,
+  `iss_cabin_temp` in C, `iss_ppco2` for the US Lab CO2 item and `iss_ppco2_node3` for Node 3, both in mmHg, never
+  pooled), at most one per item per minute; an item stamped more than 2 minutes ahead of its arrival is skipped. These readings are
+  never assessed, never sent over the link and never on `/api/status`; the signals module reads them.
 
 ## Mission dose estimate (effective dose)
 
@@ -97,3 +101,32 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 - Committed file: `data/replay/ring-synthetic-nights.jsonl`, a **synthetic** pull (invented values in the vendor's field layout, labelled so on its first line). Real pulls are saved to `var/ring/pulls.jsonl` (mode 600, git-ignored) and are never committed.
 - Use: delayed cloud sync of vitals. A pull is `src hobby` with its true age; a replay is `src replay`, shown as "Replay (recorded)". The habitat core never calls the cloud; the importer is a separate process that posts to `POST /api/readings`.
 - Without it: the vitals tiles stay empty; the synthetic replay keeps the demo working with no network.
+
+## Earth weather (outdoor reference, D45)
+
+- Use: the outdoor temperature, humidity and pressure next to the bench cabin, for the signals module's
+  "side by side" card. Readings are node `earth-1`, `src ref`, device `WEATHER`, shown as "Earth reference, outdoor".
+- Importer: `python -m nodes.weather pull --hours 48`, a separate process like the ring importer. The habitat hub
+  never calls the internet.
+- Location: a coarse grid cell (1 decimal, about 11 km) from `WEATHER_LAT` and `WEATHER_LON` in `.env`
+  (git-ignored). It goes to the API as the request's coordinates and nowhere else: it is never committed, posted to
+  the hub, logged or shown.
+- Name: Open-Meteo Forecast API (the vendor is named here only; the code and the console say "weather API" and
+  device `WEATHER`). Chosen by the team owner on 2026-11-15 instead of INMET, so no token is needed.
+- Endpoint: `https://api.open-meteo.com/v1/forecast`, set as `WEATHER_API_URL` in `.env`. Parameters:
+  `latitude`, `longitude`, `hourly=temperature_2m,relative_humidity_2m,surface_pressure`, `past_days` (1 to 92),
+  `forecast_days=1`, `timeformat=unixtime`, `timezone=GMT`. Units: °C, %, hPa (`surface_pressure`, at the model's
+  ground height, not sea level). Errors: HTTP 400 with `{"error": true, "reason": ...}`. Docs:
+  https://open-meteo.com/en/docs (read 2026-11-15; a live response at the neutral point 0, 0 matched them).
+- What the values are: past hours are archived weather-model values, not station observations. The console labels
+  them "Earth reference, outdoor (weather model)".
+- Terms: free API for non-commercial use only, under 10,000 calls per day, 5,000 per hour and 600 per minute; no API
+  key and no contact details needed (https://open-meteo.com/en/terms, read 2026-11-15). One pull per hour is about
+  24 calls a day.
+- Licence and credit: data under CC BY 4.0 (https://open-meteo.com/en/licence). The licence page asks for a credit
+  link next to displayed data, such as "Weather data by Open-Meteo.com" linking to https://open-meteo.com/. Where that
+  credit appears in the console is the team owner's decision for the console slice (D45 plan, Task 16); until the
+  card exists, the data is not displayed.
+- Committed file: `nodes/weather/tests/fixtures/hourly-api-sample.json`, 12 hours recorded on 2026-11-15 at the
+  neutral point (0, 0), location fields removed, one value set to null by hand for the missing-value test.
+- Without it: the "side by side" card says not enough data; nothing else changes.
