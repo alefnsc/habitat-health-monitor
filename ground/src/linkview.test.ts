@@ -136,9 +136,14 @@ describe("liveLinkFrame", () => {
     expect(f.gap).toBeNull();
   });
 
-  it("darkens Earth after more than 3 s of silence", () => {
-    expect(liveLinkFrame(beacon(), 0, 3000).earthDark).toBe(false);
-    expect(liveLinkFrame(beacon(), 0, 3001).earthDark).toBe(true);
+  it("keeps Earth receiving between public uplink batches (one every ~10-13 s)", () => {
+    expect(liveLinkFrame(beacon(), 0, 13_000).earthDark).toBe(false);
+    expect(liveLinkFrame(beacon(), 0, 30_000).earthDark).toBe(false);
+  });
+
+  it("darkens Earth after more than 45 s of silence", () => {
+    expect(liveLinkFrame(beacon(), 0, 45_000).earthDark).toBe(false);
+    expect(liveLinkFrame(beacon(), 0, 45_001).earthDark).toBe(true);
   });
 
   it("has no light-time before the first beacon", () => {

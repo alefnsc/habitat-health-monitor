@@ -22,6 +22,10 @@ export const ruleBrand = (s: string): boolean =>
 
 export const ruleNonEnglish = (s: string): boolean => /[ãõçáéíóúâêôà]/i.test(s);
 
+// D45: signal wording never claims to foresee. "not a prediction" is the one allowed use.
+export const rulePrediction = (s: string): boolean =>
+  /\bpredict\w*|\bforecast\w*|\brisk\b|\bwill\b/i.test(s.replace(/not a prediction/gi, ""));
+
 export const ruleCameraWording = (s: string): boolean => /measured|validated|accurate/i.test(s);
 
 // Extract string literals from TypeScript source text (single, double, template). Skips comments.

@@ -3,11 +3,12 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import sample from "./fixtures/ground-replay.sample.json";
-import { parseReplayFile, type ReplayFile } from "../src/replay/adapt";
+import { parseReplayFile, statusAt, type ReplayFile } from "../src/replay/adapt";
 import {
-  alertsBetween, parseExerciseReplay, readingsUntil, recordedSpan, replaySource, statusUntil,
+  alertsBetween, parseExerciseReplay, readingsUntil, recordedSpan, replaySource,
 } from "../src/replay/panel";
-import { liveSource } from "../src/views/panel/source";
+import { renderPanel } from "../src/views/panel";
+import { copyFor, liveSource, type PanelSource } from "../src/views/panel/source";
 
 // uPlot draws on a canvas, which jsdom does not have: the mount test only checks the text around the charts.
 vi.mock("uplot", () => ({
@@ -52,14 +53,24 @@ describe("replay readings at habitat time", () => {
     expect(readingsUntil(f, "hr", 0, T0 + 4999).map((r) => r.val)).toEqual([70]);
     expect(readingsUntil(f, "hr", 0, T0 + 5000).map((r) => r.val)).toEqual([70, 74]);
     expect(readingsUntil(f, "hr", T0 + 1, T0 + 9000).map((r) => r.val)).toEqual([74]);
+    expect(readingsUntil(f, "hr", T0 + 5000, T0 + 5000).map((r) => r.val)).toEqual([74]); // both ends inclusive
+    expect(readingsUntil(f, "spo2", 0, T0 + 9000)).toEqual([]);
     const r = readingsUntil(f, "cabin_ppco2", 0, T0 + 9000)[0];
     expect(r).toMatchObject({ src: "replay", dev: "BME280", node: "sim-1", q: ["ok"], measured_at: "2026-11-15T12:00:09Z" });
   });
 
   test("status holds the newest reading per indicator, at the replay clock", () => {
-    const s = statusUntil(file(), T0 + 9000);
+    const s = statusAt(file(), 9000, null);
     expect(Object.fromEntries(s.results.map((e) => [e.ind, e.val]))).toEqual({ hr: 74, cabin_ppco2: 3.1 });
     expect(s.generated_at).toBe("2026-11-15T12:00:09.000Z");
+  });
+
+  test("the status board and the panel share one time base: the measured time", async () => {
+    // hr 74 was measured at 12:00:05 but arrives only with the 9 s batch.
+    const f = file();
+    f.arrivals[2].items.push(f.arrivals[1].items.splice(0, 1)[0]);
+    expect(statusAt(f, 5000, null).results.find((e) => e.ind === "hr")!.val).toBe(74);
+    expect((await replaySource(f, null, () => 5000).status()).results).toEqual(statusAt(f, 5000, null).results);
   });
 
   test("alerts fire once, at their measured time (arrival time when the file has none)", () => {
@@ -80,12 +91,24 @@ describe("replay panel source", () => {
     return replaySource(file(), set, () => positionMs);
   };
 
-  test("it is marked as a replay and runs on the replay clock", () => {
+  test("it labels its values as a replay and runs on the replay clock", () => {
     const s = src(5000);
-    expect(s.replay).toBe(true);
+    expect(s.label).toBe("Replay (recorded)");
     expect(s.now()).toBe(T0 + 5000);
     expect(s.laneWindow!(0)).toEqual([T0 / 1000, (T0 + 9000) / 1000]);
-    expect(liveSource.replay).toBe(false);
+    expect(liveSource.label).toBeUndefined();
+  });
+
+  test("the source carries its own wording; the live source keeps the hub wording", () => {
+    const s = src(0);
+    expect(copyFor(s, "panel.noData")).toBe("Not available in the replay.");
+    expect(copyFor(s, "panel.massNone")).toBe("No weigh-ins in this replay.");
+    expect(copyFor(s, "panel.window")).toBe("Recorded session");
+    expect(copyFor(s, "panel.notOnBench")).toBe("Not in this replay:");
+    expect(copyFor(s, "panel.lift")).toBe("Lift");
+    expect(copyFor(liveSource, "panel.noData")).toBe("No data");
+    expect(s.setNote).toBe("Synthetic set from the exercise replay file, shown one minute before the cabin recording.");
+    expect(replaySource(file(), null, () => 0).setNote).toBeUndefined();
   });
 
   test("lift and training work come from the replay set", async () => {
@@ -111,9 +134,45 @@ describe("replay panel source", () => {
     expect((await src(5000).link()).state).toBe("blackout");
   });
 
+  test("the replay source has no signals, so the panel shows no signals chip", () => {
+    expect("signals" in replaySource(file(), null, () => 0)).toBe(false);
+    expect("signals" in src(0)).toBe(false);
+  });
+
   test("feeds the replay does not carry are refused, so their cards say so", async () => {
     const s = src(0);
     for (const p of [s.spaceWeather(), s.issCabin(), s.issReference(), s.foodDay()]) await expect(p).rejects.toThrow();
+  });
+});
+
+describe("panel refresh", () => {
+  afterEach(() => vi.useRealTimers());
+
+  test("a frozen source clock (a paused replay) does not reload or redraw the cards", async () => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
+    let clock = T0;
+    const calls = { status: 0, readings: 0 };
+    const no = () => Promise.reject(new Error("none"));
+    const stub: PanelSource = {
+      now: () => clock, refreshMs: 1000, lanesRefreshMs: 5000, laneWindow: () => [T0 / 1000, T0 / 1000 + 60],
+      status: async () => (calls.status++, { crew: null, generated_at: "", nodes: [], results: [] }),
+      sessions: async () => [], reps: no, readings: async () => (calls.readings++, []),
+      foodDay: no, exerciseDay: no, spaceWeather: no, issCabin: no, issReference: no, link: no,
+    };
+    document.body.innerHTML = '<div id="p"></div>';
+    const dispose = renderPanel(document.getElementById("p")!, stub);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(calls).toEqual({ status: 1, readings: 7 }); // 6 lanes + weigh-ins
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(calls).toEqual({ status: 1, readings: 7 }); // clock frozen, lanes current: nothing to do
+    clock += 500;
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(calls).toEqual({ status: 2, readings: 8 }); // moved: cards reload, lanes not due yet
+    await vi.advanceTimersByTimeAsync(1000);
+    expect(calls).toEqual({ status: 3, readings: 15 }); // frozen again: the lanes catch up to the paused frame once
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(calls).toEqual({ status: 3, readings: 15 });
+    dispose();
   });
 });
 
@@ -152,6 +211,8 @@ describe("replay mode opens on the habitat panel", () => {
     const top = root.querySelector(".p-top")!.textContent!;
     expect(top).toContain("Cabin sensors Replay (recorded)");
     expect(top).not.toMatch(/\blive\b/);
+    expect(top).not.toContain("Signals");
+    expect(root.querySelector('.p-top a[href="#/signals"]')).toBeNull();
     expect(root.querySelector(".p-lift")!.textContent).toContain("Synthetic set from the exercise replay file");
     expect(root.querySelectorAll(".p-lift .bar")).toHaveLength(8);
     expect(root.querySelector(".p-vitals")!.textContent).toContain("Recorded session");

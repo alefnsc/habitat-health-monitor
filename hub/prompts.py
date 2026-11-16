@@ -24,7 +24,11 @@ PROMPT_ASKS: dict[str, tuple[str, ...]] = {
     "morning": ("body_temp", "hr", "sleep_h", "mood"),
     "post_exercise": ("hr", "symptom"),
     "cabin_trigger": ("symptom",),
+    # D45: opened only by hub/signals/trigger.py, always with the signal snapshot as `trigger`.
+    "signal_cabin": ("symptom",),
+    "signal_body": ("symptom", "mood"),
 }
+SIGNAL_KINDS = frozenset({"signal_cabin", "signal_body"})
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS prompts (
@@ -126,12 +130,14 @@ class PromptService:
         *,
         trigger_reading_id: int | None = None,
         rule_id: str | None = None,
+        trigger: dict | None = None,
     ) -> Prompt:
         if kind not in PROMPT_ASKS:
             raise PromptError("bad_value:kind")
+        if (kind in SIGNAL_KINDS) != (trigger is not None):
+            raise PromptError("bad_value:kind")  # signal prompts come only from the trigger
         if crew is not None and crew not in CREWS:
             raise PromptError("bad_crew")
-        trigger = None
         if trigger_reading_id is not None:
             r = self.store.get_reading(trigger_reading_id)
             if r is not None:

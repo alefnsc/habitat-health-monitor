@@ -21,6 +21,7 @@ from collections import Counter
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -130,6 +131,12 @@ def _replay(args: argparse.Namespace, http: httpx.Client) -> int:
 def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
     env = fill_missing(env, Path(args.env_file), input, getpass.getpass)
     cfg = config_from_env(env)
+    if urlsplit(cfg.redirect_uri).hostname == "127.0.0.1":
+        print(
+            f"warning: RING_REDIRECT_URI is {cfg.redirect_uri}, but the vendor's load balancer blocks "
+            f"requests carrying 127.0.0.1. Register {DEFAULT_REDIRECT} and set RING_REDIRECT_URI to match.",
+            file=sys.stderr,
+        )
     verifier, challenge = make_pkce()
     state = secrets.token_urlsafe(24)
     send_redirect = not args.use_registered_redirect
@@ -145,7 +152,12 @@ def _auth(args: argparse.Namespace, env: Mapping[str, str]) -> int:
         redirect = wait_for_redirect(cfg.redirect_uri, on_ready=open_sign_in)
     else:
         open_sign_in()
-        redirect = input("Paste the full URL the browser was sent to: ")
+        try:
+            redirect = input("Paste the full URL the browser was sent to: ")
+        except EOFError:
+            raise AuthError(
+                "nothing to read the address from: run `python -m nodes.ring auth` in an interactive terminal"
+            ) from None
     code = code_from_redirect(redirect, state)
     with httpx.Client() as http:
         tok = exchange_code(cfg, code, verifier, http, include_redirect=send_redirect)

@@ -1,7 +1,9 @@
 import type { Beacon, BlackoutCause, ReplayFile } from "./types";
 
 const BIG_ITEMS = 100;
-const SILENCE_MS = 3000;
+// The public uplink sends one batch every PUBLIC_FLUSH_S (10 s by default), so the page sees an arrival about
+// every 10-13 s. Earth goes dark only after several missed batches, not between two normal ones.
+const SILENCE_MS = 45_000;
 
 /** A span when the link is down at Mars, in replay time (ms after the file's t0). */
 export interface Blackout {

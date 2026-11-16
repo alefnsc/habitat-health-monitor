@@ -1,12 +1,10 @@
 # AI disclosure
 
-> DRAFT for review by the hardware member and the operator (task S15). Facts marked [confirm] need a human check before submission. The commit count is refreshed at the pre-submit check.
-
 The team made the idea and every design decision: what to monitor, which sources to trust, what the crew is told, the hardware, and what to cut. AI assistants helped us write and check the work. Nothing was accepted without review.
 
 ## Tools
 
-- Claude Code (Anthropic), using Claude models, run in the team's own development environment. [confirm exact model names against the commit trailers]
+- Claude Code (Anthropic), run in the team's own development environment. The commit trailers name the models used: Claude Opus 5.5, Claude Sonnet 5.5, Claude Haiku 5.5 and, on one commit, Claude Fable 5.1.
 - An image tool run by a team member, using a Gemini image model (Google), generated the background art for two presentation images (see "Generated media").
 - ElevenLabs (text-to-speech, model `eleven_turbo_v2_5` for the final v3 cut; `eleven_multilingual_v2` for earlier cuts) read the team's own script to make the English narration of the 29-second video, using a stock library voice. One 1-second AI video clip is used: the team's AI illustration animated with a Gemini Veo model through an internal media tool, labelled "AI-generated video" on screen, with its audio removed.
 
@@ -55,11 +53,11 @@ The images:
   - Added by the team: the composite layout, the comparison text and numbers from cited NASA sources, and the watermark.
 - `docs/img/console-status.png` is not AI. It is a real screenshot of the team's console replaying a recorded synthetic session, labelled "Real screenshot".
 
-The 29-second video's narration is an AI-generated voice (ElevenLabs, a stock library voice) reading the team's script. No person's voice is cloned, and the video contains no microphone or room audio. One 1-second AI video clip (Gemini Veo, animated from the team's AI illustration, labelled "AI-generated video" on screen, audio removed) is used [confirm]. No image shows a person, a NASA logo or a mission identifier.
+The 29-second video's narration is an AI-generated voice (ElevenLabs, a stock library voice) reading the team's script. No person's voice is cloned, and the video contains no microphone or room audio. One 1-second AI video clip (Gemini Veo, animated from the team's AI illustration, labelled "AI-generated video" on screen, audio removed) is used, at 22.3–23.3 s in the final cut. No image shows a person, a NASA logo or a mission identifier.
 
 ## Commit trailers
 
-Every commit made with AI assistance ends with a trailer naming the assistant, for example `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. At the time of writing, all commits on `main` carry it (67 of 67 on 2026-11-14 at about 11:00; refresh at S19). The trailers can be listed with `git log --format=%B | grep Co-Authored-By`.
+Every commit made with AI assistance ends with a trailer naming the assistant, for example `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`. On 2026-11-16 at about 00:10 BRT, all 245 non-merge commits on `main` carry it; the other 58 commits are GitHub merge commits, which carry no trailer. The trailers can be listed with `git log --format=%B | grep Co-Authored-By`.
 
 ## Short version for the form ("Use of Super Intelligence (SI)")
 

@@ -14,6 +14,7 @@ import { PANEL_LANES, vitalsCard } from "./panel/vitals";
 // leaves that card at "No data" and the others alone. The panel only reads from the hub.
 const REFRESH_MS = 10_000;
 const LANES_REFRESH_MS = 30_000; // the lane readings are the heavy request: refetch them less often
+const SIGNALS_REFRESH_MS = 30_000; // D45 signals are worked out on read for every crew: on their own, slower cadence
 export const LANE_HOURS = 6;
 export const LANE_BUCKET_S = 60; // a few stored readings per minute, so a fast sensor cannot cut the window
 export const LANE_LIMIT = 5000;
@@ -52,12 +53,32 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   let token = 0;
   let disposed = false;
   let lanesAt = 0;
+  let signalsAt = 0;
+  let signalsToken = 0;
+  // The signals chip loads on its own: no card waits for the evaluation.
+  const loadSignals = () => {
+    if (!src.signals || Date.now() - signalsAt < SIGNALS_REFRESH_MS) return;
+    signalsAt = Date.now();
+    const mine = ++signalsToken;
+    void soft(src.signals(currentCrew() ?? undefined)).then((b) => {
+      if (!disposed && mine === signalsToken) top.signals(b);
+    });
+  };
+  // The source clock at the last load and at the last lane load. A paused replay holds its clock still, so once the
+  // lanes have caught up with the frozen frame there is nothing to reload or redraw.
+  let loadedAt = Number.NaN;
+  let lanesClock = Number.NaN;
   const load = async () => {
+    loadSignals(); // on the wall clock, so a paused source clock does not stop it
+    const clock = src.now();
+    if (clock === loadedAt && clock === lanesClock) return;
+    const frozen = clock === loadedAt;
+    loadedAt = clock;
     const mine = ++token;
     const crew = currentCrew() ?? undefined;
-    const nowS = src.now() / 1000;
+    const nowS = clock / 1000;
     const win = src.laneWindow?.(nowS) ?? [nowS - LANE_HOURS * 3600, nowS];
-    const lanesDue = Date.now() - lanesAt >= (src.lanesRefreshMs ?? LANES_REFRESH_MS);
+    const lanesDue = frozen || Date.now() - lanesAt >= (src.lanesRefreshMs ?? LANES_REFRESH_MS);
     const [status, set, weather, linkState, weighIns, food, training, rows, iss, ref] = await Promise.all([
       soft(src.status(crew)), latestSet(src, crew), soft(src.spaceWeather()), soft(src.link()),
       soft(src.readings("body_mass", { since: new Date((nowS - MASS_DAYS * 86400) * 1000).toISOString(), limit: 500, crew })),
@@ -72,6 +93,7 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
     mass.update({ weighIns, food, training, sessions: set.sessions });
     if (rows !== undefined) {
       lanesAt = Date.now();
+      lanesClock = clock;
       vitals.update({ rows, win, iss, latest: status?.results ?? null });
     }
     rad.update({ ref, weather });
@@ -81,6 +103,8 @@ export function renderPanel(root: HTMLElement, src: PanelSource = liveSource): (
   const timer = setInterval(() => void load(), src.refreshMs ?? REFRESH_MS);
   const offCrew = onCrewChange(() => {
     lanesAt = 0;
+    signalsAt = 0;
+    loadedAt = Number.NaN;
     void load();
   });
   return () => {

@@ -39,7 +39,7 @@ export type Ind =
   | "body_mass"
   | IntakeInd;
 
-export type SrcClass = "certified" | "hobby" | "self" | "nasa" | "replay";
+export type SrcClass = "certified" | "hobby" | "self" | "nasa" | "replay" | "ref";
 export type QualityFlag =
   | "ok"
   | "motion"
@@ -183,14 +183,14 @@ export interface RepsBody {
 
 export interface Prompt {
   id: number;
-  kind: "morning" | "post_exercise" | "cabin_trigger";
+  kind: "morning" | "post_exercise" | "cabin_trigger" | "signal_cabin" | "signal_body";
   asks: Ind[];
   crew: CrewId | null;
   status: "open" | "answered" | "skipped";
   created_at: string;
   trigger_reading_id: number | null;
   rule_id: string | null;
-  trigger: StatusEntry | null;
+  trigger: StatusEntry | SignalSnapshot | null;
 }
 
 export interface PromptAnswer {
@@ -401,4 +401,82 @@ export interface ExerciseDay {
   cell_work_j: number | null;
   replay: boolean;
   excluded_reps: number;
+}
+
+// Signals (D45). The hub sends keys, never text: the console words them from COPY.
+export type SignalKind = "trend" | "baseline" | "time_to_limit" | "lagged_pair";
+export type SignalState = "notable" | "steady" | "not_enough_data";
+
+export interface SignalInput {
+  ind: string;
+  src: SrcClass;
+  dev: string;
+  node: string;
+  n: number;
+  first_at: string;
+  last_at: string;
+  oldest_age_s: number;
+}
+
+export interface SignalValue {
+  estimate: number;
+  low: number;
+  high: number;
+  unit: string;
+  per: string | null;
+}
+
+export interface SignalMethod {
+  name: string;
+  ref: string;
+  alpha: number | null;
+  n: number;
+  min_n: number;
+  window_start: string;
+  window_end: string;
+  coverage: number | null;
+}
+
+export interface SignalMissing {
+  key: string;
+  need: number | null;
+  have: number | null;
+}
+
+export interface Signal {
+  id: string;
+  kind: SignalKind;
+  crew: CrewId | null;
+  state: SignalState;
+  headline_key: string;
+  value: SignalValue | null;
+  method: SignalMethod;
+  inputs: SignalInput[];
+  missing: SignalMissing[];
+  limits: string[];
+  reference: { rule_id: string; source_kind: SourceKind; limit: number | null } | null;
+  replay: boolean;
+  series: [string | number, number][];
+  pairs: (string | number)[][];
+  can_trigger: boolean;
+  detail: Record<string, unknown>;
+}
+
+export interface SignalsBody {
+  crew: CrewId | null;
+  at: string;
+  signals: Signal[];
+}
+
+/** The `trigger` of a signal_cabin / signal_body prompt: what the signal showed when it asked. */
+export interface SignalSnapshot {
+  signal_id: string;
+  state: SignalState;
+  headline_key: string;
+  value: SignalValue | null;
+  inputs: SignalInput[];
+  limits: string[];
+  reference: Signal["reference"];
+  replay: boolean;
+  at: string;
 }

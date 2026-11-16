@@ -38,6 +38,10 @@ Last updated by the Science lane (N11a). The BLE, wearable-baseline, OAuth, grou
 - Committed file: `data/nasa/isslive_capture.jsonl`, a 13-minute capture (13:56 to 14:10 UTC) recorded on 2026-11-14, all four items present, always shown as "recorded".
 - Use: "ISS cabin now" beside the habitat cabin, with a data-age badge.
 - Without it: the page serves the recorded capture, labelled recorded.
+- Stored (D45): the hub also stores each fresh item as a reference reading (`iss_cabin_p` in hPa from the mmHg value,
+  `iss_cabin_temp` in C, `iss_ppco2` for the US Lab CO2 item and `iss_ppco2_node3` for Node 3, both in mmHg, never
+  pooled), at most one per item per minute; an item stamped more than 2 minutes ahead of its arrival is skipped. These readings are
+  never assessed, never sent over the link and never on `/api/status`; the signals module reads them.
 
 ## Mission dose estimate (effective dose)
 
@@ -89,11 +93,42 @@ Read in full on 2026-11-14; page and requirement ID for each number are in `docs
 
 - Name: Oura Ring cloud API, version 2 (the vendor is named here only; the code and the console say "ring" and device `RING`).
 - Endpoints (base `https://api.ouraring.com`), all `GET`, paged with `next_token`: `/v2/usercollection/heartrate?start_datetime=&end_datetime=` (rows `timestamp`, `timestamp_unix`, `bpm`, `source`), `/v2/usercollection/sleep?start_date=&end_date=` (`day`, `bedtime_end`, `total_sleep_duration` in seconds, `type`), `/v2/usercollection/daily_spo2?start_date=&end_date=` (`day`, `spo2_percentage.average`). Reference: https://cloud.ouraring.com/v2/docs (OpenAPI 1.43, read 2026-11-14).
-- Auth: OAuth2 authorization code with PKCE S256. Authorize `https://cloud.ouraring.com/oauth/authorize`, token `https://api.ouraring.com/oauth/token`; refresh tokens are single-use. Scopes requested: `heartrate`, `spo2`, `daily`. Personal access tokens were deprecated in December 2025 and can no longer be used (https://cloud.ouraring.com/docs/authentication). Every request sends a `User-Agent`. An unapproved developer app is limited to 10 users, which is enough for one.
-- Settings: `RING_API_BASE=https://api.ouraring.com`, `RING_AUTHORIZE_URL=https://cloud.ouraring.com/oauth/authorize`, `RING_TOKEN_URL=https://api.ouraring.com/oauth/token`, plus the app's `RING_CLIENT_ID`, `RING_CLIENT_SECRET` and `RING_REDIRECT_URI` in `.env` (git-ignored).
+- Auth: OAuth2 authorization code with PKCE S256. Authorize `https://cloud.ouraring.com/oauth/authorize`, which hands sign-in to the identity server `https://moi.ouraring.com` (issuer `https://moi.ouraring.com/oauth/v2/ext/oauth-anonymous`). Token `https://moi.ouraring.com/oauth/v2/ext/oauth-token`, taken from the issuer's `.well-known/openid-configuration` on 2026-11-15. The older `https://api.ouraring.com/oauth/token` answered `400 invalid_request` to every exchange. Refresh tokens are single-use. The app is the team owner's own "Habitat Health Monitor" app on the developer portal (https://developer.ouraring.com/applications), with scopes daily, heartrate and spo2 only. The load balancer in front of the identity server answers 403 to any request carrying `127.0.0.1` (decision D41 §9). Scopes requested: `heartrate`, `spo2`, `daily`. Personal access tokens were deprecated in December 2025 and can no longer be used (https://cloud.ouraring.com/docs/authentication). Every request sends a `User-Agent`. An unapproved developer app is limited to 10 users, which is enough for one.
+- Settings: `RING_API_BASE=https://api.ouraring.com`, `RING_AUTHORIZE_URL=https://cloud.ouraring.com/oauth/authorize`, `RING_TOKEN_URL=https://moi.ouraring.com/oauth/v2/ext/oauth-token`, plus the app's `RING_CLIENT_ID`, `RING_CLIENT_SECRET` and `RING_REDIRECT_URI` in `.env` (git-ignored).
 - Access date: 2026-11-14. Terms: the vendor's developer terms apply to the app registration; the data is the team owner's own.
 - Whose data: only the team owner's, with their consent at the vendor's sign-in page; readings carry crew `crew-b`, which stays out of `PUBLIC_CREWS` until a signed consent form exists. No minor's data goes through the importer.
 - Mapping (D41): `hr` from `rest` and `sleep` samples only; `sleep_h` from the main (`long_sleep`) period; `spo2` is the nightly average, timed at the end of that night. `skin_temp` is not mapped: the ring reports only a temperature deviation, not a skin temperature.
 - Committed file: `data/replay/ring-synthetic-nights.jsonl`, a **synthetic** pull (invented values in the vendor's field layout, labelled so on its first line). Real pulls are saved to `var/ring/pulls.jsonl` (mode 600, git-ignored) and are never committed.
 - Use: delayed cloud sync of vitals. A pull is `src hobby` with its true age; a replay is `src replay`, shown as "Replay (recorded)". The habitat core never calls the cloud; the importer is a separate process that posts to `POST /api/readings`.
 - Without it: the vitals tiles stay empty; the synthetic replay keeps the demo working with no network.
+
+## Earth weather (outdoor reference, D45)
+
+- Use: the outdoor temperature, humidity and pressure next to the bench cabin, for the signals module's
+  "side by side" card. Readings are node `earth-1`, `src ref`, device `WEATHER`, shown as "Earth reference, outdoor (weather model)".
+- Importer: `python -m nodes.weather pull --hours 48`, a separate process like the ring importer. The habitat hub
+  never calls the internet.
+- Location: a coarse grid cell (1 decimal, about 11 km) from `WEATHER_LAT` and `WEATHER_LON` in `.env`
+  (git-ignored). It goes to the API as the request's coordinates and nowhere else: it is never committed, posted to
+  the hub, logged or shown.
+- Name: Open-Meteo Forecast API. The code says "weather API" and device `WEATHER`; the console names the vendor in
+  one place only, the licence credit below. Chosen by the team owner on 2026-11-15 instead of INMET, so no token is needed.
+- Endpoint: `https://api.open-meteo.com/v1/forecast`, set as `WEATHER_API_URL` in `.env`. Parameters:
+  `latitude`, `longitude`, `hourly=temperature_2m,relative_humidity_2m,surface_pressure`, `past_days` (1 to 92),
+  `forecast_days=1`, `timeformat=unixtime`, `timezone=GMT`. Units: °C, %, hPa (`surface_pressure`, at the model's
+  ground height, not sea level). Errors: HTTP 400 with `{"error": true, "reason": ...}`. Docs:
+  https://open-meteo.com/en/docs (read 2026-11-15; a live response at the neutral point 0, 0 matched them).
+- What the values are: past hours are archived weather-model values, not station observations. The console labels
+  them "Earth reference, outdoor (weather model)".
+- Terms: free API for non-commercial use only, under 10,000 calls per day, 5,000 per hour and 600 per minute; no API
+  key and no contact details needed (https://open-meteo.com/en/terms, read 2026-11-15). One pull per hour is about
+  24 calls a day.
+- Licence and credit: data under CC BY 4.0 (https://open-meteo.com/en/licence). The licence page asks for a credit
+  link next to displayed data, such as "Weather data by Open-Meteo.com" linking to https://open-meteo.com/. The
+  console shows the credit "Weather data by Open-Meteo.com (CC BY 4.0)" (COPY `signals.credit.weather`) on the one
+  card that displays the data, the signals screen's "Bench cabin and outdoor temperature" (`cabin_vs_earth`) card.
+  It is plain text, not a link, because the console runs offline on the habitat network. This is the one vendor
+  name in console text, an exception to R5 for a licence credit, approved by the team owner on 2026-11-15.
+- Committed file: `nodes/weather/tests/fixtures/hourly-api-sample.json`, 12 hours recorded on 2026-11-15 at the
+  neutral point (0, 0), location fields removed, one value set to null by hand for the missing-value test.
+- Without it: the "side by side" card says not enough data; nothing else changes.

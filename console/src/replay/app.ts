@@ -12,6 +12,8 @@ import { createReplayPlayer, replayBanner } from "./player";
 
 // The exercise replay is a separate synthetic recording: its set is shown this long before the cabin recording.
 const SET_LEAD_MS = 60_000;
+// The exercise replay is optional, so a stalled request for it must not hold the replay back longer than this.
+const EXERCISE_WAIT_MS = 3000;
 
 // Replay mode: replay.json and the exercise replay from the build base, no API call, no WebSocket. It opens on the
 // habitat panel, fed by those two files; the status board stays in the navigation.
@@ -27,7 +29,10 @@ export async function mountReplayApp(root: HTMLElement, o: { base: string; fetch
 
   // Both files at once. The exercise replay is optional: without it the lift cards keep their empty text.
   const replayRes = o.fetchImpl(`${o.base}replay.json`);
-  const exerciseP = o.fetchImpl(`${o.base}exercise-day.jsonl`).then((r) => (r.ok ? r.text() : "")).catch(() => "");
+  const exerciseP = Promise.race([
+    o.fetchImpl(`${o.base}exercise-day.jsonl`).then((r) => (r.ok ? r.text() : "")).catch(() => ""),
+    new Promise<string>((resolve) => setTimeout(() => resolve(""), EXERCISE_WAIT_MS)),
+  ]);
   let file;
   try {
     const res = await replayRes;

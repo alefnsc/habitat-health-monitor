@@ -1,4 +1,4 @@
-export const SCREENS = ["panel", "status", "entry", "history", "lanes", "exercise", "food", "nasa", "prompts", "body"] as const;
+export const SCREENS = ["panel", "status", "entry", "history", "lanes", "exercise", "food", "nasa", "signals", "prompts", "body"] as const;
 export type Screen = (typeof SCREENS)[number];
 
 /** The screen named in the hash, or `fallback` (the panel, in the console and in the replay build). */

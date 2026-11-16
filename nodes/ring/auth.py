@@ -8,12 +8,15 @@ DATA_SOURCES.md lists their values. The token is kept in a mode-600 file under v
 from __future__ import annotations
 
 import base64
+import errno
 import hashlib
 import json
 import os
 import secrets
+import socket
 import time
 from collections.abc import Callable, Mapping
+from contextlib import ExitStack
 from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -162,6 +165,17 @@ class _ExclusiveServer(HTTPServer):
     allow_reuse_address = False
 
 
+class _ExclusiveServer6(_ExclusiveServer):
+    address_family = socket.AF_INET6
+
+
+def _in_use(port: int | None, e: OSError) -> AuthError:
+    return AuthError(
+        f"port {port} is in use by another program ({e.strerror}); register a free port "
+        "as the redirect URI and set RING_REDIRECT_URI to match"
+    )
+
+
 def wait_for_redirect(
     redirect_uri: str, timeout_s: float = 300, on_ready: Callable[[], None] | None = None
 ) -> str:
@@ -190,20 +204,27 @@ def wait_for_redirect(
         def log_message(self, *_args: object) -> None:
             return  # keep the code out of the terminal log
 
-    try:
-        server = _ExclusiveServer(("127.0.0.1", parts.port), Handler)
-    except OSError as e:
-        raise AuthError(
-            f"port {parts.port} is in use by another program ({e.strerror}); register a free port "
-            "as the redirect URI and set RING_REDIRECT_URI to match"
-        ) from None
-    deadline = time.monotonic() + timeout_s
-    with server:
+    with ExitStack() as stack:
+        try:
+            servers = [stack.enter_context(_ExclusiveServer(("127.0.0.1", parts.port), Handler))]
+        except OSError as e:
+            raise _in_use(parts.port, e) from None
+        if parts.hostname == "localhost":
+            # Browsers try [::1] first for localhost: hold that port too, or another program there
+            # would receive the code. No IPv6 loopback at all means nobody can listen there.
+            try:
+                servers.append(stack.enter_context(_ExclusiveServer6(("::1", parts.port), Handler)))
+            except OSError as e:
+                if e.errno == errno.EADDRINUSE:
+                    raise _in_use(parts.port, e) from None
+        deadline = time.monotonic() + timeout_s
         if on_ready is not None:
             on_ready()
-        server.timeout = 0.5
+        for server in servers:
+            server.timeout = 0.25
         while not got and time.monotonic() < deadline:
-            server.handle_request()
+            for server in servers:
+                server.handle_request()
     if not got:
         raise AuthError(f"no redirect within {timeout_s:.0f} s")
     return got[0]
